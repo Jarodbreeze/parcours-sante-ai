@@ -222,38 +222,7 @@ textarea.situation::placeholder{color:var(--text3)}
   <div class="sec-title">Le conseil d'experts</div>
   <p class="experts-intro">Chaque expert analyse la situation depuis son angle métier et propose des actions concrètes. Le staff IA remplace la réunion pluridisciplinaire.</p>
 
-  <div class="experts-grid" id="expertsGrid">
-    <div class="expert-card" id="exp-med" style="border-color:var(--green-b)">
-      <div class="expert-status" id="st-med"></div>
-      <div class="expert-avatar" style="background:var(--green-bg)">🩺</div>
-      <div class="expert-name">Dr. Méd</div>
-      <div class="expert-role">Médecin coordinateur</div>
-    </div>
-    <div class="expert-card" id="exp-as" style="border-color:var(--blue-b)">
-      <div class="expert-status" id="st-as"></div>
-      <div class="expert-avatar" style="background:var(--blue-bg)">🤝</div>
-      <div class="expert-name">Assistante sociale</div>
-      <div class="expert-role">Travailleur social</div>
-    </div>
-    <div class="expert-card" id="exp-jur" style="border-color:var(--purple-b)">
-      <div class="expert-status" id="st-jur"></div>
-      <div class="expert-avatar" style="background:var(--purple-bg)">⚖️</div>
-      <div class="expert-name">Juriste</div>
-      <div class="expert-role">Droits sociaux & admin</div>
-    </div>
-    <div class="expert-card" id="exp-cpam" style="border-color:var(--teal-b)">
-      <div class="expert-status" id="st-cpam"></div>
-      <div class="expert-avatar" style="background:var(--teal-bg)">🏥</div>
-      <div class="expert-name">Référent CPAM</div>
-      <div class="expert-role">Assurance Maladie 93</div>
-    </div>
-    <div class="expert-card" id="exp-mdph" style="border-color:var(--amber-b)">
-      <div class="expert-status" id="st-mdph"></div>
-      <div class="expert-avatar" style="background:var(--amber-bg)">♿</div>
-      <div class="expert-name">Référent MDPH</div>
-      <div class="expert-role">Handicap & autonomie</div>
-    </div>
-  </div>
+  <div class="experts-grid" id="expertsGrid"></div>
 
   <!-- BOUTON LANCER -->
   <button class="btn-primary" id="btnLancer" onclick="lancerStaff()">
@@ -438,8 +407,23 @@ function getApiKey() { return localStorage.getItem('mediasante_api_key') || ''; 
 
 window.addEventListener('load', () => {
   const k = getApiKey(); if(k) document.getElementById('apiKeyInput').value = k.slice(0,12)+'...';
+  renderExpertsGrid();
   renderHistory();
 });
+
+function renderExpertsGrid() {
+  const grid = document.getElementById('expertsGrid');
+  if(!grid) return;
+  grid.innerHTML = EXPERTS.map(e => `
+    <div class="expert-card" id="exp-${e.id}" 
+         style="border-color:${e.border};cursor:pointer"
+         onclick="toggleAvis('${e.id}')">
+      <div class="expert-status" id="st-${e.id}"></div>
+      <div class="expert-avatar" style="background:${e.bg}">${e.emoji}</div>
+      <div class="expert-name">${e.nom.split(' ').slice(-2).join(' ')}</div>
+      <div class="expert-role" style="color:${e.couleur};font-size:9px">${e.role}</div>
+    </div>`).join('');
+}
 
 // ─── PATIENT ───
 function getDossiers() { return JSON.parse(localStorage.getItem('mediasante_dossiers') || '[]'); }
@@ -685,11 +669,24 @@ Génère UNIQUEMENT un JSON valide sans markdown ni backticks :
     });
     const data = await resp.json();
     let text = data.content?.[0]?.text || '{}';
-    text = text.replace(/```json|```/g,'').trim();
+    // Nettoyage robuste — extraire le JSON même si Claude ajoute du texte autour
+    text = text.replace(/```json/g,'').replace(/```/g,'').trim();
+    // Si Claude a ajouté du texte avant/après le JSON, extraire uniquement le JSON
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if(jsonMatch) text = jsonMatch[0];
     const result = JSON.parse(text);
+    if(!result.consensus) throw new Error('JSON incomplet');
     renderConsensus(result);
   } catch(e) {
-    renderConsensus({ consensus: 'Synthèse indisponible — consultez les avis individuels ci-dessous.', urgence: 'MOYENNE', actions: [] });
+    // Fallback : synthèse basée sur les avis individuels disponibles
+    const nbAvis = Object.keys(avisMap).length;
+    renderConsensus({ 
+      consensus: nbAvis > 0 
+        ? `Le staff a recueilli ${nbAvis} avis d'experts. Consultez les avis individuels ci-dessous pour le détail des recommandations. Une synthèse automatique n'a pas pu être générée — vérifiez votre clé API.`
+        : 'Aucun avis disponible. Vérifiez votre clé API Claude et relancez le staff.', 
+      urgence: 'MOYENNE', 
+      actions: [] 
+    });
   }
 }
 
