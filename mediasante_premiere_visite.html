@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>ParcourSanté AI — Première visite</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+:root{
+  --bg:#0f1117;--bg2:#161820;--bg3:#1e2130;
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.16);
+  --text:#f0f1f5;--text2:#8b8fa8;--text3:#565a72;
+  --purple:#7c6ff7;--purple-l:#a99ef9;--purple-bg:rgba(124,111,247,0.12);--purple-b:rgba(124,111,247,0.3);
+  --teal:#3ecfaa;--teal-bg:rgba(62,207,170,0.1);--teal-b:rgba(62,207,170,0.25);
+  --amber:#f0a43a;--amber-bg:rgba(240,164,58,0.1);--amber-b:rgba(240,164,58,0.25);
+  --red:#e05c6a;--red-bg:rgba(224,92,106,0.1);--red-b:rgba(224,92,106,0.25);
+  --green:#4cba82;--green-bg:rgba(76,186,130,0.1);--green-b:rgba(76,186,130,0.25);
+  --r:10px;--rs:7px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+.topbar{position:sticky;top:0;z-index:100;background:rgba(15,17,23,0.93);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 16px;height:52px;display:flex;align-items:center;justify-content:space-between}
+.logo{display:flex;align-items:center;gap:8px}
+.logo-dot{width:8px;height:8px;border-radius:50%;background:var(--green)}
+.logo-text{font-size:14px;font-weight:600;letter-spacing:-.3px}
+.logo-sub{font-size:11px;color:var(--text3);margin-left:2px}
+.badge-mode{font-size:10px;font-weight:600;letter-spacing:.08em;padding:3px 8px;border-radius:20px;background:var(--green-bg);color:var(--green);border:1px solid var(--green-b)}
+
+.api-bar{background:var(--bg2);border-bottom:1px solid var(--border);padding:8px 16px;display:flex;align-items:center;gap:8px}
+.api-label{font-size:11px;color:var(--text3);flex-shrink:0}
+.api-input{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:11px;padding:5px 8px;font-family:monospace;outline:none}
+.api-input:focus{border-color:var(--purple)}
+.api-save{font-size:11px;padding:5px 10px;border-radius:5px;background:var(--purple-bg);color:var(--purple-l);border:1px solid var(--purple-b);cursor:pointer}
+
+/* PROGRESS */
+.progress-wrap{padding:14px 16px 0}
+.steps-row{display:flex;gap:5px;overflow-x:auto;margin-bottom:10px;padding-bottom:2px}
+.step-pill{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3);padding:5px 10px;border-radius:20px;border:1px solid var(--border);white-space:nowrap;cursor:pointer;transition:all .2s;flex-shrink:0}
+.step-pill.active{color:var(--green);border-color:var(--green-b);background:var(--green-bg)}
+.step-pill.done{color:var(--teal);border-color:var(--teal-b);background:var(--teal-bg)}
+.step-num{width:16px;height:16px;border-radius:50%;background:var(--bg3);font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.step-pill.active .step-num{background:var(--green);color:var(--bg)}
+.step-pill.done .step-num{background:var(--teal);color:var(--bg)}
+.prog-bar{height:3px;background:var(--bg3);border-radius:2px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--teal));border-radius:2px;transition:width .4s ease}
+
+.main{max-width:640px;margin:0 auto;padding:18px 16px 48px}
+.panel{display:none}.panel.active{display:block}
+
+/* PANEL HEADER */
+.panel-tag{font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--text3);text-transform:uppercase;margin-bottom:5px}
+.panel-title{font-size:20px;font-weight:700;letter-spacing:-.5px;margin-bottom:4px}
+.panel-desc{font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:18px}
+
+/* PATIENT SELECTOR */
+.patient-bar{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:14px;cursor:pointer}
+.patient-bar:hover{border-color:var(--border2)}
+.pa{width:32px;height:32px;border-radius:50%;background:var(--purple-bg);border:1px solid var(--purple-b);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--purple-l);flex-shrink:0}
+.pn{font-size:13px;font-weight:600}.pid{font-size:11px;color:var(--text3);margin-top:1px}
+
+/* GRILLE CARDS */
+.grille-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:10px}
+.grille-header{padding:12px 14px 10px;border-bottom:1px solid var(--border);background:var(--bg3);display:flex;align-items:center;gap:8px}
+.grille-icon{font-size:16px}
+.grille-title{font-size:13px;font-weight:600}
+.grille-sub{font-size:11px;color:var(--text3);margin-left:auto}
+.grille-body{padding:14px}
+
+/* AGGIR VARIABLES */
+.aggir-grid{display:flex;flex-direction:column;gap:8px}
+.aggir-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:var(--bg);border-radius:var(--rs);border:1px solid var(--border)}
+.aggir-label{flex:1;min-width:0}
+.aggir-name{font-size:13px;font-weight:500;color:var(--text);margin-bottom:2px}
+.aggir-desc{font-size:11px;color:var(--text3);line-height:1.4}
+.aggir-score{display:flex;gap:4px;flex-shrink:0}
+.score-btn{width:30px;height:30px;border-radius:6px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+.score-btn.active-A{background:var(--green-bg);border-color:var(--green-b);color:var(--green)}
+.score-btn.active-B{background:var(--amber-bg);border-color:var(--amber-b);color:var(--amber)}
+.score-btn.active-C{background:var(--red-bg);border-color:var(--red-b);color:var(--red)}
+
+/* GIR RESULT */
+.gir-result{padding:14px;background:var(--bg2);border-radius:var(--rs);border:1px solid var(--border);margin-top:12px;display:flex;align-items:center;gap:12px}
+.gir-badge{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;flex-shrink:0}
+.gir-info{flex:1}
+.gir-label{font-size:11px;color:var(--text3);margin-bottom:3px;text-transform:uppercase;letter-spacing:.06em}
+.gir-title{font-size:14px;font-weight:600;margin-bottom:3px}
+.gir-desc{font-size:12px;color:var(--text2);line-height:1.4}
+.gir-alert{margin-top:8px;padding:8px 10px;border-radius:var(--rs);font-size:12px;font-weight:600}
+
+/* IADL */
+.iadl-grid{display:flex;flex-direction:column;gap:6px}
+.iadl-item{display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--bg);border-radius:var(--rs);border:1px solid var(--border);cursor:pointer;transition:all .15s}
+.iadl-check{width:20px;height:20px;border-radius:5px;border:1.5px solid var(--text3);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+.iadl-item.capable .iadl-check{background:var(--green);border-color:var(--green)}
+.iadl-item.capable{border-color:var(--green-b);background:var(--green-bg)}
+.iadl-text{font-size:13px;color:var(--text2);flex:1;line-height:1.4}
+.iadl-item.capable .iadl-text{color:var(--text)}
+.iadl-score-display{font-size:18px;font-weight:700;text-align:center;padding:10px 0}
+
+/* UP AND GO */
+.timer-wrap{text-align:center;padding:16px 0}
+.timer-display{font-size:56px;font-weight:700;letter-spacing:-2px;font-variant-numeric:tabular-nums;margin-bottom:8px;color:var(--text)}
+.timer-status{font-size:13px;color:var(--text3);margin-bottom:16px}
+.timer-btns{display:flex;gap:8px;justify-content:center}
+.timer-btn{padding:10px 24px;border-radius:var(--rs);font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;border:1px solid var(--border);background:var(--bg2);color:var(--text);transition:all .15s}
+.timer-btn.start{background:var(--green);border-color:var(--green);color:var(--bg)}
+.timer-btn.stop{background:var(--red);border-color:var(--red);color:#fff}
+.timer-btn.reset{color:var(--text2)}
+.upgo-result{margin-top:12px;padding:12px 14px;border-radius:var(--rs);display:flex;align-items:center;gap:10px}
+.upgo-result.normal{background:var(--green-bg);border:1px solid var(--green-b)}
+.upgo-result.risk{background:var(--amber-bg);border:1px solid var(--amber-b)}
+.upgo-result.high{background:var(--red-bg);border:1px solid var(--red-b)}
+.upgo-icon{font-size:20px;flex-shrink:0}
+.upgo-text{font-size:13px;font-weight:600}
+.upgo-sub{font-size:11px;color:var(--text2);margin-top:2px}
+
+/* ÉVAL SOCIALE */
+.field{margin-bottom:12px}
+.field-label{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:5px}
+input[type=text],input[type=date],select,textarea{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:13px;padding:9px 11px;outline:none;font-family:inherit;-webkit-appearance:none}
+input:focus,select:focus,textarea:focus{border-color:var(--purple)}
+select option{background:var(--bg2)}
+textarea{resize:vertical;min-height:72px;line-height:1.5}
+input::placeholder,textarea::placeholder{color:var(--text3)}
+.check-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer}
+.check-row:last-child{border-bottom:none}
+.cb{width:18px;height:18px;border-radius:4px;border:1.5px solid var(--text3);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.cb.on{background:var(--purple);border-color:var(--purple)}
+.check-lbl{font-size:13px;color:var(--text2)}
+.check-row.on .check-lbl{color:var(--text)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* SYNTHÈSE */
+.synth-scores{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.score-card{background:var(--bg2);border-radius:var(--rs);border:1px solid var(--border);padding:10px;text-align:center}
+.score-card-val{font-size:22px;font-weight:700}
+.score-card-lbl{font-size:10px;color:var(--text3);margin-top:2px;text-transform:uppercase;letter-spacing:.05em}
+.score-card-sub{font-size:11px;margin-top:3px;font-weight:500}
+
+/* PPCS */
+.ppcs-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:12px}
+.ppcs-toolbar{display:flex;align-items:center;gap:6px;padding:8px 12px;background:var(--bg3);border-bottom:1px solid var(--border)}
+.tool-btn{font-size:11px;padding:4px 8px;border-radius:5px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;font-family:inherit}
+.tool-btn:hover{background:var(--bg2);color:var(--text)}
+.ppcs-body{padding:16px;min-height:300px;font-size:13px;line-height:1.8;color:var(--text);outline:none;white-space:pre-wrap}
+.ppcs-body:empty::before{content:'Le PPCS sera généré automatiquement depuis les résultats d\'évaluation...';color:var(--text3)}
+.ppcs-status{display:flex;align-items:center;gap:8px;padding:8px 12px;border-top:1px solid var(--border);font-size:11px;color:var(--text3)}
+.status-dot{width:6px;height:6px;border-radius:50%;background:var(--text3)}
+
+/* BUTTONS */
+.btn-primary{width:100%;padding:13px;border-radius:var(--r);background:var(--green);color:var(--bg);font-size:14px;font-weight:700;font-family:inherit;border:none;cursor:pointer;transition:opacity .2s,transform .1s;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px;letter-spacing:-.2px}
+.btn-primary:active{transform:scale(.98)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-secondary{width:100%;padding:11px;border-radius:var(--r);background:transparent;color:var(--text2);font-size:13px;font-family:inherit;border:1px solid var(--border);cursor:pointer;margin-bottom:6px}
+.btn-secondary:hover{border-color:var(--border2)}
+.btn-row{display:flex;gap:8px}
+.btn-row .btn-primary{flex:2}
+.btn-row .btn-secondary{flex:1;font-size:13px}
+
+/* INFO BOX */
+.info-box{background:var(--bg3);border:.5px solid var(--border);border-radius:var(--rs);padding:10px 12px;font-size:12px;color:var(--text3);line-height:1.5;margin-bottom:12px}
+.info-box strong{color:var(--text2)}
+.warn-box{background:var(--amber-bg);border:1px solid var(--amber-b);border-radius:var(--rs);padding:10px 12px;font-size:12px;color:var(--amber);line-height:1.5;margin-bottom:12px}
+
+/* IA DOT */
+.ia-dot{width:7px;height:7px;border-radius:50%;background:var(--purple);animation:pulse 2s infinite;display:inline-block}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:flex;align-items:flex-end;justify-content:center}
+.modal-overlay.hidden{display:none}
+.modal{background:var(--bg2);border-top:1px solid var(--border);border-radius:16px 16px 0 0;padding:20px;width:100%;max-width:500px;max-height:70vh;overflow-y:auto}
+.modal-title{font-size:16px;font-weight:700;margin-bottom:14px}
+.modal-close{float:right;background:none;border:none;color:var(--text2);font-size:18px;cursor:pointer;margin-top:-4px}
+.dossier-item{padding:10px 12px;border-radius:var(--rs);border:1px solid var(--border);background:var(--bg3);margin-bottom:6px;cursor:pointer;display:flex;align-items:center;gap:10px}
+.dossier-item:hover{border-color:var(--border2)}
+.d-av{width:32px;height:32px;border-radius:50%;background:var(--purple-bg);border:1px solid var(--purple-b);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--purple-l);flex-shrink:0}
+.d-name{font-size:13px;font-weight:600}.d-id{font-size:11px;color:var(--text3)}
+.divider{height:1px;background:var(--border);margin:14px 0}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:2px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-dot"></div>
+    <span class="logo-text">ParcourSanté AI</span>
+    <span class="logo-sub">Première visite</span>
+  </div>
+  <span class="badge-mode">ÉVALUATION</span>
+</div>
+
+<div class="api-bar">
+  <span class="api-label">Clé API Claude :</span>
+  <input type="password" class="api-input" id="apiKeyInput" placeholder="sk-ant-..." />
+  <button class="api-save" onclick="saveApiKey()">OK</button>
+</div>
+
+<div class="progress-wrap">
+  <div class="steps-row" id="stepsRow">
+    <div class="step-pill active" data-s="0"><div class="step-num">1</div>Patient</div>
+    <div class="step-pill" data-s="1"><div class="step-num">2</div>AGGIR</div>
+    <div class="step-pill" data-s="2"><div class="step-num">3</div>IADL</div>
+    <div class="step-pill" data-s="3"><div class="step-num">4</div>Up & Go</div>
+    <div class="step-pill" data-s="4"><div class="step-num">5</div>Social</div>
+    <div class="step-pill" data-s="5"><div class="step-num">6</div>PPCS</div>
+  </div>
+  <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:8%"></div></div>
+</div>
+
+<div class="main">
+
+<!-- ═══ PANEL 0 — PATIENT ═══ -->
+<div class="panel active" id="panel-0">
+  <div class="panel-tag">Étape 1 / 6</div>
+  <div class="panel-title">Première visite</div>
+  <div class="panel-desc">Sélectionnez le dossier du patient ou saisissez manuellement. L'évaluation sera sauvegardée dans le dossier.</div>
+
+  <div class="patient-bar" onclick="openModal()" id="patientBar">
+    <div class="pa" id="pAvatar">?</div>
+    <div style="flex:1"><div class="pn" id="pName">Sélectionner un patient</div><div class="pid" id="pId">Ouvrir un dossier patient existant</div></div>
+    <span style="color:var(--text3);font-size:10px">▼</span>
+  </div>
+
+  <div class="field">
+    <div class="field-label">Date de la visite</div>
+    <input type="date" id="visite_date" />
+  </div>
+  <div class="field">
+    <div class="field-label">Lieu</div>
+    <select id="visite_lieu">
+      <option value="">Sélectionner...</option>
+      <option>Domicile du patient</option>
+      <option>MSP Épinay-sur-Seine</option>
+      <option>DAC 93 Nord</option>
+      <option>Hôpital / établissement</option>
+      <option>Autre</option>
+    </select>
+  </div>
+  <div class="field">
+    <div class="field-label">Professionnel réalisant l'évaluation</div>
+    <input type="text" id="visite_pro" placeholder="Votre nom et fonction" />
+  </div>
+  <div class="field">
+    <div class="field-label">Contexte de la visite</div>
+    <textarea id="visite_contexte" placeholder="Suite admission du... / Adressé par... / Motif principal de la visite..."></textarea>
+  </div>
+
+  <div class="btn-primary" onclick="goTo(1)" style="cursor:pointer;border:none;border-radius:var(--r)">Commencer l'évaluation →</div>
+</div>
+
+<!-- ═══ PANEL 1 — AGGIR ═══ -->
+<div class="panel" id="panel-1">
+  <div class="panel-tag">Étape 2 / 6 · Grille AGGIR</div>
+  <div class="panel-title">Autonomie — AGGIR</div>
+  <div class="panel-desc">Évaluez chaque variable. A = fait seul, B = fait partiellement / avec aide, C = ne fait pas / dépendant total.</div>
+
+  <div class="info-box"><strong>Guide :</strong> Observez ce que la personne fait réellement, pas ce qu'elle dit pouvoir faire. En cas de doute, choisissez la cotation la moins favorable.</div>
+
+  <div class="grille-card">
+    <div class="grille-header"><span class="grille-icon">🧠</span><span class="grille-title">Fonctions mentales</span><span class="grille-sub">Variables discriminantes</span></div>
+    <div class="grille-body">
+      <div class="aggir-grid" id="agg-mentales"></div>
+    </div>
+  </div>
+
+  <div class="grille-card">
+    <div class="grille-header"><span class="grille-icon">🚶</span><span class="grille-title">Fonctions corporelles & locomotion</span><span class="grille-sub">Variables discriminantes</span></div>
+    <div class="grille-body">
+      <div class="aggir-grid" id="agg-corpo"></div>
+    </div>
+  </div>
+
+  <div class="grille-card">
+    <div class="grille-header"><span class="grille-icon">🏠</span><span class="grille-title">Activités domestiques & sociales</span><span class="grille-sub">Variables illustratives</span></div>
+    <div class="grille-body">
+      <div class="aggir-grid" id="agg-dom"></div>
+    </div>
+  </div>
+
+  <div id="girResultWrap" style="display:none">
+    <div class="gir-result" id="girResult">
+      <div class="gir-badge" id="girBadge"></div>
+      <div class="gir-info">
+        <div class="gir-label">Résultat estimé</div>
+        <div class="gir-title" id="girTitle"></div>
+        <div class="gir-desc" id="girDesc"></div>
+      </div>
+    </div>
+    <div class="gir-alert" id="girAlert" style="display:none"></div>
+  </div>
+
+  <div class="divider"></div>
+  <div class="btn-row">
+    <button class="btn-secondary" onclick="goTo(0)">← Retour</button>
+    <button class="btn-primary" onclick="goTo(2)" style="flex:2">Continuer →</button>
+  </div>
+</div>
+
+<!-- ═══ PANEL 2 — IADL ═══ -->
+<div class="panel" id="panel-2">
+  <div class="panel-tag">Étape 3 / 6 · Échelle IADL</div>
+  <div class="panel-title">Activités instrumentales</div>
+  <div class="panel-desc">Cochez ce que la personne est capable de faire seule. Score sur 8 — plus le score est bas, plus l'aide est nécessaire.</div>
+
+  <div class="grille-card">
+    <div class="grille-header"><span class="grille-icon">📊</span><span class="grille-title">IADL — Lawton</span><span class="grille-sub" id="iadlScoreDisplay">0 / 8</span></div>
+    <div class="grille-body">
+      <div class="iadl-grid" id="iadlGrid"></div>
+    </div>
+  </div>
+
+  <div id="iadlResultWrap" style="margin-top:8px;display:none">
+    <div class="gir-result" id="iadlResult">
+      <div style="flex:1">
+        <div class="gir-label">Interprétation IADL</div>
+        <div class="gir-title" id="iadlTitle"></div>
+        <div class="gir-desc" id="iadlDesc"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+  <div class="btn-row">
+    <button class="btn-secondary" onclick="goTo(1)">← Retour</button>
+    <button class="btn-primary" onclick="goTo(3)" style="flex:2">Continuer →</button>
+  </div>
+</div>
+
+<!-- ═══ PANEL 3 — UP AND GO ═══ -->
+<div class="panel" id="panel-3">
+  <div class="panel-tag">Étape 4 / 6 · Test Up & Go</div>
+  <div class="panel-title">Test de marche</div>
+  <div class="panel-desc">La personne se lève d'une chaise, marche 3 mètres, fait demi-tour, revient s'asseoir. Chronométrez.</div>
+
+  <div class="grille-card">
+    <div class="grille-header"><span class="grille-icon">⏱️</span><span class="grille-title">Chronomètre Up & Go</span></div>
+    <div class="grille-body">
+      <div class="timer-wrap">
+        <div class="timer-display" id="timerDisplay">0.00</div>
+        <div class="timer-status" id="timerStatus">Prêt — appuyez sur Démarrer quand le patient se lève</div>
+        <div class="timer-btns">
+          <button class="timer-btn start" id="btnStart" onclick="startTimer()">Démarrer</button>
+          <button class="timer-btn stop" id="btnStop" onclick="stopTimer()" style="display:none">Arrêter</button>
+          <button class="timer-btn reset" onclick="resetTimer()">Reset</button>
+        </div>
+      </div>
+      <div id="upgoResultWrap" style="display:none">
+        <div class="upgo-result" id="upgoResult">
+          <div class="upgo-icon" id="upgoIcon"></div>
+          <div>
+            <div class="upgo-text" id="upgoText"></div>
+            <div class="upgo-sub" id="upgoSub"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grille-card" style="margin-top:8px">
+    <div class="grille-header"><span class="grille-icon">📝</span><span class="grille-title">Observations motrices</span></div>
+    <div class="grille-body">
+      <textarea id="obs_moteur" placeholder="Démarche, équilibre, aide technique utilisée (canne, déambulateur), douleurs signalées..."></textarea>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+  <div class="btn-row">
+    <button class="btn-secondary" onclick="goTo(2)">← Retour</button>
+    <button class="btn-primary" onclick="goTo(4)" style="flex:2">Continuer →</button>
+  </div>
+</div>
+
+<!-- ═══ PANEL 4 — ÉVALUATION SOCIALE ═══ -->
+<div class="panel" id="panel-4">
+  <div class="panel-tag">Étape 5 / 6 · Évaluation sociale</div>
+  <div class="panel-title">Dimension sociale</div>
+  <div class="panel-desc">Votre domaine d'expertise. Ces informations alimenteront directement le PPCS.</div>
+
+  <div class="grille-card">
+    <div class="grille-header"><span class="grille-icon">💶</span><span class="grille-title">Ressources & droits</span></div>
+    <div class="grille-body">
+      <div class="grid2">
+        <div class="field">
+          <div class="field-label">Ressources mensuelles</div>
+          <input type="text" id="s_ressources" placeholder="RSA / retraite / sans ressources..." />
+        </div>
+        <div class="field">
+          <div class="field-label">Couverture santé</div>
+          <select id="s_couverture">
+            <option value="">...</option>
+            <option>Assurance maladie + CSS</option>
+            <option>AME</option>
+            <option>Assurance maladie seule</option>
+            <option>Aucune couverture</option>
+            <option>En cours d'ouverture</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <div class="field-label">Droits identifiés à ouvrir</div>
+        <div id="droitsCheckList" style="background:var(--bg);border-radius:var(--rs);border:1px solid var(--border);padding:0 10px"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grille-card">
+    <div class="grille-header"><span class="grille-icon">🏠</span><span class="grille-title">Logement & environnement</span></div>
+    <div class="grille-body">
+      <div class="grid2">
+        <div class="field">
+          <div class="field-label">Type de logement</div>
+          <select id="s_logement">
+            <option value="">...</option>
+            <option>Domicile propre</option>
+            <option>Locataire bailleur social</option>
+            <option>Locataire privé</option>
+            <option>Hébergé chez famille</option>
+            <option>Hébergement d'urgence</option>
+            <option>Sans domicile fixe</option>
+          </select>
+        </div>
+        <div class="field">
+          <div class="field-label">Niveau d'accessibilité</div>
+          <select id="s_access">
+            <option value="">...</option>
+            <option>Bon — accessible</option>
+            <option>Partiellement adapté</option>
+            <option>Non adapté — travaux nécessaires</option>
+            <option>Inadapté — risque de chute</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <div class="field-label">Alertes logement</div>
+        <div id="logCheckList" style="background:var(--bg);border-radius:var(--rs);border:1px solid var(--border);padding:0 10px"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grille-card">
+    <div class="grille-header"><span class="grille-icon">👥</span><span class="grille-title">Environnement social & aidants</span></div>
+    <div class="grille-body">
+      <div class="field">
+        <div class="field-label">Aidant principal</div>
+        <input type="text" id="s_aidant" placeholder="Conjoint / enfant / voisin / aucun..." />
+      </div>
+      <div class="field">
+        <div class="field-label">Niveau d'isolement</div>
+        <select id="s_isolement">
+          <option value="">...</option>
+          <option>Bien entouré(e)</option>
+          <option>Entourage limité</option>
+          <option>Isolement modéré</option>
+          <option>Isolement sévère</option>
+        </select>
+      </div>
+      <div class="field">
+        <div class="field-label">Observations sociales libres</div>
+        <textarea id="s_obs" placeholder="Éléments importants observés lors de la visite, comportement de la personne, difficultés non cochées..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+  <div class="btn-row">
+    <button class="btn-secondary" onclick="goTo(3)">← Retour</button>
+    <button class="btn-primary" onclick="goTo(5)" style="flex:2">Générer le PPCS →</button>
+  </div>
+</div>
+
+<!-- ═══ PANEL 5 — PPCS ═══ -->
+<div class="panel" id="panel-5">
+  <div class="panel-tag">Étape 6 / 6 · Plan Personnalisé de Coordination en Santé</div>
+  <div class="panel-title">PPCS</div>
+  <div class="panel-desc">Généré automatiquement depuis l'évaluation. Vérifiez, complétez si nécessaire, puis exportez en PDF.</div>
+
+  <div class="warn-box">⚠ Document d'aide à la décision — doit être relu et validé par un professionnel de santé avant utilisation officielle.</div>
+
+  <div class="synth-scores" id="synthScores"></div>
+
+  <div class="ppcs-wrap">
+    <div class="ppcs-toolbar">
+      <button class="tool-btn" onclick="genPPCS()"><span class="ia-dot"></span> Générer</button>
+      <button class="tool-btn" onclick="copyPPCS()">⎘ Copier</button>
+      <button class="tool-btn" onclick="exportPDF()">↓ PDF</button>
+      <button class="tool-btn" onclick="printDoc()">⎙ Imprimer</button>
+    </div>
+    <div class="ppcs-body" id="ppcsBody" contenteditable="true" spellcheck="true"></div>
+    <div class="ppcs-status">
+      <div class="status-dot" id="ppcsStatusDot"></div>
+      <span id="ppcsStatusText">En attente de génération</span>
+      <span style="margin-left:auto;font-size:10px" id="ppcsWords">0 mots</span>
+    </div>
+  </div>
+
+  <button class="btn-secondary" onclick="savePPCS()">💾 Sauvegarder dans le dossier</button>
+  <button class="btn-secondary" onclick="resetAll()">↺ Nouvelle évaluation</button>
+</div>
+
+</div><!-- /main -->
+
+<!-- MODAL PATIENT -->
+<div class="modal-overlay hidden" id="patientModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <div class="modal-title">Sélectionner un dossier</div>
+    <div id="dossierList"></div>
+    <button class="btn-secondary" style="margin-top:8px" onclick="useNoPatient()">Continuer sans dossier</button>
+  </div>
+</div>
+
+<script>
+// ═══ STATE ═══
+let currentStep = 0;
+let currentPatient = null;
+const TOTAL = 6;
+const aggirScores = {};
+const iadlScores = {};
+let upgoTime = null;
+let timerInterval = null;
+let timerRunning = false;
+let timerStart = null;
+
+// ═══ API ═══
+function saveApiKey(){const k=document.getElementById('apiKeyInput').value.trim();if(k){localStorage.setItem('mediasante_api_key',k);showToast('Clé enregistrée ✓')}}
+function getApiKey(){return localStorage.getItem('mediasante_api_key')||''}
+window.addEventListener('load',()=>{
+  const k=getApiKey();if(k)document.getElementById('apiKeyInput').value=k.slice(0,12)+'...';
+  document.getElementById('visite_date').value=new Date().toISOString().split('T')[0];
+  buildAGGIR();buildIADL();buildDroits();buildLogAlertes();
+});
+
+// ═══ NAVIGATION ═══
+function goTo(step){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+step).classList.add('active');
+  currentStep=step;
+  updateProgress();
+  if(step===5)setTimeout(genPPCS,300);
+  window.scrollTo(0,0);
+}
+function updateProgress(){
+  const pills=document.querySelectorAll('.step-pill');
+  pills.forEach((p,i)=>{
+    p.classList.remove('active','done');
+    if(i<currentStep)p.classList.add('done');
+    else if(i===currentStep)p.classList.add('active');
+  });
+  const pct=Math.round((currentStep/(TOTAL-1))*100);
+  document.getElementById('progFill').style.width=pct+'%';
+}
+
+// ═══ PATIENT ═══
+function getDossiers(){return JSON.parse(localStorage.getItem('mediasante_dossiers')||'[]')}
+function openModal(){
+  const dossiers=getDossiers();
+  const list=document.getElementById('dossierList');
+  if(!dossiers.length){list.innerHTML='<div style="text-align:center;padding:20px;font-size:13px;color:var(--text3)">Aucun dossier patient trouvé.</div>'}
+  else{list.innerHTML=dossiers.map(d=>{
+    const p=d.data?.patient||{};
+    const ini=((p.prenom||'?')[0]+(p.nom||'?')[0]).toUpperCase();
+    const name=[p.prenom,p.nom].filter(Boolean).join(' ')||'Patient inconnu';
+    return`<div class="dossier-item" onclick="selectPatient('${d.id}')"><div class="d-av">${ini}</div><div><div class="d-name">${name}</div><div class="d-id">${d.id}</div></div></div>`;
+  }).join('')}
+  document.getElementById('patientModal').classList.remove('hidden');
+}
+function closeModal(){document.getElementById('patientModal').classList.add('hidden')}
+function useNoPatient(){closeModal()}
+function selectPatient(id){
+  const d=getDossiers().find(x=>x.id===id);if(!d)return;
+  const p=d.data?.patient||{};
+  currentPatient={...p,id:d.id,famo:d.data,score:d.score};
+  const name=[p.prenom,p.nom].filter(Boolean).join(' ')||'Patient';
+  const ini=((p.prenom||'?')[0]+(p.nom||'?')[0]).toUpperCase();
+  document.getElementById('pAvatar').textContent=ini;
+  document.getElementById('pName').textContent=name;
+  document.getElementById('pId').textContent=d.id;
+  closeModal();
+}
+
+// ═══ AGGIR ═══
+const AGGIR_VARS = [
+  {id:'coherence',name:'Cohérence',desc:'Se comporter, agir de façon sensée',group:'mentales'},
+  {id:'orientation',name:'Orientation',desc:"S'orienter dans le temps et l'espace",group:'mentales'},
+  {id:'toilette',name:'Toilette',desc:'Assurer son hygiène corporelle',group:'corpo'},
+  {id:'habillage',name:'Habillage',desc:'S\'habiller, se déshabiller, se présenter',group:'corpo'},
+  {id:'alimentation',name:'Alimentation',desc:'Se servir et manger les aliments préparés',group:'corpo'},
+  {id:'elimination',name:'Élimination',desc:'Assurer l\'hygiène de l\'élimination urinaire et fécale',group:'corpo'},
+  {id:'transferts',name:'Transferts',desc:'Se lever, se coucher, s\'asseoir',group:'corpo'},
+  {id:'deplacements_int',name:'Déplacements intérieurs',desc:'Se déplacer à l\'intérieur du domicile',group:'corpo'},
+  {id:'deplacements_ext',name:'Déplacements extérieurs',desc:'Se déplacer hors du domicile',group:'dom'},
+  {id:'communication',name:'Communication',desc:'Utiliser les moyens de communication à distance',group:'dom'},
+  {id:'gestion',name:'Gestion',desc:'Gérer ses affaires, son budget, ses biens',group:'dom'},
+  {id:'cuisine',name:'Cuisine',desc:'Préparer ses repas et les conditions de préparation',group:'dom'},
+  {id:'menage',name:'Ménage',desc:'Effectuer l\'ensemble des travaux ménagers',group:'dom'},
+  {id:'transport',name:'Transports',desc:'Utiliser les moyens de transport',group:'dom'},
+  {id:'achats',name:'Achats',desc:'Effectuer les achats nécessaires',group:'dom'},
+  {id:'suivi_medical',name:'Suivi médical',desc:'Suivre son traitement, assurer sa santé',group:'dom'},
+  {id:'activites',name:'Activités de loisirs',desc:'Pratiquer des activités sportives, culturelles',group:'dom'},
+];
+
+function buildAGGIR(){
+  ['mentales','corpo','dom'].forEach(group=>{
+    const el=document.getElementById('agg-'+group);
+    const vars=AGGIR_VARS.filter(v=>v.group===group);
+    el.innerHTML=vars.map(v=>`
+      <div class="aggir-item" id="aggir-${v.id}">
+        <div class="aggir-label"><div class="aggir-name">${v.name}</div><div class="aggir-desc">${v.desc}</div></div>
+        <div class="aggir-score">
+          <div class="score-btn" id="agg-${v.id}-A" onclick="setAGGIR('${v.id}','A')">A</div>
+          <div class="score-btn" id="agg-${v.id}-B" onclick="setAGGIR('${v.id}','B')">B</div>
+          <div class="score-btn" id="agg-${v.id}-C" onclick="setAGGIR('${v.id}','C')">C</div>
+        </div>
+      </div>`).join('');
+  });
+}
+
+function setAGGIR(id,val){
+  aggirScores[id]=val;
+  ['A','B','C'].forEach(v=>{
+    const btn=document.getElementById('agg-'+id+'-'+v);
+    btn.className='score-btn'+(v===val?' active-'+v:'');
+  });
+  updateGIR();
+}
+
+function updateGIR(){
+  const scored=Object.keys(aggirScores).length;
+  if(scored<17){document.getElementById('girResultWrap').style.display='none';return}
+  
+  // Calcul GIR simplifié basé sur les variables discriminantes
+  const discrim=['coherence','orientation','toilette','habillage','alimentation','elimination','transferts','deplacements_int'];
+  const disc_scores=discrim.map(v=>aggirScores[v]||'A');
+  const cCount=disc_scores.filter(s=>s==='C').length;
+  const bCount=disc_scores.filter(s=>s==='B').length;
+  
+  let gir;
+  if(cCount>=4)gir=1;
+  else if(cCount>=2||cCount===1&&bCount>=2)gir=2;
+  else if(cCount===1||bCount>=4)gir=3;
+  else if(bCount>=2)gir=4;
+  else if(bCount>=1||Object.values(aggirScores).some(s=>s==='B'))gir=5;
+  else gir=6;
+
+  const girData={
+    1:{label:'GIR 1',desc:'Perte totale d\'autonomie mentale et corporelle. Présence indispensable d\'intervenants.',color:'var(--red)',bg:'var(--red-bg)',apa:true,montant:'1 748 €/mois max'},
+    2:{label:'GIR 2',desc:'Perte importante de l\'autonomie mentale ou corporelle.',color:'var(--red)',bg:'var(--red-bg)',apa:true,montant:'1 399 €/mois max'},
+    3:{label:'GIR 3',desc:'Autonomie mentale préservée, mais dépendance corporelle partielle.',color:'var(--amber)',bg:'var(--amber-bg)',apa:true,montant:'1 049 €/mois max'},
+    4:{label:'GIR 4',desc:'Autonomie partielle pour les transferts et l\'habillage, aide nécessaire.',color:'var(--amber)',bg:'var(--amber-bg)',apa:true,montant:'699 €/mois max'},
+    5:{label:'GIR 5',desc:'Aide ponctuelle pour la toilette, le ménage, la préparation des repas.',color:'var(--green)',bg:'var(--green-bg)',apa:false},
+    6:{label:'GIR 6',desc:'Autonomie conservée pour tous les actes de la vie quotidienne.',color:'var(--green)',bg:'var(--green-bg)',apa:false},
+  };
+  const g=girData[gir];
+  
+  const badge=document.getElementById('girBadge');
+  badge.textContent=gir;
+  badge.style.cssText=`background:${g.bg};color:${g.color};border:2px solid ${g.color}`;
+  document.getElementById('girTitle').textContent=g.label+' — '+g.desc.split('.')[0];
+  document.getElementById('girDesc').textContent=g.desc;
+  document.getElementById('girResultWrap').style.display='flex';
+  
+  const alert=document.getElementById('girAlert');
+  if(g.apa){
+    alert.style.display='block';
+    alert.style.cssText=`display:block;background:var(--amber-bg);border:1px solid var(--amber-b);border-radius:var(--rs);padding:8px 10px;font-size:12px;font-weight:600;color:var(--amber);margin-top:8px`;
+    alert.textContent=`⚡ APA éligible (GIR ${gir} ≤ 4) — Montant max : ${g.montant}. Initier le dossier APA auprès du CD93.`;
+  } else {
+    alert.style.display='none';
+  }
+}
+
+// ═══ IADL ═══
+const IADL_ITEMS=[
+  {id:'telephone',label:'Utiliser le téléphone de manière autonome'},
+  {id:'courses',label:'Faire les courses seul(e)'},
+  {id:'repas',label:'Préparer ses repas'},
+  {id:'menage',label:'Faire le ménage'},
+  {id:'linge',label:'Faire la lessive'},
+  {id:'transport',label:'Utiliser les transports'},
+  {id:'medicaments',label:'Gérer ses médicaments seul(e)'},
+  {id:'argent',label:'Gérer son budget et ses finances'},
+];
+
+function buildIADL(){
+  const el=document.getElementById('iadlGrid');
+  el.innerHTML=IADL_ITEMS.map(item=>`
+    <div class="iadl-item" id="iadl-${item.id}" onclick="toggleIADL('${item.id}')">
+      <div class="iadl-check" id="iadlc-${item.id}">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" id="iadlchk-${item.id}" style="display:none"><path d="M2 5l2.5 2.5L8 3" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <div class="iadl-text">${item.label}</div>
+    </div>`).join('');
+}
+
+function toggleIADL(id){
+  iadlScores[id]=!iadlScores[id];
+  const item=document.getElementById('iadl-'+id);
+  const chk=document.getElementById('iadlchk-'+id);
+  item.classList.toggle('capable',iadlScores[id]);
+  chk.style.display=iadlScores[id]?'block':'none';
+  updateIADL();
+}
+
+function updateIADL(){
+  const score=Object.values(iadlScores).filter(Boolean).length;
+  document.getElementById('iadlScoreDisplay').textContent=score+' / 8';
+  const res=document.getElementById('iadlResultWrap');
+  res.style.display='block';
+  let title,desc,color;
+  if(score>=7){title='Autonomie conservée';desc='Pas de déficit instrumental majeur identifié.';color='var(--green)'}
+  else if(score>=5){title='Déficit léger';desc='Aide ponctuelle recommandée pour 2-3 activités.';color='var(--teal)'}
+  else if(score>=3){title='Déficit modéré';desc='Aide régulière nécessaire. Évaluer SSIAD ou aide à domicile.';color='var(--amber)'}
+  else{title='Déficit sévère';desc='Dépendance importante. Plan d\'aide à domicile urgent.';color='var(--red)'}
+  document.getElementById('iadlTitle').innerHTML=`<span style="color:${color}">${title}</span> (${score}/8)`;
+  document.getElementById('iadlDesc').textContent=desc;
+}
+
+// ═══ UP & GO TIMER ═══
+function startTimer(){
+  timerRunning=true;timerStart=Date.now();
+  document.getElementById('btnStart').style.display='none';
+  document.getElementById('btnStop').style.display='inline-flex';
+  document.getElementById('timerStatus').textContent='⏱ Chronomètre en cours...';
+  timerInterval=setInterval(()=>{
+    const elapsed=(Date.now()-timerStart)/1000;
+    document.getElementById('timerDisplay').textContent=elapsed.toFixed(2);
+  },50);
+}
+function stopTimer(){
+  if(!timerRunning)return;
+  clearInterval(timerInterval);timerRunning=false;
+  upgoTime=(Date.now()-timerStart)/1000;
+  document.getElementById('timerDisplay').textContent=upgoTime.toFixed(2);
+  document.getElementById('btnStop').style.display='none';
+  document.getElementById('btnStart').style.display='inline-flex';
+  document.getElementById('btnStart').textContent='Recommencer';
+  document.getElementById('timerStatus').textContent=`Temps enregistré : ${upgoTime.toFixed(2)} secondes`;
+  showUpGoResult();
+}
+function resetTimer(){
+  clearInterval(timerInterval);timerRunning=false;upgoTime=null;
+  document.getElementById('timerDisplay').textContent='0.00';
+  document.getElementById('timerStatus').textContent='Prêt — appuyez sur Démarrer quand le patient se lève';
+  document.getElementById('btnStart').style.display='inline-flex';
+  document.getElementById('btnStart').textContent='Démarrer';
+  document.getElementById('btnStop').style.display='none';
+  document.getElementById('upgoResultWrap').style.display='none';
+}
+function showUpGoResult(){
+  const t=upgoTime;const wrap=document.getElementById('upgoResultWrap');
+  const res=document.getElementById('upgoResult');
+  wrap.style.display='block';
+  let cls,icon,text,sub;
+  if(t<12){cls='normal';icon='✅';text='Résultat normal — pas de risque de chute identifié';sub=`${t.toFixed(2)}s < 12s`}
+  else if(t<20){cls='risk';icon='⚠️';text='Risque de chute modéré — surveillance recommandée';sub=`${t.toFixed(2)}s entre 12 et 20s — évaluation kiné conseillée`}
+  else{cls='high';icon='🔴';text='Risque de chute élevé — intervention prioritaire';sub=`${t.toFixed(2)}s > 20s — référer en urgence à kinésithérapeute`}
+  res.className='upgo-result '+cls;
+  document.getElementById('upgoIcon').textContent=icon;
+  document.getElementById('upgoText').textContent=text;
+  document.getElementById('upgoSub').textContent=sub;
+}
+
+// ═══ DROITS & ALERTES ═══
+const DROITS_OPTIONS=['CSS / C2S à ouvrir','AME à initier','AAH — MDPH à saisir','APA (GIR ≤ 4)','RSA à vérifier','APL — dossier CAF','MDPH — RQTH','Aide logement FSL'];
+const LOG_OPTIONS=['Habitat inadapté — travaux','Risque de chute — aménagement','Insalubrité signalée','Risque expulsion','Accessibilité insuffisante'];
+
+function buildDroits(){
+  const el=document.getElementById('droitsCheckList');
+  el.innerHTML=DROITS_OPTIONS.map((d,i)=>`
+    <div class="check-row" id="droit-${i}" onclick="toggleCheck('droit',${i})">
+      <div class="cb" id="dcb-${i}"></div>
+      <div class="check-lbl">${d}</div>
+    </div>`).join('');
+}
+function buildLogAlertes(){
+  const el=document.getElementById('logCheckList');
+  el.innerHTML=LOG_OPTIONS.map((l,i)=>`
+    <div class="check-row" id="log-${i}" onclick="toggleCheck('log',${i})">
+      <div class="cb" id="lcb-${i}"></div>
+      <div class="check-lbl">${l}</div>
+    </div>`).join('');
+}
+const checkState={droit:{},log:{}};
+function toggleCheck(type,i){
+  checkState[type][i]=!checkState[type][i];
+  const row=document.getElementById(type+'-'+i);
+  const cb=document.getElementById(type.slice(0,1)+'cb-'+i);
+  const on=checkState[type][i];
+  row.classList.toggle('on',on);
+  cb.classList.toggle('on',on);
+  cb.innerHTML=on?'<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>':'';
+}
+
+// ═══ SYNTH SCORES ═══
+function buildSynthScores(){
+  const girScore=computeGIR();
+  const iadlScore=Object.values(iadlScores).filter(Boolean).length;
+  const upgoDisplay=upgoTime?upgoTime.toFixed(1)+'s':'N/A';
+  const el=document.getElementById('synthScores');
+  el.innerHTML=`
+    <div class="score-card">
+      <div class="score-card-val" style="color:${girScore<=4?'var(--amber)':'var(--green)'}">${girScore<=0?'N/A':'GIR '+girScore}</div>
+      <div class="score-card-lbl">AGGIR</div>
+      <div class="score-card-sub" style="color:${girScore<=4?'var(--amber)':'var(--green)'}">${girScore<=4&&girScore>0?'APA éligible':'Autonome'}</div>
+    </div>
+    <div class="score-card">
+      <div class="score-card-val" style="color:${iadlScore<5?'var(--red)':iadlScore<7?'var(--amber)':'var(--green)'}">${iadlScore}/8</div>
+      <div class="score-card-lbl">IADL</div>
+      <div class="score-card-sub" style="color:${iadlScore<5?'var(--red)':iadlScore<7?'var(--amber)':'var(--green)'}">${iadlScore<5?'Déficit sévère':iadlScore<7?'Déficit modéré':'Conservée'}</div>
+    </div>
+    <div class="score-card">
+      <div class="score-card-val" style="color:${!upgoTime?'var(--text3)':upgoTime<12?'var(--green)':upgoTime<20?'var(--amber)':'var(--red)'}">${upgoDisplay}</div>
+      <div class="score-card-lbl">Up & Go</div>
+      <div class="score-card-sub" style="color:${!upgoTime?'var(--text3)':upgoTime<12?'var(--green)':upgoTime<20?'var(--amber)':'var(--red)'}">${!upgoTime?'Non réalisé':upgoTime<12?'Normal':upgoTime<20?'Risque modéré':'Risque élevé'}</div>
+    </div>`;
+}
+
+function computeGIR(){
+  if(Object.keys(aggirScores).length<17)return 0;
+  const disc=['coherence','orientation','toilette','habillage','alimentation','elimination','transferts','deplacements_int'];
+  const ds=disc.map(v=>aggirScores[v]||'A');
+  const cC=ds.filter(s=>s==='C').length,bC=ds.filter(s=>s==='B').length;
+  if(cC>=4)return 1;if(cC>=2||cC===1&&bC>=2)return 2;if(cC===1||bC>=4)return 3;if(bC>=2)return 4;if(bC>=1)return 5;return 6;
+}
+
+// ═══ GÉNÉRATION PPCS ═══
+async function genPPCS(){
+  buildSynthScores();
+  const apiKey=getApiKey();
+  const ppcsEl=document.getElementById('ppcsBody');
+  const dot=document.getElementById('ppcsStatusDot');
+  const txt=document.getElementById('ppcsStatusText');
+  dot.style.cssText='width:6px;height:6px;border-radius:50%;background:var(--amber);animation:pulse 1s infinite';
+  txt.textContent='Génération en cours...';
+
+  const patientName=currentPatient?[currentPatient.prenom,currentPatient.nom].filter(Boolean).join(' '):'[NOM DU PATIENT]';
+  const girScore=computeGIR();
+  const iadlScore=Object.values(iadlScores).filter(Boolean).length;
+  const droitsCoches=DROITS_OPTIONS.filter((_,i)=>checkState.droit[i]);
+  const logAlertes=LOG_OPTIONS.filter((_,i)=>checkState.log[i]);
+  const date=new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
+
+  if(!apiKey||!apiKey.startsWith('sk-')){
+    ppcsEl.innerHTML=generatePPCSTemplate(patientName,girScore,iadlScore,droitsCoches,logAlertes,date).replace(/\n/g,'<br>');
+    dot.style.background='var(--green)';dot.style.animation='none';
+    txt.textContent='Template généré — ajoutez une clé API pour une version personnalisée';
+    updatePPCSWords();return;
+  }
+
+  const aggirSummary=Object.entries(aggirScores).map(([k,v])=>`${k}:${v}`).join(', ');
+  const iadlSummary=IADL_ITEMS.map(item=>item.label+': '+(iadlScores[item.id]?'Capable':'Non capable')).join('\n');
+
+  const prompt=`Tu es un coordinateur de parcours au sein d'un Dispositif d'Appui à la Coordination (DAC) en Seine-Saint-Denis. Tu dois rédiger un Plan Personnalisé de Coordination en Santé (PPCS) à partir des résultats d'une évaluation multidimensionnelle.
+
+PATIENT : ${patientName}
+Date de visite : ${date}
+Lieu : ${document.getElementById('visite_lieu').value||'Domicile'}
+Évaluateur : ${document.getElementById('visite_pro').value||'Médiateur en santé'}
+Contexte : ${document.getElementById('visite_contexte').value||'Première visite de coordination'}
+
+RÉSULTATS AGGIR :
+GIR estimé : ${girScore>0?girScore:'Non calculé (grille incomplète)'}
+Cotations détaillées : ${aggirSummary||'Non renseignées'}
+${girScore>0&&girScore<=4?'→ ÉLIGIBLE APA : GIR '+girScore+' — initier demande APA auprès du CD93':''}
+
+RÉSULTATS IADL (Lawton) :
+Score : ${iadlScore}/8
+${iadlSummary}
+
+TEST UP & GO : ${upgoTime?upgoTime.toFixed(2)+' secondes ('+(upgoTime<12?'normal':upgoTime<20?'risque modéré':'risque élevé')+')':'Non réalisé'}
+Observations motrices : ${document.getElementById('obs_moteur').value||'Aucune'}
+
+ÉVALUATION SOCIALE :
+Ressources : ${document.getElementById('s_ressources').value||'Non précisées'}
+Couverture santé : ${document.getElementById('s_couverture').value||'Non précisée'}
+Logement : ${document.getElementById('s_logement').value||'Non précisé'}
+Accessibilité : ${document.getElementById('s_access').value||'Non précisée'}
+Aidant : ${document.getElementById('s_aidant').value||'Non précisé'}
+Isolement : ${document.getElementById('s_isolement').value||'Non précisé'}
+Droits à ouvrir : ${droitsCoches.length?droitsCoches.join(', '):'Aucun identifié'}
+Alertes logement : ${logAlertes.length?logAlertes.join(', '):'Aucune'}
+Observations sociales : ${document.getElementById('s_obs').value||'Aucune'}
+
+Rédige un PPCS complet et structuré avec les sections suivantes :
+1. EN-TÊTE (date, patient, évaluateur, structure)
+2. SYNTHÈSE DE LA SITUATION (3-4 phrases)
+3. ÉVALUATION FONCTIONNELLE (AGGIR/GIR, IADL, motricité)
+4. ÉVALUATION SOCIALE ET DES DROITS
+5. BESOINS IDENTIFIÉS (liste hiérarchisée)
+6. OBJECTIFS DE COORDINATION (3-5 objectifs SMART)
+7. PLAN D'ACTION (actions, responsable, délai)
+8. ALERTES ET URGENCES (si applicable)
+9. PROCHAINE RÉÉVALUATION (date proposée)
+10. MENTION LÉGALE
+
+Ton : professionnel, factuel, bienveillant. Langage accessible (pas de jargon excessif). Format texte structuré avec titres en MAJUSCULES. Commencer directement par le document, sans introduction.`;
+
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
+      body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:2000,messages:[{role:'user',content:prompt}]})
+    });
+    const data=await resp.json();
+    const text=data.content?.[0]?.text||'Erreur de génération.';
+    ppcsEl.innerHTML=text.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
+    dot.style.background='var(--green)';dot.style.animation='none';
+    txt.textContent='Généré par Claude · Aide à la décision uniquement';
+  }catch(e){
+    ppcsEl.innerHTML=generatePPCSTemplate(patientName,girScore,iadlScore,droitsCoches,logAlertes,date).replace(/\n/g,'<br>');
+    dot.style.background='var(--amber)';dot.style.animation='none';
+    txt.textContent='Template — vérifiez votre clé API';
+  }
+  updatePPCSWords();
+}
+
+function generatePPCSTemplate(name,gir,iadl,droits,log,date){
+  return`PLAN PERSONNALISÉ DE COORDINATION EN SANTÉ (PPCS)
+─────────────────────────────────────────────────
+Date : ${date}
+Patient : ${name}
+Évaluateur : ${document.getElementById('visite_pro').value||'[NOM ÉVALUATEUR]'}
+Structure : ParcourSanté AI — Dispositif d'Appui à la Coordination
+
+─────────────────────────────────────────────────
+1. SYNTHÈSE DE LA SITUATION
+─────────────────────────────────────────────────
+Suite à une première visite à domicile, une évaluation multidimensionnelle a été réalisée auprès de ${name}.
+
+─────────────────────────────────────────────────
+2. ÉVALUATION FONCTIONNELLE
+─────────────────────────────────────────────────
+• AGGIR : ${gir>0?'GIR '+gir+' — '+(gir<=4?'ÉLIGIBLE APA':'autonomie conservée'):'Grille incomplète — à compléter'}
+• IADL (Lawton) : ${iadl}/8 — ${iadl<5?'Déficit sévère':iadl<7?'Déficit modéré':'Autonomie conservée'}
+• Test Up & Go : ${upgoTime?upgoTime.toFixed(2)+'s — '+(upgoTime<12?'Normal':upgoTime<20?'Risque modéré':'Risque élevé'):'Non réalisé'}
+
+─────────────────────────────────────────────────
+3. DROITS ET SITUATION SOCIALE
+─────────────────────────────────────────────────
+Couverture santé : ${document.getElementById('s_couverture').value||'À préciser'}
+Droits à ouvrir : ${droits.length?droits.join(' / '):'À évaluer'}
+Alertes logement : ${log.length?log.join(' / '):'Aucune'}
+${gir>0&&gir<=4?'\n⚡ PRIORITÉ : Initier dossier APA auprès du Conseil Départemental 93\n':''}
+─────────────────────────────────────────────────
+4. PLAN D'ACTION
+─────────────────────────────────────────────────
+${gir<=4&&gir>0?'1. Initier demande APA — CD93 — Immédiat\n':''}${droits.includes('CSS / C2S à ouvrir')?'• Renouvellement/ouverture CSS — CPAM 93\n':''}${droits.includes('AME à initier')?'• Dossier AME — CPAM 93\n':''}
+─────────────────────────────────────────────────
+5. PROCHAINE RÉÉVALUATION
+─────────────────────────────────────────────────
+Réévaluation proposée dans 3 mois.
+
+─────────────────────────────────────────────────
+MENTION LÉGALE
+─────────────────────────────────────────────────
+Ce document est un outil d'aide à la décision. Il ne se substitue pas à l'avis médical et doit être validé par un professionnel de santé qualifié avant toute décision clinique.`;
+}
+
+function updatePPCSWords(){
+  const text=document.getElementById('ppcsBody').innerText.trim();
+  const w=text?text.split(/\s+/).length:0;
+  document.getElementById('ppcsWords').textContent=w+' mots';
+}
+document.addEventListener('input',e=>{if(e.target.id==='ppcsBody')updatePPCSWords()});
+
+function copyPPCS(){navigator.clipboard.writeText(document.getElementById('ppcsBody').innerText).then(()=>showToast('Copié ✓'))}
+function printDoc(){window.print()}
+
+function exportPDF(){
+  const name=currentPatient?[currentPatient.prenom,currentPatient.nom].filter(Boolean).join('_'):'patient';
+  const date=new Date().toISOString().split('T')[0];
+  const div=document.createElement('div');
+  div.style.cssText='font-family:Georgia,serif;font-size:11pt;line-height:1.8;color:#000;padding:30px;background:#fff';
+  div.innerHTML=document.getElementById('ppcsBody').innerHTML;
+  html2pdf().from(div).set({margin:[15,20],filename:`PPCS_${name}_${date}.pdf`,html2canvas:{scale:2,backgroundColor:'#ffffff'},jsPDF:{unit:'mm',format:'a4'}}).save();
+  showToast('PDF exporté ✓');
+}
+
+function savePPCS(){
+  const content=document.getElementById('ppcsBody').innerText;
+  if(!content.trim()){showToast('Rien à sauvegarder');return}
+  const dossiers=JSON.parse(localStorage.getItem('mediasante_dossiers')||'[]');
+  if(currentPatient){
+    const idx=dossiers.findIndex(d=>d.id===currentPatient.id);
+    if(idx>=0){
+      dossiers[idx].ppcs={content,date:new Date().toISOString(),gir:computeGIR(),iadl:Object.values(iadlScores).filter(Boolean).length};
+      localStorage.setItem('mediasante_dossiers',JSON.stringify(dossiers));
+      showToast('PPCS sauvegardé dans le dossier ✓');return;
+    }
+  }
+  // Sauvegarde locale si pas de dossier lié
+  const evals=JSON.parse(localStorage.getItem('mediasante_evals')||'[]');
+  evals.unshift({date:new Date().toISOString(),patient:currentPatient?.id||'manuel',content,gir:computeGIR()});
+  localStorage.setItem('mediasante_evals',JSON.stringify(evals.slice(0,20)));
+  showToast('PPCS sauvegardé ✓');
+}
+
+function resetAll(){
+  if(!confirm('Réinitialiser toute l\'évaluation ?'))return;
+  Object.keys(aggirScores).forEach(k=>delete aggirScores[k]);
+  Object.keys(iadlScores).forEach(k=>delete iadlScores[k]);
+  Object.keys(checkState.droit).forEach(k=>delete checkState.droit[k]);
+  Object.keys(checkState.log).forEach(k=>delete checkState.log[k]);
+  upgoTime=null;currentPatient=null;
+  buildAGGIR();buildIADL();buildDroits();buildLogAlertes();
+  document.getElementById('ppcsBody').innerHTML='';
+  document.getElementById('pAvatar').textContent='?';
+  document.getElementById('pName').textContent='Sélectionner un patient';
+  document.getElementById('pId').textContent='Ouvrir un dossier patient existant';
+  goTo(0);
+}
+
+function showToast(msg){
+  const t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:9px 18px;border-radius:20px;font-size:12px;z-index:9999;white-space:nowrap';
+  t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2200);
+}
+</script>
+</body>
+</html>

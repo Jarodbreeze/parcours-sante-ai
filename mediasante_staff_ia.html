@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>ParcourSanté AI — Staff IA</title>
+<style>
+:root {
+  --bg:#0f1117;--bg2:#161820;--bg3:#1e2130;--bg4:#252840;
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.15);
+  --text:#f0f1f5;--text2:#8b8fa8;--text3:#565a72;
+  --purple:#7c6ff7;--purple-l:#a99ef9;--purple-bg:rgba(124,111,247,0.12);--purple-b:rgba(124,111,247,0.3);
+  --teal:#3ecfaa;--teal-bg:rgba(62,207,170,0.1);--teal-b:rgba(62,207,170,0.25);
+  --amber:#f0a43a;--amber-bg:rgba(240,164,58,0.1);--amber-b:rgba(240,164,58,0.25);
+  --red:#e05c6a;--red-bg:rgba(224,92,106,0.1);--red-b:rgba(224,92,106,0.25);
+  --green:#4cba82;--green-bg:rgba(76,186,130,0.1);--green-b:rgba(76,186,130,0.25);
+  --blue:#5b9ef7;--blue-bg:rgba(91,158,247,0.1);--blue-b:rgba(91,158,247,0.25);
+  --r:10px;--rs:7px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* TOPBAR */
+.topbar{position:sticky;top:0;z-index:100;background:rgba(15,17,23,0.93);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 16px;height:52px;display:flex;align-items:center;justify-content:space-between}
+.logo{display:flex;align-items:center;gap:8px}
+.logo-dot{width:8px;height:8px;border-radius:50%;background:var(--amber)}
+.logo-text{font-size:14px;font-weight:600;letter-spacing:-.3px}
+.logo-sub{font-size:11px;color:var(--text3);margin-left:2px}
+.badge-mode{font-size:10px;font-weight:600;letter-spacing:.08em;padding:3px 8px;border-radius:20px;background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-b)}
+
+/* API BAR */
+.api-bar{background:var(--bg2);border-bottom:1px solid var(--border);padding:8px 16px;display:flex;align-items:center;gap:8px}
+.api-label{font-size:11px;color:var(--text3);flex-shrink:0}
+.api-input{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:11px;padding:5px 8px;font-family:monospace;outline:none}
+.api-input:focus{border-color:var(--purple)}
+.api-save{font-size:11px;padding:5px 10px;border-radius:5px;background:var(--purple-bg);color:var(--purple-l);border:1px solid var(--purple-b);cursor:pointer}
+
+/* MAIN */
+.main{max-width:720px;margin:0 auto;padding:20px 16px 40px}
+
+/* SECTION TITLES */
+.sec-title{font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--text3);text-transform:uppercase;margin-bottom:10px}
+
+/* PATIENT PICKER */
+.patient-bar{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:6px;cursor:pointer;transition:border-color .15s}
+.patient-bar:hover{border-color:var(--border2)}
+.pa{width:32px;height:32px;border-radius:50%;background:var(--purple-bg);border:1px solid var(--purple-b);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--purple-l);flex-shrink:0}
+.pi{flex:1}
+.pn{font-size:13px;font-weight:600}
+.pid{font-size:11px;color:var(--text3);margin-top:1px}
+.pc{color:var(--text3);font-size:10px}
+
+/* SITUATION INPUT */
+.situation-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:6px}
+.sit-header{padding:10px 14px 8px;border-bottom:1px solid var(--border);background:var(--bg3);display:flex;align-items:center;gap:8px}
+.sit-icon{font-size:14px}
+.sit-title{font-size:13px;font-weight:600;color:var(--text)}
+.sit-sub{font-size:11px;color:var(--text3);margin-left:auto}
+textarea.situation{width:100%;background:transparent;border:none;color:var(--text);font-size:14px;font-family:inherit;padding:14px;resize:vertical;min-height:120px;outline:none;line-height:1.7}
+textarea.situation::placeholder{color:var(--text3)}
+
+/* BLOCAGE TAGS */
+.blocage-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.blocage-tag{font-size:11px;padding:5px 10px;border-radius:20px;border:1px solid var(--border);color:var(--text2);cursor:pointer;transition:all .15s;user-select:none}
+.blocage-tag.sel{border-color:var(--amber-b);background:var(--amber-bg);color:var(--amber)}
+.blocage-tag:hover{border-color:var(--border2)}
+
+/* EXPERTS GRID */
+.experts-intro{font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.6}
+.experts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-bottom:16px}
+.expert-card{padding:10px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--bg2);cursor:pointer;transition:all .2s;text-align:center;position:relative}
+.expert-card.active{border-width:1.5px}
+.expert-card.loading .expert-avatar{animation:spin 1s linear infinite}
+@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+.expert-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;margin:0 auto 6px;transition:transform .2s}
+.expert-name{font-size:11px;font-weight:600;color:var(--text);margin-bottom:2px}
+.expert-role{font-size:10px;color:var(--text3);line-height:1.3}
+.expert-status{position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;background:var(--text3)}
+.expert-status.ready{background:var(--green)}
+.expert-status.thinking{background:var(--amber);animation:pulse 1s infinite}
+.expert-status.done{background:var(--teal)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* AVIS CARDS */
+.avis-section{margin-bottom:8px}
+.avis-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:8px;transition:border-color .2s}
+.avis-header{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;user-select:none}
+.avis-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.avis-expert-name{font-size:13px;font-weight:600;color:var(--text)}
+.avis-expert-role{font-size:11px;color:var(--text3)}
+.avis-tag{margin-left:auto;font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600}
+.avis-chevron{color:var(--text3);font-size:10px;margin-left:6px;transition:transform .2s}
+.avis-chevron.open{transform:rotate(180deg)}
+.avis-body{display:none;padding:0 14px 14px;border-top:1px solid var(--border)}
+.avis-body.open{display:block}
+.avis-content{font-size:13px;color:var(--text2);line-height:1.7;padding-top:12px;white-space:pre-wrap}
+
+/* ACTIONS SECTION */
+.actions-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:14px}
+.actions-title{font-size:13px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.action-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.action-item:last-child{border-bottom:none}
+.action-num{width:20px;height:20px;border-radius:5px;background:var(--purple-bg);color:var(--purple-l);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.action-body{flex:1}
+.action-text{font-size:13px;color:var(--text);line-height:1.4}
+.action-who{font-size:11px;color:var(--text3);margin-top:2px}
+.action-btn{flex-shrink:0;font-size:10px;padding:3px 8px;border-radius:4px;background:var(--teal-bg);color:var(--teal);border:1px solid var(--teal-b);cursor:pointer;font-family:inherit;white-space:nowrap}
+
+/* CONSENSUS */
+.consensus-card{background:var(--purple-bg);border:1px solid var(--purple-b);border-radius:var(--r);padding:14px;margin-bottom:14px}
+.consensus-header{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.c-dot{width:8px;height:8px;border-radius:50%;background:var(--purple)}
+.c-title{font-size:13px;font-weight:600;color:var(--purple-l)}
+.c-level{margin-left:auto;font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600}
+.consensus-text{font-size:13px;color:var(--text2);line-height:1.7}
+
+/* BUTTONS */
+.btn-primary{width:100%;padding:13px;border-radius:var(--r);background:var(--amber);color:var(--bg);font-size:14px;font-weight:700;font-family:inherit;border:none;cursor:pointer;transition:opacity .2s,transform .1s;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px;letter-spacing:-.2px}
+.btn-primary:active{transform:scale(.98)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-secondary{width:100%;padding:11px;border-radius:var(--r);background:transparent;color:var(--text2);font-size:13px;font-family:inherit;border:1px solid var(--border);cursor:pointer;transition:border-color .2s;margin-bottom:6px}
+.btn-secondary:hover{border-color:var(--border2)}
+
+/* HISTORY */
+.history-item{padding:10px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);margin-bottom:6px;cursor:pointer;transition:border-color .15s}
+.history-item:hover{border-color:var(--border2)}
+.hi-top{display:flex;align-items:center;gap:8px}
+.hi-dot{width:6px;height:6px;border-radius:50%;background:var(--amber);flex-shrink:0}
+.hi-title{font-size:12px;font-weight:600;color:var(--text);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hi-date{font-size:10px;color:var(--text3)}
+.hi-preview{font-size:11px;color:var(--text3);margin-top:3px;line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:flex;align-items:flex-end;justify-content:center}
+.modal-overlay.hidden{display:none}
+.modal{background:var(--bg2);border-top:1px solid var(--border);border-radius:16px 16px 0 0;padding:20px;width:100%;max-width:500px;max-height:70vh;overflow-y:auto}
+.modal-title{font-size:16px;font-weight:700;margin-bottom:14px}
+.modal-close{float:right;background:none;border:none;color:var(--text2);font-size:18px;cursor:pointer;margin-top:-4px}
+.dossier-item{padding:10px 12px;border-radius:var(--rs);border:1px solid var(--border);background:var(--bg3);margin-bottom:6px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:border-color .15s}
+.dossier-item:hover{border-color:var(--border2)}
+.dossier-avatar{width:32px;height:32px;border-radius:50%;background:var(--purple-bg);border:1px solid var(--purple-b);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--purple-l);flex-shrink:0}
+.dossier-name{font-size:13px;font-weight:600}
+.dossier-id{font-size:11px;color:var(--text3)}
+.empty-state{text-align:center;padding:24px;color:var(--text3);font-size:13px;line-height:1.6}
+
+/* EMPTY / WELCOME */
+.welcome{text-align:center;padding:32px 0 20px}
+.welcome-icon{font-size:40px;margin-bottom:12px}
+.welcome-title{font-size:17px;font-weight:700;margin-bottom:6px}
+.welcome-desc{font-size:13px;color:var(--text2);line-height:1.6;max-width:340px;margin:0 auto}
+
+/* DIVIDER */
+.divider{height:1px;background:var(--border);margin:16px 0}
+
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:2px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-dot"></div>
+    <span class="logo-text">ParcourSanté AI</span>
+    <span class="logo-sub">Staff IA</span>
+  </div>
+  <span class="badge-mode">STAFF IA</span>
+</div>
+
+<div class="api-bar">
+  <span class="api-label">Clé API Claude :</span>
+  <input type="password" class="api-input" id="apiKeyInput" placeholder="sk-ant-..." />
+  <button class="api-save" onclick="saveApiKey()">OK</button>
+</div>
+
+<div class="main">
+
+  <!-- PATIENT -->
+  <div class="sec-title">Dossier concerné</div>
+  <div class="patient-bar" onclick="openModal()" id="patientBar">
+    <div class="pa" id="patientAvatar">?</div>
+    <div class="pi">
+      <div class="pn" id="patientName">Sélectionner un patient (optionnel)</div>
+      <div class="pid" id="patientId">Le staff peut aussi se faire sans dossier ouvert</div>
+    </div>
+    <span class="pc">▼</span>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- SITUATION -->
+  <div class="sec-title">Décrivez la situation bloquante</div>
+  <div class="situation-wrap">
+    <div class="sit-header">
+      <span class="sit-icon">📋</span>
+      <span class="sit-title">Situation à soumettre au staff</span>
+      <span class="sit-sub">Soyez précis, pas de jargon requis</span>
+    </div>
+    <textarea class="situation" id="situationText" placeholder="Exemple : Mme X, 72 ans, vit seule. Expulsion dans 15 jours, pas de CSS, pas de médecin traitant, ne parle pas français. La CPAM refuse le dossier AME car un document manque mais elle ne sait pas lequel. Son fils ne veut pas s'impliquer. Je ne sais pas par quoi commencer..."></textarea>
+  </div>
+
+  <!-- BLOCAGES RAPIDES -->
+  <div class="sec-title" style="margin-top:14px">Type de blocage (optionnel)</div>
+  <div class="blocage-row" id="blocageRow">
+    <div class="blocage-tag" onclick="toggleBlocage(this)">Accès aux droits refusé</div>
+    <div class="blocage-tag" onclick="toggleBlocage(this)">Urgence logement</div>
+    <div class="blocage-tag" onclick="toggleBlocage(this)">Barrière linguistique</div>
+    <div class="blocage-tag" onclick="toggleBlocage(this)">Refus de soins / aide</div>
+    <div class="blocage-tag" onclick="toggleBlocage(this)">Troubles cognitifs</div>
+    <div class="blocage-tag" onclick="toggleBlocage(this)">Isolement sévère</div>
+    <div class="blocage-tag" onclick="toggleBlocage(this)">Situation administrative précaire</div>
+    <div class="blocage-tag" onclick="toggleBlocage(this)">Conflit familial</div>
+    <div class="blocage-tag" onclick="toggleBlocage(this)">Risque maltraitance</div>
+    <div class="blocage-tag" onclick="toggleBlocage(this)">Multi-problématiques</div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- EXPERTS -->
+  <div class="sec-title">Le conseil d'experts</div>
+  <p class="experts-intro">Chaque expert analyse la situation depuis son angle métier et propose des actions concrètes. Le staff IA remplace la réunion pluridisciplinaire.</p>
+
+  <div class="experts-grid" id="expertsGrid">
+    <div class="expert-card" id="exp-med" style="border-color:var(--green-b)">
+      <div class="expert-status" id="st-med"></div>
+      <div class="expert-avatar" style="background:var(--green-bg)">🩺</div>
+      <div class="expert-name">Dr. Méd</div>
+      <div class="expert-role">Médecin coordinateur</div>
+    </div>
+    <div class="expert-card" id="exp-as" style="border-color:var(--blue-b)">
+      <div class="expert-status" id="st-as"></div>
+      <div class="expert-avatar" style="background:var(--blue-bg)">🤝</div>
+      <div class="expert-name">Assistante sociale</div>
+      <div class="expert-role">Travailleur social</div>
+    </div>
+    <div class="expert-card" id="exp-jur" style="border-color:var(--purple-b)">
+      <div class="expert-status" id="st-jur"></div>
+      <div class="expert-avatar" style="background:var(--purple-bg)">⚖️</div>
+      <div class="expert-name">Juriste</div>
+      <div class="expert-role">Droits sociaux & admin</div>
+    </div>
+    <div class="expert-card" id="exp-cpam" style="border-color:var(--teal-b)">
+      <div class="expert-status" id="st-cpam"></div>
+      <div class="expert-avatar" style="background:var(--teal-bg)">🏥</div>
+      <div class="expert-name">Référent CPAM</div>
+      <div class="expert-role">Assurance Maladie 93</div>
+    </div>
+    <div class="expert-card" id="exp-mdph" style="border-color:var(--amber-b)">
+      <div class="expert-status" id="st-mdph"></div>
+      <div class="expert-avatar" style="background:var(--amber-bg)">♿</div>
+      <div class="expert-name">Référent MDPH</div>
+      <div class="expert-role">Handicap & autonomie</div>
+    </div>
+  </div>
+
+  <!-- BOUTON LANCER -->
+  <button class="btn-primary" id="btnLancer" onclick="lancerStaff()">
+    <span id="btnIcon">⚡</span>
+    <span id="btnText">Lancer le Staff IA</span>
+  </button>
+
+  <!-- RÉSULTATS -->
+  <div id="resultSection" style="display:none">
+
+    <!-- CONSENSUS -->
+    <div class="consensus-card" id="consensusCard" style="display:none">
+      <div class="consensus-header">
+        <div class="c-dot"></div>
+        <div class="c-title">Synthèse collective — décision du staff</div>
+        <div class="c-level" id="urgenceLevel"></div>
+      </div>
+      <div class="consensus-text" id="consensusText"></div>
+    </div>
+
+    <!-- PLAN D'ACTION -->
+    <div class="actions-card" id="actionsCard" style="display:none">
+      <div class="actions-title">
+        <span>📋</span> Plan d'action — priorités
+      </div>
+      <div id="actionsList"></div>
+    </div>
+
+    <!-- AVIS PAR EXPERT -->
+    <div class="sec-title" style="margin-top:16px">Avis détaillés par expert</div>
+    <div id="avisContainer"></div>
+
+    <!-- NOUVEAU STAFF -->
+    <div class="divider"></div>
+    <button class="btn-secondary" onclick="resetStaff()">↺ Nouveau staff</button>
+    <button class="btn-secondary" onclick="saveStaff()">💾 Sauvegarder ce staff</button>
+  </div>
+
+  <!-- HISTORIQUE -->
+  <div id="historySection" style="margin-top:24px">
+    <div class="sec-title">Staffs récents</div>
+    <div id="historyList">
+      <div style="font-size:12px;color:var(--text3);padding:8px 0">Aucun staff enregistré pour l'instant.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL PATIENT -->
+<div class="modal-overlay hidden" id="patientModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <div class="modal-title">Sélectionner un dossier</div>
+    <div id="dossierList"></div>
+    <button class="btn-secondary" style="margin-top:8px" onclick="clearPatient()">Continuer sans dossier</button>
+  </div>
+</div>
+
+<script>
+// ─── STATE ───
+let currentPatient = null;
+let staffRunning = false;
+let staffResult = null;
+
+const EXPERTS = [
+  {
+    id: 'med',
+    nom: 'Dr. Médecin coordinateur',
+    role: 'Médecin coordinateur DAC',
+    emoji: '🩺',
+    couleur: 'var(--green)',
+    bg: 'var(--green-bg)',
+    border: 'var(--green-b)',
+    tagBg: 'var(--green-bg)',
+    tagColor: 'var(--green)',
+    persona: `Tu es Dr. Médecin coordinateur au DAC 93 Nord (Seine-Saint-Denis). Tu analyses les situations médicales complexes. Tu vois les choses du point de vue de la santé : pathologies, soins à mettre en place, urgence médicale, besoin d'évaluation, lien avec le médecin traitant, hospitalisations. Tu parles de manière simple, sans jargon médical excessif.`
+  },
+  {
+    id: 'as',
+    nom: 'Assistante sociale',
+    role: 'Travailleur social référent',
+    emoji: '🤝',
+    couleur: 'var(--blue)',
+    bg: 'var(--blue-bg)',
+    border: 'var(--blue-b)',
+    tagBg: 'var(--blue-bg)',
+    tagColor: 'var(--blue)',
+    persona: `Tu es assistante sociale au DAC 93 Nord (Seine-Saint-Denis). Tu analyses les situations du point de vue social : isolement, famille, réseau d'aide, difficultés relationnelles, capacité de la personne à se mobiliser, aidants. Tu proposes des actions sociales concrètes et tu sais quand il faut signaler.`
+  },
+  {
+    id: 'jur',
+    nom: 'Juriste droits sociaux',
+    role: 'Droits sociaux & administratif',
+    emoji: '⚖️',
+    couleur: 'var(--purple-l)',
+    bg: 'var(--purple-bg)',
+    border: 'var(--purple-b)',
+    tagBg: 'var(--purple-bg)',
+    tagColor: 'var(--purple-l)',
+    persona: `Tu es juriste spécialisé en droits sociaux et droit des étrangers en France, au DAC 93 Nord (Seine-Saint-Denis). Tu analyses les situations du point de vue juridique et administratif : droits ouverts ou non, recours possibles, délais légaux, documents manquants, procédures. Tu cites les textes si utile mais tu traduis en langage accessible.`
+  },
+  {
+    id: 'cpam',
+    nom: 'Référent CPAM',
+    role: 'Assurance Maladie 93',
+    emoji: '🏥',
+    couleur: 'var(--teal)',
+    bg: 'var(--teal-bg)',
+    border: 'var(--teal-b)',
+    tagBg: 'var(--teal-bg)',
+    tagColor: 'var(--teal)',
+    persona: `Tu es référent partenariat à la CPAM de Seine-Saint-Denis. Tu connais tous les dispositifs d'assurance maladie : CSS, AME, ALD, invalidité, maternité, droits dérivés, procédures de déblocage rapide. Tu sais quand un dossier est bloqué et comment le débloquer concrètement. Tu parles le langage CPAM mais tu l'expliques simplement.`
+  },
+  {
+    id: 'mdph',
+    nom: 'Référent MDPH',
+    role: 'Handicap & autonomie',
+    emoji: '♿',
+    couleur: 'var(--amber)',
+    bg: 'var(--amber-bg)',
+    border: 'var(--amber-b)',
+    tagBg: 'var(--amber-bg)',
+    tagColor: 'var(--amber)',
+    persona: `Tu es référent MDPH Seine-Saint-Denis, spécialisé dans l'évaluation des situations de handicap et de perte d'autonomie. Tu analyses les besoins : AAH, RQTH, PCH, AEEH, orientation en établissement, carte CMI. Tu connais les délais réels et les astuces pour accélérer les dossiers complexes.`
+  },
+  {
+    id: 'ide',
+    nom: 'IDE Coordinateur',
+    role: 'Infirmier coordinateur DAC',
+    emoji: '💉',
+    couleur: 'var(--teal)',
+    bg: 'var(--teal-bg)',
+    border: 'var(--teal-b)',
+    tagBg: 'var(--teal-bg)',
+    tagColor: 'var(--teal)',
+    persona: `Tu es infirmier(e) coordinateur(trice) au DAC 93 Nord (Seine-Saint-Denis). Tu analyses les situations du point de vue paramédical et des soins à domicile : besoins en soins infirmiers, gestion des traitements, surveillance de l'état de santé, coordination avec le médecin traitant, SSIAD, HAD. Tu évalues le risque de décompensation et les signes d'alerte clinique. Tu parles avec l'expérience du terrain infirmier.`
+  },
+  {
+    id: 'ergo',
+    nom: 'Ergothérapeute',
+    role: 'Autonomie & adaptation du cadre de vie',
+    emoji: '🔧',
+    couleur: 'var(--blue)',
+    bg: 'var(--blue-bg)',
+    border: 'var(--blue-b)',
+    tagBg: 'var(--blue-bg)',
+    tagColor: 'var(--blue)',
+    persona: `Tu es ergothérapeute au DAC 93 Nord (Seine-Saint-Denis). Tu analyses les situations du point de vue de l'autonomie fonctionnelle et de l'adaptation du domicile : risques de chute, accessibilité, aides techniques (déambulateur, barre d'appui, lit médicalisé), aménagements nécessaires, capacités gestuelles résiduelles. Tu sais évaluer ce qui est faisable à domicile versus ce qui nécessite une institutionnalisation. Tu connects avec les financements APA, PCH et FSL.`
+  },
+  {
+    id: 'psy',
+    nom: 'Psychologue clinicien',
+    role: 'Santé mentale & soutien psychologique',
+    emoji: '🧠',
+    couleur: 'var(--purple-l)',
+    bg: 'var(--purple-bg)',
+    border: 'var(--purple-b)',
+    tagBg: 'var(--purple-bg)',
+    tagColor: 'var(--purple-l)',
+    persona: `Tu es psychologue clinicien(ne) au DAC 93 Nord (Seine-Saint-Denis). Tu analyses les situations du point de vue de la santé mentale : dépression, anxiété, troubles cognitifs, comportements à risque, capacité de discernement, relations familiales conflictuelles, traumatismes. Tu identifies les besoins de soutien psychologique, les orientations vers CMP ou psychiatre, et les situations de crise. Tu es attentif(ve) à ce que le patient dit et ne dit pas.`
+  },
+  {
+    id: 'educ',
+    nom: 'Éducateur spécialisé',
+    role: 'Accompagnement social & insertion',
+    emoji: '🌱',
+    couleur: 'var(--green)',
+    bg: 'var(--green-bg)',
+    border: 'var(--green-b)',
+    tagBg: 'var(--green-bg)',
+    tagColor: 'var(--green)',
+    persona: `Tu es éducateur(trice) spécialisé(e) au DAC 93 Nord (Seine-Saint-Denis). Tu analyses les situations du point de vue de l'insertion sociale et de l'accompagnement au quotidien : autonomie dans les actes de la vie, compétences sociales, insertion professionnelle ou en milieu protégé (ESAT), addictions, errance, protection de l'enfance ou adultes vulnérables. Tu travailles sur le lien social, la réhabilitation et le projet de vie. Tu connais les dispositifs CHRS, SAMSAH, SAVS, ESAT.`
+  }
+];
+
+// ─── API ───
+function saveApiKey() {
+  const k = document.getElementById('apiKeyInput').value.trim();
+  if(k) { localStorage.setItem('mediasante_api_key', k); showToast('Clé enregistrée ✓'); }
+}
+function getApiKey() { return localStorage.getItem('mediasante_api_key') || ''; }
+
+window.addEventListener('load', () => {
+  const k = getApiKey(); if(k) document.getElementById('apiKeyInput').value = k.slice(0,12)+'...';
+  renderHistory();
+});
+
+// ─── PATIENT ───
+function getDossiers() { return JSON.parse(localStorage.getItem('mediasante_dossiers') || '[]'); }
+
+function openModal() {
+  const dossiers = getDossiers();
+  const list = document.getElementById('dossierList');
+  if(!dossiers.length) {
+    list.innerHTML = '<div class="empty-state">Aucun dossier patient trouvé.<br>Vous pouvez quand même lancer un staff sans dossier.</div>';
+  } else {
+    list.innerHTML = dossiers.map(d => {
+      const p = d.data?.patient || {};
+      const initials = ((p.prenom||'?')[0]+(p.nom||'?')[0]).toUpperCase();
+      const name = [p.prenom, p.nom].filter(Boolean).join(' ') || 'Patient inconnu';
+      const alerts = Object.values(d.data?.alerts||{}).flat();
+      return `<div class="dossier-item" onclick="selectPatient('${d.id}')">
+        <div class="dossier-avatar">${initials}</div>
+        <div>
+          <div class="dossier-name">${name}</div>
+          <div class="dossier-id">${d.id} · ${alerts.length} alerte(s) · Niveau ${d.score||'?'}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('patientModal').classList.remove('hidden');
+}
+function closeModal() { document.getElementById('patientModal').classList.add('hidden'); }
+function clearPatient() { currentPatient = null; updatePatientUI(); closeModal(); }
+function selectPatient(id) {
+  const d = getDossiers().find(x => x.id === id);
+  if(!d) return;
+  currentPatient = { ...d.data.patient, id: d.id, famo: d.data, score: d.score };
+  updatePatientUI();
+  // Pré-remplir la situation avec les infos FAMO
+  const sit = document.getElementById('situationText');
+  if(!sit.value.trim()) {
+    const p = d.data.patient || {};
+    const alerts = Object.values(d.data.alerts||{}).flat();
+    const name = [p.prenom, p.nom].filter(Boolean).join(' ');
+    const age = p.age || '';
+    sit.value = `Patient : ${name}${age ? ', ' + age : ''}.\n\nAlertes du dossier :\n${alerts.map(a => '• ' + a).join('\n') || 'Aucune alerte renseignée.'}\n\n${d.data.demande ? 'Demande exprimée : ' + d.data.demande : ''}\n\nSituation bloquante à décrire : `;
+    sit.focus();
+    sit.setSelectionRange(sit.value.length, sit.value.length);
+  }
+  closeModal();
+}
+function updatePatientUI() {
+  if(!currentPatient) {
+    document.getElementById('patientAvatar').textContent = '?';
+    document.getElementById('patientName').textContent = 'Sélectionner un patient (optionnel)';
+    document.getElementById('patientId').textContent = 'Le staff peut aussi se faire sans dossier ouvert';
+    return;
+  }
+  const name = [currentPatient.prenom, currentPatient.nom].filter(Boolean).join(' ') || 'Patient';
+  const initials = ((currentPatient.prenom||'?')[0]+(currentPatient.nom||'?')[0]).toUpperCase();
+  document.getElementById('patientAvatar').textContent = initials;
+  document.getElementById('patientName').textContent = name;
+  document.getElementById('patientId').textContent = currentPatient.id || 'Manuel';
+}
+
+// ─── BLOCAGES ───
+function toggleBlocage(el) { el.classList.toggle('sel'); }
+function getBlocages() {
+  return [...document.querySelectorAll('.blocage-tag.sel')].map(el => el.textContent.trim());
+}
+
+// ─── EXPERT STATUS ───
+function setExpertStatus(id, state) {
+  const dot = document.getElementById('st-' + id);
+  const card = document.getElementById('exp-' + id);
+  if(!dot || !card) return;
+  dot.className = 'expert-status' + (state === 'thinking' ? ' thinking' : state === 'done' ? ' done' : state === 'ready' ? ' ready' : '');
+  card.classList.toggle('loading', state === 'thinking');
+}
+function resetAllStatus() {
+  EXPERTS.forEach(e => setExpertStatus(e.id, ''));
+}
+
+// ─── LANCER STAFF ───
+async function lancerStaff() {
+  const situation = document.getElementById('situationText').value.trim();
+  if(!situation || situation.length < 20) { showToast('Décrivez la situation (min. 20 caractères)'); return; }
+  if(staffRunning) return;
+
+  staffRunning = true;
+  const btn = document.getElementById('btnLancer');
+  btn.disabled = true;
+  document.getElementById('btnIcon').textContent = '⏳';
+  document.getElementById('btnText').textContent = 'Staff en cours...';
+  document.getElementById('resultSection').style.display = 'none';
+  document.getElementById('consensusCard').style.display = 'none';
+  document.getElementById('actionsCard').style.display = 'none';
+  document.getElementById('avisContainer').innerHTML = '';
+  resetAllStatus();
+
+  const apiKey = getApiKey();
+  const blocages = getBlocages();
+  const patientCtx = currentPatient
+    ? `Patient : ${[currentPatient.prenom, currentPatient.nom].filter(Boolean).join(' ')}${currentPatient.age ? ', ' + currentPatient.age : ''}${currentPatient.adresse ? ', ' + currentPatient.adresse : ''}\nNiveau de complexité : ${currentPatient.score || 'non évalué'}`
+    : 'Aucun dossier patient associé';
+  const blocagesCtx = blocages.length ? `Types de blocage : ${blocages.join(', ')}` : '';
+
+  if(!apiKey || !apiKey.startsWith('sk-')) {
+    await runDemoStaff(situation, blocages);
+  } else {
+    await runRealStaff(situation, patientCtx, blocagesCtx, apiKey);
+  }
+
+  staffRunning = false;
+  btn.disabled = false;
+  document.getElementById('btnIcon').textContent = '↺';
+  document.getElementById('btnText').textContent = 'Relancer le staff';
+}
+
+// ─── STAFF RÉEL (Claude API) ───
+async function runRealStaff(situation, patientCtx, blocagesCtx, apiKey) {
+  document.getElementById('resultSection').style.display = 'block';
+  const avisContainer = document.getElementById('avisContainer');
+  const avisMap = {};
+
+  // Lancer tous les experts en parallèle
+  const promises = EXPERTS.map(async (expert) => {
+    setExpertStatus(expert.id, 'thinking');
+
+    const prompt = `${expert.persona}
+
+CONTEXTE DU STAFF :
+${patientCtx}
+${blocagesCtx}
+
+SITUATION SOUMISE AU STAFF :
+${situation}
+
+En tant que ${expert.nom}, donne ton avis professionnel sur cette situation. Structure ta réponse ainsi :
+
+**Mon analyse**
+[2-3 phrases sur ce que tu observes depuis ton angle métier]
+
+**Ce qui bloque**
+[1-2 points précis du blocage de ton point de vue]
+
+**Mes recommandations concrètes**
+[3-4 actions numérotées, précises, réalisables immédiatement]
+
+**Urgence**
+[HAUTE / MOYENNE / FAIBLE — et pourquoi en 1 phrase]
+
+Sois direct, pratique. Pas de théorie. Parle à un médiateur en santé qui n'est pas forcément du même domaine que toi.`;
+
+    try {
+      const resp = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json', 'x-api-key': apiKey, 'anthropic-version':'2023-06-01' },
+        body: JSON.stringify({ model:'claude-sonnet-4-5', max_tokens:700, messages:[{role:'user', content: prompt}] })
+      });
+      const data = await resp.json();
+      const text = data.content?.[0]?.text || 'Erreur de génération.';
+      avisMap[expert.id] = text;
+      setExpertStatus(expert.id, 'done');
+      renderAvisCard(expert, text, avisContainer);
+    } catch(e) {
+      avisMap[expert.id] = 'Erreur de connexion pour cet expert.';
+      setExpertStatus(expert.id, '');
+    }
+  });
+
+  await Promise.all(promises);
+
+  // Synthèse collective
+  await genererConsensus(situation, avisMap, apiKey);
+}
+
+function renderAvisCard(expert, text, container) {
+  const urgenceMatch = text.match(/HAUTE|MOYENNE|FAIBLE/i);
+  const urgence = urgenceMatch ? urgenceMatch[0].toUpperCase() : 'MOYENNE';
+  const urgColors = { HAUTE: ['var(--red-bg)','var(--red)'], MOYENNE: ['var(--amber-bg)','var(--amber)'], FAIBLE: ['var(--green-bg)','var(--green)'] };
+  const [ubg, utxt] = urgColors[urgence] || urgColors.MOYENNE;
+
+  const cardId = 'avis-' + expert.id;
+  const existing = document.getElementById(cardId);
+  if(existing) existing.remove();
+
+  const formatted = text
+    .replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--text);display:block;margin:10px 0 4px;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--text3)">$1</strong>')
+    .replace(/\n/g, '<br>');
+
+  const div = document.createElement('div');
+  div.className = 'avis-card';
+  div.id = cardId;
+  div.style.borderColor = expert.border;
+  div.innerHTML = `
+    <div class="avis-header" onclick="toggleAvis('${expert.id}')">
+      <div class="avis-avatar" style="background:${expert.bg}">${expert.emoji}</div>
+      <div>
+        <div class="avis-expert-name">${expert.nom}</div>
+        <div class="avis-expert-role">${expert.role}</div>
+      </div>
+      <div class="avis-tag" style="background:${ubg};color:${utxt}">${urgence}</div>
+      <span class="avis-chevron open" id="chev-${expert.id}">▼</span>
+    </div>
+    <div class="avis-body open" id="body-${expert.id}">
+      <div class="avis-content">${formatted}</div>
+    </div>`;
+  container.appendChild(div);
+}
+
+async function genererConsensus(situation, avisMap, apiKey) {
+  const avisTexts = Object.entries(avisMap).map(([id, txt]) => {
+    const expert = EXPERTS.find(e => e.id === id);
+    return `=== ${expert?.nom} ===\n${txt}`;
+  }).join('\n\n');
+
+  const prompt = `Tu es le coordinateur du staff pluridisciplinaire du DAC 93 Nord. Tu viens de recevoir les avis de 5 experts sur une situation complexe.
+
+SITUATION :
+${situation}
+
+AVIS DES EXPERTS :
+${avisTexts}
+
+Génère UNIQUEMENT un JSON valide sans markdown ni backticks :
+{
+  "consensus": "Synthèse en 3-4 phrases de ce que le staff recommande collectivement. Langue simple, actionnable.",
+  "urgence": "HAUTE" | "MOYENNE" | "FAIBLE",
+  "actions": [
+    { "action": "Action précise et concrète", "qui": "Médiateur / CPAM / Médecin / AS...", "delai": "Aujourd'hui / Cette semaine / Ce mois" },
+    ...max 5 actions
+  ]
+}`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'x-api-key': apiKey, 'anthropic-version':'2023-06-01' },
+      body: JSON.stringify({ model:'claude-sonnet-4-5', max_tokens:800, messages:[{role:'user', content: prompt}] })
+    });
+    const data = await resp.json();
+    let text = data.content?.[0]?.text || '{}';
+    text = text.replace(/```json|```/g,'').trim();
+    const result = JSON.parse(text);
+    renderConsensus(result);
+  } catch(e) {
+    renderConsensus({ consensus: 'Synthèse indisponible — consultez les avis individuels ci-dessous.', urgence: 'MOYENNE', actions: [] });
+  }
+}
+
+function renderConsensus(result) {
+  const urgColors = { HAUTE: ['var(--red-bg)','var(--red)'], MOYENNE: ['var(--amber-bg)','var(--amber)'], FAIBLE: ['var(--green-bg)','var(--green)'] };
+  const [ubg, utxt] = urgColors[result.urgence] || urgColors.MOYENNE;
+
+  document.getElementById('urgenceLevel').textContent = 'Urgence ' + (result.urgence||'MOYENNE');
+  document.getElementById('urgenceLevel').style.cssText = `background:${ubg};color:${utxt};font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600`;
+  document.getElementById('consensusText').textContent = result.consensus || '';
+  document.getElementById('consensusCard').style.display = 'block';
+
+  if(result.actions?.length) {
+    const list = document.getElementById('actionsList');
+    list.innerHTML = result.actions.map((a, i) => `
+      <div class="action-item">
+        <div class="action-num">${i+1}</div>
+        <div class="action-body">
+          <div class="action-text">${a.action}</div>
+          <div class="action-who">→ ${a.qui} · ${a.delai}</div>
+        </div>
+      </div>`).join('');
+    document.getElementById('actionsCard').style.display = 'block';
+  }
+
+  staffResult = result;
+}
+
+// ─── DEMO STAFF (sans clé API) ───
+async function runDemoStaff(situation, blocages) {
+  document.getElementById('resultSection').style.display = 'block';
+  const container = document.getElementById('avisContainer');
+
+  const demoAvis = [
+    { id:'med', text:`**Mon analyse**\nSituation médicale préoccupante. L'absence de suivi médical régulier est le premier risque à adresser. Plusieurs signaux d'alerte nécessitent une évaluation clinique rapide.\n\n**Ce qui bloque**\n1. Pas de médecin traitant déclaré\n2. Absence probable de droits ouverts pour les soins\n\n**Mes recommandations concrètes**\n1. Identifier en urgence un médecin traitant acceptant en secteur 1 (liste CPTS 93)\n2. Ouvrir les droits CSS ou AME en parallèle\n3. Évaluation clinique à programmer dès que les droits sont ouverts\n4. Vérifier si ALD à constituer\n\n**Urgence**\nHAUTE — l'accès aux soins est bloqué faute de droits` },
+    { id:'as', text:`**Mon analyse**\nLa dimension sociale est centrale ici. L'isolement et les difficultés relationnelles amplifient la complexité de la situation.\n\n**Ce qui bloque**\n1. Réseau de soutien absent ou défaillant\n2. Capacité de la personne à se mobiliser réduite\n\n**Mes recommandations concrètes**\n1. Évaluer la situation familiale et l'entourage immédiat\n2. Proposer un accompagnement physique aux démarches\n3. Contacter le CCAS de la commune pour aide d'urgence si besoin\n4. Envisager une médiation familiale si conflit identifié\n\n**Urgence**\nMOYENNE — la situation sociale peut se dégrader rapidement sans intervention` },
+    { id:'jur', text:`**Mon analyse**\nJuridiquement, plusieurs droits sont potentiellement ouverts mais non activés. Le blocage administratif est souvent une question de document manquant identifiable.\n\n**Ce qui bloque**\n1. Dossier incomplet — il faut identifier le document précis manquant\n2. Délais de traitement non suivis\n\n**Mes recommandations concrètes**\n1. Demander par écrit à la CPAM la liste exacte des pièces manquantes\n2. Vérifier le délai légal de traitement (2 mois pour AME, 1 mois pour CSS)\n3. Si dépassé, envoyer une relance formelle recommandée\n4. En cas de refus, préparer un recours amiable (RAPO)\n\n**Urgence**\nHAUTE — des recours existent mais ont des délais à respecter` },
+    { id:'cpam', text:`**Mon analyse**\nDu point de vue Assurance Maladie, la situation présente des signaux d'alerte classiques pour le 93. Des solutions de déblocage rapide existent.\n\n**Ce qui bloque**\n1. Dossier bloqué sur un document — souvent un justificatif d'identité ou de domicile\n2. Interlocuteur CPAM non identifié\n\n**Mes recommandations concrètes**\n1. Appeler le 36 46 avec le numéro de dossier pour identifier le document exact\n2. Utiliser le Service Social CPAM 93 pour les situations complexes (voie rapide)\n3. Si AME : passer par un CPAM partenaire DAC pour traitement prioritaire\n4. Conserver toutes les preuves de dépôt (récépissé, AR)\n\n**Urgence**\nHAUTE — des solutions de déblocage rapide existent via le Service Social CPAM` },
+    { id:'mdph', text:`**Mon analyse**\nSelon les éléments, une évaluation du degré d'autonomie serait utile pour déterminer si des prestations MDPH sont applicables.\n\n**Ce qui bloque**\n1. Aucune évaluation MDPH n'a été réalisée\n2. La personne ne connaît peut-être pas ses droits potentiels\n\n**Mes recommandations concrètes**\n1. Remplir une première grille AGGIR pour estimer le niveau d'autonomie\n2. Si GIR ≤ 4 : demande APA à initier en parallèle\n3. Si handicap psychique ou cognitif : dossier AAH + RQTH à envisager\n4. Délai MDPH 93 actuel : 4-6 mois — anticiper dès maintenant\n\n**Urgence**\nMOYENNE — à enclencher maintenant pour éviter un délai supplémentaire` }
+  ];
+
+  for(const avis of demoAvis) {
+    setExpertStatus(avis.id, 'thinking');
+    await new Promise(r => setTimeout(r, 600));
+    const expert = EXPERTS.find(e => e.id === avis.id);
+    renderAvisCard(expert, avis.text, container);
+    setExpertStatus(avis.id, 'done');
+  }
+
+  renderConsensus({
+    consensus: "Le staff identifie deux priorités absolues : débloquer l'accès aux droits santé (CSS ou AME) en contactant directement le Service Social CPAM 93, et identifier un médecin traitant acceptant en secteur 1 via la CPTS. En parallèle, un accompagnement physique aux démarches est recommandé compte tenu des difficultés de mobilisation. Le médiateur est l'interlocuteur central — il coordonne et accompagne.",
+    urgence: "HAUTE",
+    actions: [
+      { action: "Appeler le Service Social CPAM 93 pour déblocage prioritaire du dossier", qui: "Médiateur", delai: "Aujourd'hui" },
+      { action: "Demander par écrit la liste exacte des pièces manquantes", qui: "Médiateur", delai: "Aujourd'hui" },
+      { action: "Identifier médecin traitant secteur 1 via CPTS 93", qui: "Médiateur + Dr. Méd", delai: "Cette semaine" },
+      { action: "Évaluer situation sociale et réseau d'aide", qui: "AS + Médiateur", delai: "Cette semaine" },
+      { action: "Initier grille AGGIR si perte d'autonomie suspectée", qui: "Médiateur", delai: "Ce mois" }
+    ]
+  });
+
+  showToast('Démo staff — ajoutez une clé API pour une analyse personnalisée');
+}
+
+// ─── TOGGLE AVIS ───
+function toggleAvis(id) {
+  const body = document.getElementById('body-' + id);
+  const chev = document.getElementById('chev-' + id);
+  if(!body) return;
+  const open = body.classList.toggle('open');
+  chev?.classList.toggle('open', open);
+}
+
+// ─── RESET ───
+function resetStaff() {
+  document.getElementById('situationText').value = '';
+  document.getElementById('resultSection').style.display = 'none';
+  document.getElementById('avisContainer').innerHTML = '';
+  document.querySelectorAll('.blocage-tag').forEach(t => t.classList.remove('sel'));
+  document.getElementById('btnIcon').textContent = '⚡';
+  document.getElementById('btnText').textContent = 'Lancer le Staff IA';
+  document.getElementById('btnLancer').disabled = false;
+  resetAllStatus();
+  staffResult = null;
+  window.scrollTo(0,0);
+}
+
+// ─── SAVE ───
+function saveStaff() {
+  const situation = document.getElementById('situationText').value.trim();
+  if(!situation) { showToast('Aucun staff à sauvegarder'); return; }
+  const staffs = JSON.parse(localStorage.getItem('mediasante_staffs') || '[]');
+  const entry = {
+    id: Date.now(),
+    date: new Date().toISOString(),
+    patient: currentPatient ? [currentPatient.prenom, currentPatient.nom].filter(Boolean).join(' ') : null,
+    situation: situation.slice(0, 120),
+    result: staffResult,
+    blocages: getBlocages()
+  };
+  staffs.unshift(entry);
+  localStorage.setItem('mediasante_staffs', JSON.stringify(staffs.slice(0, 20)));
+  renderHistory();
+  showToast('Staff sauvegardé ✓');
+}
+
+// ─── HISTORY ───
+function renderHistory() {
+  const staffs = JSON.parse(localStorage.getItem('mediasante_staffs') || '[]');
+  const list = document.getElementById('historyList');
+  if(!staffs.length) {
+    list.innerHTML = '<div style="font-size:12px;color:var(--text3);padding:8px 0">Aucun staff enregistré pour l\'instant.</div>';
+    return;
+  }
+  list.innerHTML = staffs.map(s => {
+    const urgColors = { HAUTE:'var(--red)', MOYENNE:'var(--amber)', FAIBLE:'var(--green)' };
+    const urgColor = urgColors[s.result?.urgence] || 'var(--text3)';
+    return `<div class="history-item" onclick="loadStaff(${s.id})">
+      <div class="hi-top">
+        <div class="hi-dot" style="background:${urgColor}"></div>
+        <div class="hi-title">${s.patient || 'Sans dossier'} — ${s.blocages?.join(', ') || 'Staff général'}</div>
+        <div class="hi-date">${new Date(s.date).toLocaleDateString('fr-FR')}</div>
+      </div>
+      <div class="hi-preview">${s.situation}</div>
+    </div>`;
+  }).join('');
+}
+
+function loadStaff(id) {
+  const staffs = JSON.parse(localStorage.getItem('mediasante_staffs') || '[]');
+  const s = staffs.find(x => x.id === id);
+  if(!s) return;
+  document.getElementById('situationText').value = s.situation;
+  if(s.result) {
+    document.getElementById('resultSection').style.display = 'block';
+    renderConsensus(s.result);
+  }
+  window.scrollTo(0, 0);
+  showToast('Staff chargé');
+}
+
+// ─── TOAST ───
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:9px 18px;border-radius:20px;font-size:12px;z-index:9999;white-space:nowrap';
+  t.textContent = msg; document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2200);
+}
+</script>
+</body>
+</html>

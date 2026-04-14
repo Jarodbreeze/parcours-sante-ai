@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>ParcourSanté AI — Agenda & Coordination</title>
+<style>
+:root{
+  --bg:#0f1117;--bg2:#161820;--bg3:#1e2130;
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.16);
+  --text:#f0f1f5;--text2:#8b8fa8;--text3:#565a72;
+  --purple:#7c6ff7;--purple-l:#a99ef9;--purple-bg:rgba(124,111,247,0.12);--purple-b:rgba(124,111,247,0.3);
+  --teal:#3ecfaa;--teal-bg:rgba(62,207,170,0.1);--teal-b:rgba(62,207,170,0.25);
+  --amber:#f0a43a;--amber-bg:rgba(240,164,58,0.1);--amber-b:rgba(240,164,58,0.25);
+  --red:#e05c6a;--red-bg:rgba(224,92,106,0.1);--red-b:rgba(224,92,106,0.25);
+  --green:#4cba82;--green-bg:rgba(76,186,130,0.1);--green-b:rgba(76,186,130,0.25);
+  --blue:#5b9ef7;--blue-bg:rgba(91,158,247,0.1);--blue-b:rgba(91,158,247,0.25);
+  --r:10px;--rs:7px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* TOPBAR */
+.topbar{position:sticky;top:0;z-index:100;background:rgba(15,17,23,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 16px;height:52px;display:flex;align-items:center;gap:10px}
+.logo{display:flex;align-items:center;gap:7px}
+.logo-dot{width:8px;height:8px;border-radius:50%;background:var(--blue)}
+.logo-text{font-size:14px;font-weight:600;letter-spacing:-.3px}
+.logo-sub{font-size:11px;color:var(--text3);margin-left:2px}
+.badge-mode{font-size:10px;font-weight:600;letter-spacing:.08em;padding:3px 8px;border-radius:20px;background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-b);margin-left:auto}
+
+/* TABS */
+.nav-tabs{display:flex;padding:0 16px;border-bottom:1px solid var(--border);background:var(--bg2);overflow-x:auto;gap:2px}
+.tab{font-size:12px;padding:10px 14px;cursor:pointer;border-bottom:2px solid transparent;color:var(--text2);white-space:nowrap;margin-bottom:-1px;transition:all .15s}
+.tab.active{color:var(--blue);border-bottom-color:var(--blue);font-weight:500}
+
+/* LAYOUT */
+.main{max-width:700px;margin:0 auto;padding:16px 16px 64px}
+
+/* CALENDAR */
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.cal-nav{display:flex;gap:8px;align-items:center}
+.cal-btn{width:32px;height:32px;border-radius:50%;border:1px solid var(--border);background:var(--bg2);color:var(--text2);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.cal-btn:hover{border-color:var(--border2);color:var(--text)}
+.cal-month{font-size:15px;font-weight:600;letter-spacing:-.3px;min-width:140px;text-align:center}
+.cal-view-btns{display:flex;gap:4px}
+.cal-view-btn{font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;font-family:inherit;transition:all .15s}
+.cal-view-btn.active{background:var(--blue-bg);border-color:var(--blue-b);color:var(--blue);font-weight:600}
+
+/* GRID */
+.cal-grid{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:14px}
+.cal-days-header{display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid var(--border)}
+.cal-day-label{font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--text3);text-transform:uppercase;text-align:center;padding:8px 4px}
+.cal-cells{display:grid;grid-template-columns:repeat(7,1fr)}
+.cal-cell{min-height:52px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:4px;cursor:pointer;transition:background .15s;position:relative}
+.cal-cell:nth-child(7n){border-right:none}
+.cal-cell:hover{background:var(--bg3)}
+.cal-cell.today .cal-num{background:var(--blue);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center}
+.cal-cell.other-month .cal-num{color:var(--text3)}
+.cal-cell.has-rdv{background:var(--blue-bg)}
+.cal-num{font-size:12px;font-weight:500;margin-bottom:2px;display:inline-block;width:22px;height:22px;line-height:22px;text-align:center}
+.cal-dot{width:5px;height:5px;border-radius:50%;margin:1px auto;display:block}
+.cal-event-mini{font-size:9px;background:var(--blue-bg);color:var(--blue);border-radius:3px;padding:1px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;border-left:2px solid var(--blue)}
+.cal-event-mini.rdv{background:var(--blue-bg);border-left-color:var(--blue)}
+.cal-event-mini.relance{background:var(--amber-bg);border-left-color:var(--amber);color:var(--amber)}
+.cal-event-mini.medical{background:var(--green-bg);border-left-color:var(--green);color:var(--green)}
+.cal-event-mini.staff{background:var(--purple-bg);border-left-color:var(--purple);color:var(--purple-l)}
+
+/* WEEK VIEW */
+.week-grid{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:14px}
+.week-header{display:grid;grid-template-columns:48px repeat(7,1fr);border-bottom:1px solid var(--border)}
+.week-day-col{text-align:center;padding:8px 4px;border-right:1px solid var(--border)}
+.week-day-col:last-child{border-right:none}
+.week-day-name{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.04em}
+.week-day-num{font-size:16px;font-weight:700;margin-top:2px}
+.week-day-col.today .week-day-num{color:var(--blue)}
+.week-slots{display:grid;grid-template-columns:48px repeat(7,1fr)}
+.time-col{font-size:10px;color:var(--text3);text-align:right;padding-right:8px;border-right:1px solid var(--border)}
+.time-slot{height:48px;display:flex;align-items:flex-start;padding-top:4px}
+.day-col-slot{border-right:1px solid var(--border);border-bottom:1px solid var(--border);height:48px;cursor:pointer;position:relative;transition:background .1s}
+.day-col-slot:hover{background:var(--blue-bg)}
+.day-col-slot:last-child{border-right:none}
+.slot-event{position:absolute;top:2px;left:2px;right:2px;font-size:10px;padding:2px 5px;border-radius:4px;font-weight:600;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;cursor:pointer;z-index:2}
+
+/* TODAY AGENDA */
+.agenda-section{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:12px}
+.agenda-day-title{font-size:13px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.agenda-no-event{font-size:12px;color:var(--text3);font-style:italic;padding:8px 0}
+.agenda-item{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s}
+.agenda-item:last-child{border-bottom:none}
+.agenda-item:hover{background:var(--bg3);border-radius:var(--rs);padding-left:6px;padding-right:6px;margin:0 -6px}
+.ai-time{font-size:12px;font-weight:600;color:var(--text2);width:44px;flex-shrink:0;margin-top:1px}
+.ai-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.ai-body{flex:1;min-width:0}
+.ai-title{font-size:13px;font-weight:500;color:var(--text)}
+.ai-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.ai-badge{font-size:9px;padding:2px 6px;border-radius:4px;font-weight:600;flex-shrink:0;margin-top:2px}
+
+/* RELANCES */
+.relance-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:10px}
+.relance-header{display:flex;align-items:center;gap:8px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.relance-icon{font-size:16px}
+.relance-title{font-size:13px;font-weight:600;flex:1}
+.relance-count{font-size:12px;font-weight:700;padding:2px 8px;border-radius:10px;background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-b)}
+.relance-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
+.relance-item:last-child{border-bottom:none}
+.ri-av{width:30px;height:30px;border-radius:50%;background:var(--purple-bg);border:1px solid var(--purple-b);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--purple-l);flex-shrink:0}
+.ri-body{flex:1;min-width:0}
+.ri-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ri-reason{font-size:11px;color:var(--text3);margin-top:1px}
+.ri-days{font-size:11px;font-weight:700;flex-shrink:0;padding:2px 8px;border-radius:4px}
+.ri-days.urgent{background:var(--red-bg);color:var(--red);border:1px solid var(--red-b)}
+.ri-days.warn{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-b)}
+.ri-days.ok{background:var(--green-bg);color:var(--green);border:1px solid var(--green-b)}
+.ri-actions{display:flex;gap:5px;flex-shrink:0}
+.ri-btn{font-size:10px;padding:4px 8px;border-radius:var(--rs);border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;font-family:inherit;white-space:nowrap}
+.ri-btn.primary{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-b)}
+
+/* VOLET MÉDICAL */
+.med-section{margin-bottom:12px}
+.med-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:10px}
+.med-card.linked{border-color:var(--green-b);background:var(--green-bg)}
+.med-header{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.med-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.med-info{flex:1}
+.med-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px}
+.med-sub{font-size:11px;color:var(--text3);line-height:1.4}
+.med-status{font-size:10px;padding:3px 8px;border-radius:4px;font-weight:600;flex-shrink:0}
+.med-fields{display:flex;flex-direction:column;gap:8px}
+.med-field-row{display:flex;gap:8px}
+label.med-label{font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px;display:block}
+input.med-input,select.med-select,textarea.med-textarea{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:13px;padding:9px 11px;outline:none;font-family:inherit;-webkit-appearance:none}
+input.med-input:focus,select.med-select:focus,textarea.med-textarea:focus{border-color:var(--blue-b)}
+textarea.med-textarea{resize:vertical;min-height:80px;line-height:1.5}
+select.med-select option{background:var(--bg3)}
+
+/* MULTI-STRUCTURES */
+.struct-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+.struct-av{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.struct-info{flex:1;min-width:0}
+.struct-name{font-size:13px;font-weight:600}
+.struct-role{font-size:11px;color:var(--text3);margin-top:2px}
+.struct-status{font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600;flex-shrink:0}
+.struct-actions{display:flex;gap:5px;flex-shrink:0}
+.struct-btn{font-size:10px;padding:4px 8px;border-radius:var(--rs);border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;font-family:inherit}
+.struct-btn.primary{background:var(--green-bg);color:var(--green);border-color:var(--green-b)}
+.partage-badge{font-size:9px;padding:2px 6px;border-radius:4px;background:var(--teal-bg);color:var(--teal);border:1px solid var(--teal-b);margin-left:6px}
+
+/* BUTTONS */
+.btn-primary{width:100%;padding:12px;border-radius:var(--r);background:var(--blue);border:none;color:#fff;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;transition:opacity .15s,transform .1s;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px}
+.btn-primary:active{transform:scale(.98)}
+.btn-secondary{width:100%;padding:10px;border-radius:var(--r);background:transparent;border:1px solid var(--border);color:var(--text2);font-size:13px;font-family:inherit;cursor:pointer;margin-bottom:6px}
+.btn-secondary:hover{border-color:var(--border2)}
+.btn-green{background:var(--green);color:var(--bg)}
+.btn-purple{background:var(--purple);color:#fff}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;display:flex;align-items:flex-end;justify-content:center}
+.modal-overlay.hidden{display:none}
+.modal{background:var(--bg2);border-top:1px solid var(--border);border-radius:16px 16px 0 0;padding:20px;width:100%;max-width:540px;max-height:88vh;overflow-y:auto}
+.modal-title{font-size:16px;font-weight:700;margin-bottom:4px}
+.modal-sub{font-size:12px;color:var(--text3);margin-bottom:14px}
+.modal-close{float:right;background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;margin-top:-4px;line-height:1}
+.form-field{margin-bottom:10px}
+.form-label{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:5px;display:block}
+.form-input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:13px;padding:9px 11px;outline:none;font-family:inherit;-webkit-appearance:none}
+.form-input:focus{border-color:var(--blue-b)}
+.form-select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:13px;padding:9px 11px;outline:none;font-family:inherit;-webkit-appearance:none;cursor:pointer}
+.form-select:focus{border-color:var(--blue-b)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.form-textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:13px;padding:9px 11px;outline:none;font-family:inherit;resize:vertical;min-height:72px;line-height:1.5}
+.form-textarea:focus{border-color:var(--blue-b)}
+.sec-label{font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--text3);text-transform:uppercase;margin:12px 0 6px}
+.divider{height:1px;background:var(--border);margin:12px 0}
+
+/* INFO BOX */
+.info-box{background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:10px 12px;font-size:12px;color:var(--text3);line-height:1.5;margin-bottom:12px}
+.info-box strong{color:var(--text2)}
+
+/* EMPTY */
+.empty{text-align:center;padding:28px 20px;color:var(--text3)}
+.empty-icon{font-size:32px;margin-bottom:10px}
+.empty-title{font-size:14px;font-weight:600;color:var(--text2);margin-bottom:5px}
+
+/* FAB */
+.fab{position:fixed;bottom:20px;right:16px;width:50px;height:50px;border-radius:50%;background:var(--blue);border:none;color:#fff;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(91,158,247,0.4);z-index:40;transition:transform .2s}
+.fab:active{transform:scale(.92)}
+
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:2px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-dot"></div>
+    <span class="logo-text">ParcourSanté AI</span>
+    <span class="logo-sub">Agenda</span>
+  </div>
+  <span class="badge-mode">COORDINATION</span>
+</div>
+
+<div class="nav-tabs">
+  <div class="tab active" data-t="agenda" onclick="switchTab('agenda')">📅 Agenda</div>
+  <div class="tab" data-t="relances" onclick="switchTab('relances')">🔔 Relances</div>
+  <div class="tab" data-t="medical" onclick="switchTab('medical')">🩺 Volet médical</div>
+  <div class="tab" data-t="multi" onclick="switchTab('multi')">🏢 Multi-structures</div>
+</div>
+
+<div class="main">
+
+<!-- ══════════════════════ AGENDA ══════════════════════ -->
+<div id="tab-agenda">
+  <div class="cal-header">
+    <div class="cal-nav">
+      <button class="cal-btn" onclick="navCal(-1)">‹</button>
+      <div class="cal-month" id="calMonth"></div>
+      <button class="cal-btn" onclick="navCal(1)">›</button>
+    </div>
+    <div class="cal-view-btns">
+      <button class="cal-view-btn active" id="vbtn-month" onclick="setCalView('month')">Mois</button>
+      <button class="cal-view-btn" id="vbtn-week" onclick="setCalView('week')">Sem.</button>
+    </div>
+  </div>
+
+  <div id="calContainer"></div>
+
+  <div class="agenda-section">
+    <div class="agenda-day-title">
+      <span>📋</span>
+      <span id="agendaDayTitle">Aujourd'hui</span>
+      <button onclick="openNewRDV()" style="margin-left:auto;font-size:11px;padding:4px 10px;border-radius:var(--rs);background:var(--blue-bg);border:1px solid var(--blue-b);color:var(--blue);cursor:pointer;font-family:inherit">+ RDV</button>
+    </div>
+    <div id="agendaList"></div>
+  </div>
+
+  <!-- PROCHAINS RDV -->
+  <div class="agenda-section">
+    <div class="agenda-day-title"><span>🗓</span><span>Prochains rendez-vous</span></div>
+    <div id="upcomingList"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════ RELANCES ══════════════════════ -->
+<div id="tab-relances" style="display:none">
+
+  <div class="info-box"><strong>Relances automatiques</strong> — Inspiré de Médiateam. Détection en temps réel des dossiers qui nécessitent un contact : délai sans transmission dépassé, droits expirants, suivi post-orientation manquant.</div>
+
+  <div class="relance-card">
+    <div class="relance-header">
+      <span class="relance-icon">🔴</span>
+      <div class="relance-title">Urgentes — Contact immédiat requis</div>
+      <span class="relance-count" id="urgCount" style="background:var(--red-bg);color:var(--red);border-color:var(--red-b)">0</span>
+    </div>
+    <div id="relancesUrgentes"></div>
+  </div>
+
+  <div class="relance-card">
+    <div class="relance-header">
+      <span class="relance-icon">🟡</span>
+      <div class="relance-title">À traiter cette semaine</div>
+      <span class="relance-count" id="warnCount">0</span>
+    </div>
+    <div id="relancesSemaine"></div>
+  </div>
+
+  <div class="relance-card">
+    <div class="relance-header">
+      <span class="relance-icon">✅</span>
+      <div class="relance-title">Dossiers à jour</div>
+      <span class="relance-count" id="okCount" style="background:var(--green-bg);color:var(--green);border-color:var(--green-b)">0</span>
+    </div>
+    <div id="relancesOk"></div>
+  </div>
+
+  <button class="btn-primary" onclick="programmerRelancesAuto()">⚡ Programmer toutes les relances automatiquement</button>
+</div>
+
+<!-- ══════════════════════ VOLET MÉDICAL ══════════════════════ -->
+<div id="tab-medical" style="display:none">
+
+  <div class="info-box"><strong>Courrier d'adressage numérique</strong> — Le médecin traitant rédige un courrier qui atterrit directement dans le dossier patient. Le spécialiste accède au dossier via un lien sécurisé. Inspiré d'Orbis APHP.</div>
+
+  <!-- NOUVEAU COURRIER D'ADRESSAGE -->
+  <div class="med-card">
+    <div class="med-header">
+      <div class="med-icon" style="background:var(--green-bg)">🩺</div>
+      <div class="med-info">
+        <div class="med-title">Nouveau courrier d'adressage</div>
+        <div class="med-sub">MT → Spécialiste → Dossier patient centralisé</div>
+      </div>
+    </div>
+    <div class="med-fields">
+      <div>
+        <label class="med-label">Dossier patient concerné</label>
+        <select class="med-select" id="med_dossier">
+          <option value="">Sélectionner un patient...</option>
+        </select>
+      </div>
+      <div class="med-field-row">
+        <div style="flex:1">
+          <label class="med-label">Médecin adresseur</label>
+          <input type="text" class="med-input" id="med_adresseur" placeholder="Dr. Martin — MT" />
+        </div>
+        <div style="flex:1">
+          <label class="med-label">Spécialiste destinataire</label>
+          <input type="text" class="med-input" id="med_destinataire" placeholder="Dr. Benali — Cardiologue" />
+        </div>
+      </div>
+      <div>
+        <label class="med-label">Spécialité / motif de consultation</label>
+        <select class="med-select" id="med_specialite">
+          <option value="">Sélectionner...</option>
+          <option>Cardiologie</option>
+          <option>Neurologie</option>
+          <option>Pneumologie</option>
+          <option>Rhumatologie</option>
+          <option>Gériatrie</option>
+          <option>Psychiatrie</option>
+          <option>Ophtalmologie</option>
+          <option>ORL</option>
+          <option>Dermatologie</option>
+          <option>Endocrinologie</option>
+          <option>Gastro-entérologie</option>
+          <option>Urologie</option>
+          <option>Médecine interne</option>
+          <option>Autre spécialité</option>
+        </select>
+      </div>
+      <div>
+        <label class="med-label">Motif clinique</label>
+        <textarea class="med-textarea" id="med_motif" placeholder="Décrire le motif médical, les symptômes, les examens déjà réalisés, les traitements en cours..."></textarea>
+      </div>
+      <div>
+        <label class="med-label">Degré d'urgence</label>
+        <select class="med-select" id="med_urgence">
+          <option value="normale">Normale — RDV dans le mois</option>
+          <option value="prioritaire">Prioritaire — sous 15 jours</option>
+          <option value="urgente">Urgente — sous 72h</option>
+          <option value="tres_urgente">Très urgente — aujourd'hui</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button class="btn-primary btn-green" style="flex:2" onclick="genererAdressageIA()">✨ Générer avec l'IA</button>
+        <button class="btn-primary" style="flex:1;background:var(--bg3);color:var(--text2)" onclick="sauvegarderAdressage()">Sauvegarder</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- COURRIER GÉNÉRÉ -->
+  <div id="courrierAdressageWrap" style="display:none">
+    <div class="med-card">
+      <div class="med-header">
+        <div class="med-icon" style="background:var(--blue-bg)">📄</div>
+        <div class="med-info">
+          <div class="med-title">Courrier d'adressage généré</div>
+          <div class="med-sub">Vérifiez et envoyez dans le dossier</div>
+        </div>
+        <div class="med-status" style="background:var(--teal-bg);color:var(--teal);border:1px solid var(--teal-b)" id="courrierStatus">Brouillon</div>
+      </div>
+      <div id="courrierAdressageContent" contenteditable="true" style="font-size:13px;color:var(--text2);line-height:1.8;outline:none;min-height:200px;padding:8px;background:var(--bg3);border-radius:var(--rs);white-space:pre-wrap"></div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="btn-primary btn-green" style="flex:2" onclick="envoyerDansDossier()">📋 Envoyer dans le dossier patient</button>
+        <button class="btn-secondary" style="flex:1;margin-bottom:0" onclick="copierCourrier()">⎘ Copier</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HISTORIQUE ADRESSAGES -->
+  <div style="font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--text3);text-transform:uppercase;margin:14px 0 8px">Courriers d'adressage récents</div>
+  <div id="adressagesHistorique"></div>
+
+</div>
+
+<!-- ══════════════════════ MULTI-STRUCTURES ══════════════════════ -->
+<div id="tab-multi" style="display:none">
+
+  <div class="info-box"><strong>Suivi multi-structures</strong> — Un patient peut être suivi simultanément par plusieurs structures (DAC, SAMSAH, SSIAD, CCAS...). Inspiré de Médiateam. Chaque structure accède au dossier partagé avec les informations qui la concernent.</div>
+
+  <!-- PATIENTS AVEC MULTI-SUIVI -->
+  <div style="font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--text3);text-transform:uppercase;margin-bottom:8px">Patients en suivi multi-structures</div>
+  <div id="multiList"></div>
+
+  <button class="btn-primary" onclick="openMultiModal()" style="margin-top:8px">+ Ajouter un suivi multi-structures</button>
+
+  <!-- STRUCTURES PARTENAIRES ACTIVES -->
+  <div style="font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--text3);text-transform:uppercase;margin:16px 0 8px">Structures partenaires connectées</div>
+  <div id="partenairesList"></div>
+
+  <button class="btn-secondary" onclick="openPartenairesModal()">+ Ajouter une structure partenaire</button>
+
+</div>
+
+</div><!-- /main -->
+
+<!-- FAB -->
+<button class="fab" onclick="onFAB()">+</button>
+
+<!-- ══ MODAL NOUVEAU RDV ══ -->
+<div class="modal-overlay hidden" id="rdvModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('rdvModal')">×</button>
+    <div class="modal-title">Nouveau rendez-vous</div>
+    <div class="modal-sub">Planifié · Réalisé · Suivi</div>
+    <div class="form-field">
+      <label class="form-label">Type de RDV</label>
+      <select class="form-select" id="rdv_type">
+        <option value="visite">🏠 Visite à domicile</option>
+        <option value="consultation">🩺 Consultation médicale</option>
+        <option value="rdv_admin">📋 RDV administratif</option>
+        <option value="staff">👥 Staff / réunion</option>
+        <option value="accompagnement">🤝 Accompagnement externe</option>
+        <option value="relance">📞 Appel de relance</option>
+      </select>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Patient concerné</label>
+      <select class="form-select" id="rdv_patient_sel">
+        <option value="">Sans patient — RDV général</option>
+      </select>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Titre</label>
+      <input type="text" class="form-input" id="rdv_titre" placeholder="Ex: Visite initiale Mme Dupont" />
+    </div>
+    <div class="form-row">
+      <div class="form-field" style="margin:0">
+        <label class="form-label">Date</label>
+        <input type="date" class="form-input" id="rdv_date" />
+      </div>
+      <div class="form-field" style="margin:0">
+        <label class="form-label">Heure</label>
+        <input type="time" class="form-input" id="rdv_heure" value="09:00" />
+      </div>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Durée</label>
+      <select class="form-select" id="rdv_duree">
+        <option value="30">30 min</option>
+        <option value="60" selected>1h</option>
+        <option value="90">1h30</option>
+        <option value="120">2h</option>
+      </select>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Lieu</label>
+      <input type="text" class="form-input" id="rdv_lieu" placeholder="Domicile / MSP / DAC 93 Nord..." />
+    </div>
+    <div class="form-field">
+      <label class="form-label">Intervenants</label>
+      <input type="text" class="form-input" id="rdv_intervenants" placeholder="Ex: Médiateur + IDE + AS CPAM" />
+    </div>
+    <div class="form-field">
+      <label class="form-label">Notes</label>
+      <textarea class="form-textarea" id="rdv_notes" placeholder="Points à aborder, documents à apporter..."></textarea>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Rappel</label>
+      <select class="form-select" id="rdv_rappel">
+        <option value="">Pas de rappel</option>
+        <option value="15">15 min avant</option>
+        <option value="60" selected>1h avant</option>
+        <option value="1440">La veille</option>
+        <option value="2880">2 jours avant</option>
+      </select>
+    </div>
+    <button class="btn-primary" onclick="saveRDV()">Enregistrer le RDV ✓</button>
+    <button class="btn-secondary" onclick="closeModal('rdvModal')">Annuler</button>
+  </div>
+</div>
+
+<!-- ══ MODAL MULTI-STRUCTURES ══ -->
+<div class="modal-overlay hidden" id="multiModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('multiModal')">×</button>
+    <div class="modal-title">Suivi multi-structures</div>
+    <div class="modal-sub">Associer plusieurs structures au suivi d'un patient</div>
+    <div class="form-field">
+      <label class="form-label">Patient</label>
+      <select class="form-select" id="multi_patient">
+        <option value="">Sélectionner...</option>
+      </select>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Structure partenaire</label>
+      <input type="text" class="form-input" id="multi_structure" placeholder="Ex: SAMSAH Agora 93, SSIAD Épinay..." />
+    </div>
+    <div class="form-field">
+      <label class="form-label">Rôle de cette structure</label>
+      <select class="form-select" id="multi_role">
+        <option>Soins infirmiers (SSIAD)</option>
+        <option>Accompagnement médico-social (SAMSAH)</option>
+        <option>Aide à domicile (SAAD)</option>
+        <option>Hébergement</option>
+        <option>Suivi psychiatrique (CMP)</option>
+        <option>Accompagnement social (CCAS/AS)</option>
+        <option>Médecin traitant</option>
+        <option>Hospitalisation à domicile (HAD)</option>
+        <option>Autre</option>
+      </select>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Contact référent dans cette structure</label>
+      <input type="text" class="form-input" id="multi_contact" placeholder="Nom, prénom et téléphone" />
+    </div>
+    <div class="form-field">
+      <label class="form-label">Niveau de partage du dossier</label>
+      <select class="form-select" id="multi_partage">
+        <option value="lecture">Lecture seule — données sociales</option>
+        <option value="complet">Dossier complet partagé</option>
+        <option value="transmission">Transmissions uniquement</option>
+        <option value="none">Aucun partage — suivi parallèle</option>
+      </select>
+    </div>
+    <button class="btn-primary btn-green" onclick="saveMultiStructure()">Activer le suivi multi-structures ✓</button>
+    <button class="btn-secondary" onclick="closeModal('multiModal')">Annuler</button>
+  </div>
+</div>
+
+<!-- ══ MODAL PARTENAIRE ══ -->
+<div class="modal-overlay hidden" id="partenaireModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('partenaireModal')">×</button>
+    <div class="modal-title">Ajouter une structure partenaire</div>
+    <div class="form-field">
+      <label class="form-label">Nom de la structure</label>
+      <input type="text" class="form-input" id="part_nom" placeholder="Ex: SAMSAH Agora 93" />
+    </div>
+    <div class="form-field">
+      <label class="form-label">Type</label>
+      <select class="form-select" id="part_type">
+        <option>SSIAD</option><option>SAAD</option><option>SAMSAH</option><option>SAVS</option>
+        <option>HAD</option><option>CMP</option><option>CHRS</option><option>CCAS</option>
+        <option>EHPAD</option><option>Hôpital</option><option>CPAM</option><option>MDPH</option><option>Autre</option>
+      </select>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Contact référent</label>
+      <input type="text" class="form-input" id="part_contact" placeholder="Nom et téléphone" />
+    </div>
+    <div class="form-field">
+      <label class="form-label">Email sécurisé (MSSanté si disponible)</label>
+      <input type="email" class="form-input" id="part_email" placeholder="prenom.nom@structure.mssante.fr" />
+    </div>
+    <button class="btn-primary" onclick="savePartenaire()">Ajouter la structure ✓</button>
+    <button class="btn-secondary" onclick="closeModal('partenaireModal')">Annuler</button>
+  </div>
+</div>
+
+<script>
+// ═══ DONNÉES ═══
+function getDossiers(){return JSON.parse(localStorage.getItem('mediasante_dossiers')||'[]')}
+function getApiKey(){return localStorage.getItem('mediasante_api_key')||''}
+function getRDVs(){return JSON.parse(localStorage.getItem('ps_rdvs')||'[]')}
+function saveRDVs(list){localStorage.setItem('ps_rdvs',JSON.stringify(list))}
+function getAdressages(){return JSON.parse(localStorage.getItem('ps_adressages')||'[]')}
+function saveAdressages(list){localStorage.setItem('ps_adressages',JSON.stringify(list))}
+function getMultiStructures(){return JSON.parse(localStorage.getItem('ps_multi_structures')||'[]')}
+function saveMultiStructures(list){localStorage.setItem('ps_multi_structures',JSON.stringify(list))}
+function getPartenaires(){return JSON.parse(localStorage.getItem('ps_partenaires')||'[]')}
+function savePartenaires(list){localStorage.setItem('ps_partenaires',JSON.stringify(list))}
+
+// ═══ ÉTAT CALENDRIER ═══
+let calView='month';
+let calDate=new Date();
+let selectedDate=new Date();
+let editingRDVId=null;
+
+const TYPE_COLORS={
+  visite:{bg:'var(--blue-bg)',color:'var(--blue)',dot:'#5b9ef7'},
+  consultation:{bg:'var(--green-bg)',color:'var(--green)',dot:'#4cba82'},
+  rdv_admin:{bg:'var(--purple-bg)',color:'var(--purple-l)',dot:'#7c6ff7'},
+  staff:{bg:'var(--amber-bg)',color:'var(--amber)',dot:'#f0a43a'},
+  accompagnement:{bg:'var(--teal-bg)',color:'var(--teal)',dot:'#3ecfaa'},
+  relance:{bg:'rgba(240,164,58,0.15)',color:'var(--amber)',dot:'#f0a43a'},
+};
+
+// ═══ INIT ═══
+window.addEventListener('load',()=>{
+  populateSelects();
+  renderCalendar();
+  renderAgendaDay(selectedDate);
+  renderUpcoming();
+  checkRelances();
+  renderMultiStructures();
+  renderPartenaires();
+  renderAdressagesHist();
+  seedDemoRDVs();
+});
+
+function populateSelects(){
+  const dossiers=getDossiers();
+  ['rdv_patient_sel','med_dossier','multi_patient'].forEach(selId=>{
+    const sel=document.getElementById(selId);if(!sel)return;
+    const first=sel.options[0];
+    sel.innerHTML='';sel.appendChild(first);
+    dossiers.forEach(d=>{
+      const p=d.data?.patient||{};
+      const name=[p.prenom,p.nom].filter(Boolean).join(' ')||'Patient';
+      const opt=new Option(`${name} (${d.id})`,d.id);
+      sel.appendChild(opt);
+    });
+  });
+}
+
+function seedDemoRDVs(){
+  if(getRDVs().length)return;
+  const now=new Date();
+  const dossiers=getDossiers();
+  const pid=dossiers[0]?.id||'';
+  const pname=dossiers[0]?([dossiers[0].data?.patient?.prenom,dossiers[0].data?.patient?.nom].filter(Boolean).join(' ')||'Patient'):'Patient démo';
+  const demos=[
+    {id:'demo1',type:'visite',titre:'Visite à domicile '+pname,date:new Date(now.getFullYear(),now.getMonth(),now.getDate()+1).toISOString().split('T')[0],heure:'10:00',duree:60,lieu:'Domicile',intervenants:'Médiateur en santé',notes:'Première évaluation AGGIR + IADL',patientId:pid,statut:'planifie'},
+    {id:'demo2',type:'rdv_admin',titre:'RDV CPAM 93 — dossier CSS',date:new Date(now.getFullYear(),now.getMonth(),now.getDate()+3).toISOString().split('T')[0],heure:'14:30',duree:60,lieu:'CPAM Bobigny',intervenants:'Médiateur + patient',notes:'Apporter pièces justificatives',patientId:pid,statut:'planifie'},
+    {id:'demo3',type:'staff',titre:'Staff pluridisciplinaire — situations complexes',date:new Date(now.getFullYear(),now.getMonth(),now.getDate()+5).toISOString().split('T')[0],heure:'09:00',duree:90,lieu:'DAC 93 Nord',intervenants:'Médiateur + IDE + AS',notes:'3 situations à présenter',patientId:'',statut:'planifie'},
+    {id:'demo4',type:'consultation',titre:'Consultation Dr Benali — Cardio',date:new Date(now.getFullYear(),now.getMonth(),now.getDate()-2).toISOString().split('T')[0],heure:'11:00',duree:30,lieu:'Hôpital Avicenne',intervenants:'Patient + Médiateur',notes:'Courrier d\'adressage envoyé',patientId:pid,statut:'realise'},
+  ];
+  saveRDVs(demos);
+}
+
+// ═══ NAVIGATION ═══
+function switchTab(id){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.t===id));
+  ['agenda','relances','medical','multi'].forEach(t=>document.getElementById('tab-'+t).style.display=t===id?'block':'none');
+  if(id==='relances')checkRelances();
+  if(id==='medical')renderAdressagesHist();
+  if(id==='multi'){renderMultiStructures();renderPartenaires();}
+}
+function onFAB(){
+  const active=document.querySelector('.tab.active')?.dataset.t;
+  if(active==='agenda')openNewRDV();
+  else if(active==='medical')document.getElementById('med_motif')?.focus();
+  else if(active==='multi')openMultiModal();
+  else openNewRDV();
+}
+function closeModal(id){document.getElementById(id)?.classList.add('hidden')}
+
+// ═══ CALENDRIER ═══
+function setCalView(v){
+  calView=v;
+  document.getElementById('vbtn-month').classList.toggle('active',v==='month');
+  document.getElementById('vbtn-week').classList.toggle('active',v==='week');
+  renderCalendar();
+}
+function navCal(dir){
+  if(calView==='month'){calDate=new Date(calDate.getFullYear(),calDate.getMonth()+dir,1);}
+  else{calDate=new Date(calDate.getFullYear(),calDate.getMonth(),calDate.getDate()+dir*7);}
+  renderCalendar();
+}
+function renderCalendar(){
+  calView==='month'?renderMonthView():renderWeekView();
+}
+
+function renderMonthView(){
+  const months=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+  document.getElementById('calMonth').textContent=months[calDate.getMonth()]+' '+calDate.getFullYear();
+  const rdvs=getRDVs();
+  const today=new Date();
+  const y=calDate.getFullYear(),m=calDate.getMonth();
+  const firstDay=new Date(y,m,1).getDay();
+  const daysInMonth=new Date(y,m+1,0).getDate();
+  const offset=firstDay===0?6:firstDay-1;
+  const days=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+  let html=`<div class="cal-grid"><div class="cal-days-header">${days.map(d=>`<div class="cal-day-label">${d}</div>`).join('')}</div><div class="cal-cells">`;
+  // Jours du mois précédent
+  const prevDays=new Date(y,m,0).getDate();
+  for(let i=offset-1;i>=0;i--){
+    html+=`<div class="cal-cell other-month"><span class="cal-num">${prevDays-i}</span></div>`;
+  }
+  for(let d=1;d<=daysInMonth;d++){
+    const dateStr=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday=d===today.getDate()&&m===today.getMonth()&&y===today.getFullYear();
+    const isSelected=d===selectedDate.getDate()&&m===selectedDate.getMonth()&&y===selectedDate.getFullYear();
+    const dayRDVs=rdvs.filter(r=>r.date===dateStr);
+    const hasRdv=dayRDVs.length>0;
+    html+=`<div class="cal-cell${isToday?' today':''}${isSelected?' has-rdv':hasRdv?' has-rdv':''}" onclick="selectDay(${y},${m},${d})">
+      <span class="cal-num">${d}</span>
+      ${dayRDVs.slice(0,2).map(r=>`<div class="cal-event-mini ${r.type}">${r.titre.slice(0,12)}</div>`).join('')}
+      ${dayRDVs.length>2?`<div style="font-size:9px;color:var(--text3);text-align:center">+${dayRDVs.length-2}</div>`:''}
+    </div>`;
+  }
+  // Jours du mois suivant
+  const remaining=(7-(offset+daysInMonth)%7)%7;
+  for(let i=1;i<=remaining;i++){html+=`<div class="cal-cell other-month"><span class="cal-num">${i}</span></div>`;}
+  html+='</div></div>';
+  document.getElementById('calContainer').innerHTML=html;
+}
+
+function renderWeekView(){
+  const days=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+  // Trouver le lundi de la semaine
+  const dow=calDate.getDay()===0?6:calDate.getDay()-1;
+  const monday=new Date(calDate);
+  monday.setDate(calDate.getDate()-dow);
+  const months=['jan','fév','mar','avr','mai','juin','juil','août','sep','oct','nov','déc'];
+  document.getElementById('calMonth').textContent=`Semaine du ${monday.getDate()} ${months[monday.getMonth()]}`;
+  const today=new Date();
+  const rdvs=getRDVs();
+  const hours=[8,9,10,11,12,13,14,15,16,17,18];
+  let weekDays=[];
+  for(let i=0;i<7;i++){const d=new Date(monday);d.setDate(monday.getDate()+i);weekDays.push(d);}
+  let html=`<div class="week-grid"><div class="week-header"><div class="week-day-col" style="border-right:1px solid var(--border)"></div>`;
+  weekDays.forEach((d,i)=>{
+    const isToday=d.toDateString()===today.toDateString();
+    html+=`<div class="week-day-col${isToday?' today':''}"><div class="week-day-name">${days[i]}</div><div class="week-day-num">${d.getDate()}</div></div>`;
+  });
+  html+='</div><div class="week-slots">';
+  hours.forEach(h=>{
+    html+=`<div class="time-col"><div class="time-slot">${String(h).padStart(2,'0')}:00</div></div>`;
+    weekDays.forEach(d=>{
+      const dateStr=d.toISOString().split('T')[0];
+      const slotRDVs=rdvs.filter(r=>r.date===dateStr&&parseInt(r.heure)===h);
+      html+=`<div class="day-col-slot" onclick="quickAddRDV('${dateStr}','${String(h).padStart(2,'0')}:00')">`;
+      slotRDVs.forEach(r=>{
+        const tc=TYPE_COLORS[r.type]||TYPE_COLORS.visite;
+        html+=`<div class="slot-event" style="background:${tc.bg};color:${tc.color}" onclick="event.stopPropagation();editRDV('${r.id}')">${r.titre.slice(0,14)}</div>`;
+      });
+      html+='</div>';
+    });
+  });
+  html+='</div></div>';
+  document.getElementById('calContainer').innerHTML=html;
+}
+
+function selectDay(y,m,d){
+  selectedDate=new Date(y,m,d);
+  renderMonthView();
+  renderAgendaDay(selectedDate);
+}
+function quickAddRDV(date,heure){
+  document.getElementById('rdv_date').value=date;
+  document.getElementById('rdv_heure').value=heure;
+  openNewRDV();
+}
+
+// ═══ AGENDA DU JOUR ═══
+function renderAgendaDay(date){
+  const days=['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
+  const months=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+  const today=new Date();
+  const isToday=date.toDateString()===today.toDateString();
+  document.getElementById('agendaDayTitle').textContent=isToday?'Aujourd\'hui':`${days[date.getDay()]} ${date.getDate()} ${months[date.getMonth()]}`;
+  const dateStr=date.toISOString().split('T')[0];
+  const rdvs=getRDVs().filter(r=>r.date===dateStr).sort((a,b)=>a.heure.localeCompare(b.heure));
+  const el=document.getElementById('agendaList');
+  if(!rdvs.length){el.innerHTML='<div class="agenda-no-event">Aucun rendez-vous ce jour. Cliquez sur + RDV pour en créer un.</div>';return;}
+  el.innerHTML=rdvs.map(r=>{
+    const tc=TYPE_COLORS[r.type]||TYPE_COLORS.visite;
+    const statusMap={planifie:{label:'Planifié',color:'var(--blue)'},realise:{label:'Réalisé',color:'var(--green)'},annule:{label:'Annulé',color:'var(--red)'},reporte:{label:'Reporté',color:'var(--amber)'}};
+    const s=statusMap[r.statut]||statusMap.planifie;
+    return`<div class="agenda-item" onclick="editRDV('${r.id}')">
+      <div class="ai-time">${r.heure}</div>
+      <div class="ai-dot" style="background:${tc.dot}"></div>
+      <div class="ai-body">
+        <div class="ai-title">${r.titre}</div>
+        <div class="ai-sub">${r.lieu||''}${r.intervenants?' · '+r.intervenants:''}</div>
+      </div>
+      <div class="ai-badge" style="background:${s.color}22;color:${s.color};border:1px solid ${s.color}44">${s.label}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderUpcoming(){
+  const today=new Date().toISOString().split('T')[0];
+  const rdvs=getRDVs().filter(r=>r.date>=today&&r.statut!=='annule').sort((a,b)=>a.date.localeCompare(b.date)||a.heure.localeCompare(b.heure)).slice(0,5);
+  const el=document.getElementById('upcomingList');
+  if(!rdvs.length){el.innerHTML='<div class="agenda-no-event">Aucun rendez-vous à venir.</div>';return;}
+  el.innerHTML=rdvs.map(r=>{
+    const tc=TYPE_COLORS[r.type]||TYPE_COLORS.visite;
+    const d=new Date(r.date);
+    const dayLabel=d.toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'});
+    return`<div class="agenda-item" onclick="editRDV('${r.id}')">
+      <div class="ai-time" style="width:52px;font-size:10px;line-height:1.3">${dayLabel}</div>
+      <div class="ai-dot" style="background:${tc.dot}"></div>
+      <div class="ai-body">
+        <div class="ai-title">${r.titre}</div>
+        <div class="ai-sub">${r.heure}${r.lieu?' · '+r.lieu:''}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ═══ CRUD RDV ═══
+function openNewRDV(){
+  editingRDVId=null;
+  document.getElementById('rdv_titre').value='';
+  document.getElementById('rdv_notes').value='';
+  document.getElementById('rdv_lieu').value='';
+  document.getElementById('rdv_intervenants').value=localStorage.getItem('mediasante_user')||'Médiateur en santé';
+  document.getElementById('rdv_date').value=selectedDate.toISOString().split('T')[0];
+  document.getElementById('rdv_heure').value='09:00';
+  document.getElementById('rdvModal').classList.remove('hidden');
+}
+function saveRDV(){
+  const titre=document.getElementById('rdv_titre').value.trim();
+  const date=document.getElementById('rdv_date').value;
+  if(!titre){showToast('Titre requis');return}
+  if(!date){showToast('Date requise');return}
+  const rdvs=getRDVs();
+  const entry={
+    id:editingRDVId||'rdv_'+Date.now(),
+    type:document.getElementById('rdv_type').value,
+    titre,date,
+    heure:document.getElementById('rdv_heure').value,
+    duree:parseInt(document.getElementById('rdv_duree').value),
+    lieu:document.getElementById('rdv_lieu').value,
+    intervenants:document.getElementById('rdv_intervenants').value,
+    notes:document.getElementById('rdv_notes').value,
+    patientId:document.getElementById('rdv_patient_sel').value,
+    rappel:document.getElementById('rdv_rappel').value,
+    statut:'planifie',
+    createdAt:new Date().toISOString(),
+  };
+  if(editingRDVId){const idx=rdvs.findIndex(r=>r.id===editingRDVId);if(idx>=0){entry.statut=rdvs[idx].statut;rdvs.splice(idx,1,entry);}else rdvs.push(entry);}
+  else rdvs.push(entry);
+  saveRDVs(rdvs);
+  // Ajouter transmission dans le dossier lié
+  if(entry.patientId){
+    const txKey='transmissions_'+entry.patientId;
+    const txList=JSON.parse(localStorage.getItem(txKey)||'[]');
+    const exists=txList.find(t=>t.id==='rdv_tx_'+entry.id);
+    if(!exists){
+      txList.unshift({id:'rdv_tx_'+entry.id,date:new Date().toISOString(),type:'rdv',title:entry.titre,content:`${entry.heure} · ${entry.lieu||''}${entry.notes?'\n'+entry.notes:''}`,interv:entry.intervenants,suite:'Vérifier après le RDV',author:localStorage.getItem('mediasante_user')||'Médiateur',read:true});
+      localStorage.setItem(txKey,JSON.stringify(txList));
+    }
+  }
+  closeModal('rdvModal');
+  selectedDate=new Date(date+'T12:00:00');
+  renderCalendar();
+  renderAgendaDay(selectedDate);
+  renderUpcoming();
+  showToast('RDV enregistré ✓');
+}
+function editRDV(id){
+  const r=getRDVs().find(x=>x.id===id);if(!r)return;
+  editingRDVId=id;
+  document.getElementById('rdv_type').value=r.type||'visite';
+  document.getElementById('rdv_titre').value=r.titre||'';
+  document.getElementById('rdv_date').value=r.date||'';
+  document.getElementById('rdv_heure').value=r.heure||'09:00';
+  document.getElementById('rdv_duree').value=r.duree||60;
+  document.getElementById('rdv_lieu').value=r.lieu||'';
+  document.getElementById('rdv_intervenants').value=r.intervenants||'';
+  document.getElementById('rdv_notes').value=r.notes||'';
+  document.getElementById('rdv_patient_sel').value=r.patientId||'';
+  document.getElementById('rdv_rappel').value=r.rappel||'';
+  document.getElementById('rdvModal').classList.remove('hidden');
+}
+
+// ═══ RELANCES ═══
+function checkRelances(){
+  const dossiers=getDossiers();
+  const now=Date.now();
+  const urgentes=[],semaine=[],ok=[];
+
+  dossiers.forEach(d=>{
+    const p=d.data?.patient||{};
+    const name=[p.prenom,p.nom].filter(Boolean).join(' ')||d.id;
+    const ini=((p.prenom||'?')[0]+(p.nom||'?')[0]).toUpperCase();
+    const txs=JSON.parse(localStorage.getItem('transmissions_'+d.id)||'[]');
+    const lastTx=txs[0];
+    const daysSince=lastTx?Math.floor((now-new Date(lastTx.date))/86400000):999;
+    const alerts=Object.values(d.data?.alerts||{}).flat();
+    const hasDroitExpire=alerts.some(a=>a.includes('CSS')||a.includes('AME'));
+    
+    const reasons=[];
+    if(daysSince>15)reasons.push(`Sans contact depuis ${daysSince} jours`);
+    if(hasDroitExpire)reasons.push('Droit expirant (CSS/AME)');
+    if(!d.ppcs&&txs.length>2)reasons.push('PPCS non rédigé');
+
+    const item={id:d.id,name,ini,reasons,daysSince,score:d.score};
+    if(daysSince>30||hasDroitExpire)urgentes.push(item);
+    else if(daysSince>15||reasons.length>0)semaine.push(item);
+    else ok.push(item);
+  });
+
+  // Si pas de dossiers, afficher démo
+  if(!dossiers.length){
+    document.getElementById('relancesUrgentes').innerHTML='<div class="agenda-no-event">Aucun dossier patient créé.</div>';
+    document.getElementById('relancesSemaine').innerHTML='<div class="agenda-no-event">Créez des dossiers via le module Admission.</div>';
+    document.getElementById('relancesOk').innerHTML='<div class="agenda-no-event">—</div>';
+    return;
+  }
+
+  renderRelanceGroup('relancesUrgentes',urgentes,'urgent');
+  renderRelanceGroup('relancesSemaine',semaine,'warn');
+  renderRelanceGroup('relancesOk',ok,'ok');
+  document.getElementById('urgCount').textContent=urgentes.length;
+  document.getElementById('warnCount').textContent=semaine.length;
+  document.getElementById('okCount').textContent=ok.length;
+}
+
+function renderRelanceGroup(elId,items,level){
+  const el=document.getElementById(elId);if(!el)return;
+  if(!items.length){el.innerHTML=`<div class="agenda-no-event">Aucun dossier dans cette catégorie.</div>`;return;}
+  el.innerHTML=items.map(item=>`
+    <div class="relance-item">
+      <div class="ri-av">${item.ini}</div>
+      <div class="ri-body">
+        <div class="ri-name">${item.name}</div>
+        <div class="ri-reason">${item.reasons.length?item.reasons[0]:'À jour — relance préventive'}</div>
+      </div>
+      <div class="ri-days ${level}">${item.daysSince<999?item.daysSince+'j':'—'}</div>
+      <div class="ri-actions">
+        <button class="ri-btn" onclick="programmerRelance('${item.id}')">📅 RDV</button>
+        <button class="ri-btn primary" onclick="marquerContacte('${item.id}')">✓ Contacté</button>
+      </div>
+    </div>`).join('');
+}
+
+function programmerRelance(dossierId){
+  const d=getDossiers().find(x=>x.id===dossierId);
+  const p=d?.data?.patient||{};
+  const name=[p.prenom,p.nom].filter(Boolean).join(' ')||dossierId;
+  document.getElementById('rdv_titre').value=`Relance — ${name}`;
+  document.getElementById('rdv_type').value='relance';
+  document.getElementById('rdv_patient_sel').value=dossierId;
+  const tomorrow=new Date();tomorrow.setDate(tomorrow.getDate()+1);
+  document.getElementById('rdv_date').value=tomorrow.toISOString().split('T')[0];
+  document.getElementById('rdvModal').classList.remove('hidden');
+}
+
+function marquerContacte(dossierId){
+  const txKey='transmissions_'+dossierId;
+  const txList=JSON.parse(localStorage.getItem(txKey)||'[]');
+  txList.unshift({id:'relance_'+Date.now(),date:new Date().toISOString(),type:'appel',title:'Contact de relance effectué',content:'Patient contacté — dossier mis à jour.',interv:localStorage.getItem('mediasante_user')||'Médiateur',suite:'',author:localStorage.getItem('mediasante_user')||'Médiateur',read:true});
+  localStorage.setItem(txKey,JSON.stringify(txList));
+  showToast('Contact enregistré ✓');
+  checkRelances();
+}
+
+function programmerRelancesAuto(){
+  const dossiers=getDossiers();
+  const now=Date.now();
+  let count=0;
+  dossiers.forEach(d=>{
+    const txs=JSON.parse(localStorage.getItem('transmissions_'+d.id)||'[]');
+    const lastTx=txs[0];
+    const daysSince=lastTx?Math.floor((now-new Date(lastTx.date))/86400000):999;
+    if(daysSince>15){
+      const p=d.data?.patient||{};
+      const name=[p.prenom,p.nom].filter(Boolean).join(' ')||d.id;
+      const rdvs=getRDVs();
+      const inDays=daysSince>30?1:7;
+      const rdvDate=new Date();rdvDate.setDate(rdvDate.getDate()+inDays);
+      rdvs.push({id:'auto_'+d.id+'_'+Date.now(),type:'relance',titre:`Relance auto — ${name}`,date:rdvDate.toISOString().split('T')[0],heure:'09:00',duree:30,patientId:d.id,statut:'planifie',notes:'Relance programmée automatiquement',interv:'',lieu:'',createdAt:new Date().toISOString()});
+      saveRDVs(rdvs);count++;
+    }
+  });
+  showToast(count>0?`${count} relance(s) programmée(s) ✓`:'Tous les dossiers sont à jour ✓');
+  renderCalendar();renderUpcoming();
+}
+
+// ═══ VOLET MÉDICAL ═══
+async function genererAdressageIA(){
+  const adresseur=document.getElementById('med_adresseur').value.trim();
+  const destinataire=document.getElementById('med_destinataire').value.trim();
+  const specialite=document.getElementById('med_specialite').value;
+  const motif=document.getElementById('med_motif').value.trim();
+  const urgence=document.getElementById('med_urgence').value;
+  const dossierId=document.getElementById('med_dossier').value;
+  if(!adresseur||!destinataire||!motif){showToast('Renseignez adresseur, destinataire et motif');return}
+  
+  const apiKey=getApiKey();
+  const dossier=getDossiers().find(x=>x.id===dossierId);
+  const p=dossier?.data?.patient||{};
+  const patientName=[p.prenom,p.nom].filter(Boolean).join(' ')||'[Nom du patient]';
+  const patientAge=p.age||'[âge]';
+  const date=new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
+
+  document.getElementById('courrierAdressageWrap').style.display='block';
+  document.getElementById('courrierAdressageContent').textContent='Génération en cours...';
+
+  if(!apiKey.startsWith('sk-')){
+    document.getElementById('courrierAdressageContent').textContent=generateAdressageTemplate(adresseur,destinataire,specialite,motif,urgence,patientName,patientAge,date);
+    document.getElementById('courrierStatus').textContent='Template';
+    showToast('Template généré — ajoutez une clé API pour la version IA');
+    return;
+  }
+
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
+      body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:800,messages:[{role:'user',content:`Rédige un courrier médical d'adressage professionnel en français.\n\nDE : ${adresseur}\nÀ : ${destinataire} (${specialite})\nCONCERNANT : ${patientName}, ${patientAge}\nDATE : ${date}\nMOTIF : ${motif}\nURGENCE : ${urgence}\n\nStyle : professionnel, concis, structuré. Inclure les parties classiques d'un courrier médical d'adressage (formule d'appel, présentation du patient, motif, contexte clinique, demande, remerciements). Ne pas inventer d'informations cliniques non fournies. Commencer directement par le courrier sans introduction.`}]})
+    });
+    const data=await resp.json();
+    document.getElementById('courrierAdressageContent').textContent=data.content?.[0]?.text||'Erreur de génération.';
+    document.getElementById('courrierStatus').textContent='Généré par IA';
+  }catch(e){
+    document.getElementById('courrierAdressageContent').textContent=generateAdressageTemplate(adresseur,destinataire,specialite,motif,urgence,patientName,patientAge,date);
+    document.getElementById('courrierStatus').textContent='Template';
+  }
+}
+
+function generateAdressageTemplate(adresseur,dest,spec,motif,urgence,patient,age,date){
+  return`${adresseur}
+${date}
+
+${dest}
+${spec}
+
+Objet : Adressage de ${patient}, ${age} — ${spec}${urgence!=='normale'?` [${urgence.toUpperCase()}]`:''}
+
+Confrère/Consœur,
+
+Je me permets de vous adresser ${patient}, ${age}, pour une consultation en ${spec}.
+
+MOTIF DE CONSULTATION :
+${motif}
+
+Je vous serais reconnaissant(e) de bien vouloir examiner ce patient et de m'informer de votre avis spécialisé.
+
+En vous remerciant de votre collaboration,
+
+${adresseur}
+
+---
+Document généré via ParcourSanté AI — Outil d'aide à la coordination DAC`;
+}
+
+function sauvegarderAdressage(){
+  const adresseur=document.getElementById('med_adresseur').value.trim();
+  const dest=document.getElementById('med_destinataire').value.trim();
+  const spec=document.getElementById('med_specialite').value;
+  const dossierId=document.getElementById('med_dossier').value;
+  const contenu=document.getElementById('courrierAdressageContent').textContent;
+  if(!adresseur||!dest){showToast('Renseignez les champs obligatoires');return}
+  const list=getAdressages();
+  list.unshift({id:'addr_'+Date.now(),date:new Date().toISOString(),adresseur,destinataire:dest,specialite:spec,dossierId,contenu:contenu||'',statut:'envoye'});
+  saveAdressages(list);
+  // Sauvegarder dans le dossier
+  if(dossierId&&contenu){
+    const txKey='transmissions_'+dossierId;
+    const txList=JSON.parse(localStorage.getItem(txKey)||'[]');
+    txList.unshift({id:'addr_tx_'+Date.now(),date:new Date().toISOString(),type:'courrier',title:`Courrier d'adressage → ${dest} (${spec})`,content:contenu.slice(0,300)+'...',interv:adresseur,suite:'Attendre CR de consultation',author:localStorage.getItem('mediasante_user')||'Médiateur',read:true});
+    localStorage.setItem(txKey,JSON.stringify(txList));
+  }
+  renderAdressagesHist();
+  showToast('Courrier sauvegardé dans le dossier ✓');
+}
+
+function envoyerDansDossier(){
+  sauvegarderAdressage();
+}
+function copierCourrier(){
+  const txt=document.getElementById('courrierAdressageContent').textContent;
+  navigator.clipboard.writeText(txt).then(()=>showToast('Copié ✓'));
+}
+
+function renderAdressagesHist(){
+  const list=getAdressages();
+  const el=document.getElementById('adressagesHistorique');if(!el)return;
+  if(!list.length){el.innerHTML='<div class="agenda-no-event">Aucun courrier d\'adressage enregistré.</div>';return;}
+  el.innerHTML=list.slice(0,5).map(a=>`
+    <div class="struct-card">
+      <div class="struct-av" style="background:var(--green-bg)">📄</div>
+      <div class="struct-info">
+        <div class="struct-name">${a.destinataire} — ${a.specialite}</div>
+        <div class="struct-role">De : ${a.adresseur} · ${new Date(a.date).toLocaleDateString('fr-FR')}</div>
+      </div>
+      <div class="struct-status" style="background:var(--green-bg);color:var(--green);border:1px solid var(--green-b)">Envoyé</div>
+    </div>`).join('');
+}
+
+// ═══ MULTI-STRUCTURES ═══
+function openMultiModal(){
+  populateSelects();
+  document.getElementById('multiModal').classList.remove('hidden');
+}
+function saveMultiStructure(){
+  const patientId=document.getElementById('multi_patient').value;
+  const structure=document.getElementById('multi_structure').value.trim();
+  const role=document.getElementById('multi_role').value;
+  const contact=document.getElementById('multi_contact').value.trim();
+  const partage=document.getElementById('multi_partage').value;
+  if(!patientId||!structure){showToast('Patient et structure requis');return}
+  const list=getMultiStructures();
+  list.push({id:'ms_'+Date.now(),patientId,structure,role,contact,partage,dateDebut:new Date().toISOString(),actif:true});
+  saveMultiStructures(list);
+  closeModal('multiModal');
+  renderMultiStructures();
+  // Transmission dans le dossier
+  const txKey='transmissions_'+patientId;
+  const txList=JSON.parse(localStorage.getItem(txKey)||'[]');
+  txList.unshift({id:'ms_tx_'+Date.now(),date:new Date().toISOString(),type:'note',title:`Suivi multi-structures — ${structure} ajouté`,content:`Rôle : ${role}\nContact : ${contact||'—'}\nPartage dossier : ${partage}`,interv:structure,suite:'Coordination à initier',author:localStorage.getItem('mediasante_user')||'Médiateur',read:true});
+  localStorage.setItem(txKey,JSON.stringify(txList));
+  showToast(`${structure} ajouté au suivi ✓`);
+}
+
+function renderMultiStructures(){
+  const list=getMultiStructures().filter(m=>m.actif);
+  const dossiers=getDossiers();
+  const el=document.getElementById('multiList');if(!el)return;
+  if(!list.length){el.innerHTML='<div class="agenda-no-event">Aucun suivi multi-structures actif. Créez-en un avec le bouton ci-dessous.</div>';return;}
+  // Grouper par patient
+  const byPatient={};
+  list.forEach(m=>{if(!byPatient[m.patientId])byPatient[m.patientId]=[];byPatient[m.patientId].push(m);});
+  el.innerHTML=Object.entries(byPatient).map(([pid,structs])=>{
+    const d=dossiers.find(x=>x.id===pid);
+    const p=d?.data?.patient||{};
+    const name=[p.prenom,p.nom].filter(Boolean).join(' ')||pid;
+    const ini=((p.prenom||'?')[0]+(p.nom||'?')[0]).toUpperCase();
+    return`<div class="med-card" style="margin-bottom:10px">
+      <div class="med-header">
+        <div class="med-icon" style="background:var(--purple-bg);color:var(--purple-l);font-size:12px;font-weight:700">${ini}</div>
+        <div class="med-info"><div class="med-title">${name}</div><div class="med-sub">${structs.length} structure(s) en suivi simultané</div></div>
+        <span class="partage-badge">Multi-suivi</span>
+      </div>
+      ${structs.map(s=>`<div class="struct-card" style="background:var(--bg3);border-radius:var(--rs);margin-bottom:5px">
+        <div class="struct-av" style="background:var(--teal-bg)">🏢</div>
+        <div class="struct-info">
+          <div class="struct-name">${s.structure}</div>
+          <div class="struct-role">${s.role}${s.contact?' · '+s.contact:''}</div>
+        </div>
+        <div class="struct-status" style="background:${s.partage==='complet'?'var(--green-bg)':'var(--amber-bg)'};color:${s.partage==='complet'?'var(--green)':'var(--amber)'};border:1px solid ${s.partage==='complet'?'var(--green-b)':'var(--amber-b)'}">${s.partage==='complet'?'Partagé':'Partiel'}</div>
+        <div class="struct-actions"><button class="struct-btn" onclick="retirerStructure('${s.id}')">Retirer</button></div>
+      </div>`).join('')}
+    </div>`;
+  }).join('');
+}
+
+function retirerStructure(id){
+  if(!confirm('Retirer cette structure du suivi ?'))return;
+  const list=getMultiStructures();
+  const idx=list.findIndex(m=>m.id===id);
+  if(idx>=0){list[idx].actif=false;saveMultiStructures(list);}
+  renderMultiStructures();showToast('Structure retirée ✓');
+}
+
+function openPartenairesModal(){document.getElementById('partenaireModal').classList.remove('hidden');}
+function savePartenaire(){
+  const nom=document.getElementById('part_nom').value.trim();
+  if(!nom){showToast('Nom requis');return}
+  const list=getPartenaires();
+  list.push({id:'part_'+Date.now(),nom,type:document.getElementById('part_type').value,contact:document.getElementById('part_contact').value.trim(),email:document.getElementById('part_email').value.trim()});
+  savePartenaires(list);
+  closeModal('partenaireModal');
+  renderPartenaires();showToast('Partenaire ajouté ✓');
+}
+
+function renderPartenaires(){
+  const list=getPartenaires();
+  const el=document.getElementById('partenairesList');if(!el)return;
+  const defaultPart=[
+    {id:'dp1',nom:'CPAM Seine-Saint-Denis',type:'CPAM',contact:'Service social — 3646',email:''},
+    {id:'dp2',nom:'MDPH Seine-Saint-Denis',type:'MDPH',contact:'Bobigny',email:''},
+    {id:'dp3',nom:'SAMSAH Agora 93',type:'SAMSAH',contact:'Bobigny',email:''},
+    {id:'dp4',nom:'SIAO 93',type:'SIAO',contact:'Bobigny',email:''},
+  ];
+  const all=[...defaultPart,...list];
+  const typeIcons={CPAM:'💊',MDPH:'📋',SAMSAH:'♿',SIAO:'🆘',SSIAD:'💉',SAAD:'🤝',HAD:'🏡',CMP:'🧠',CCAS:'🏛️',EHPAD:'🏠',Hôpital:'🏥',Autre:'📍'};
+  el.innerHTML=all.map(p=>`
+    <div class="struct-card">
+      <div class="struct-av" style="background:var(--bg3)">${typeIcons[p.type]||'📍'}</div>
+      <div class="struct-info">
+        <div class="struct-name">${p.nom}</div>
+        <div class="struct-role">${p.type}${p.contact?' · '+p.contact:''}</div>
+      </div>
+      <div class="struct-status" style="background:var(--green-bg);color:var(--green);border:1px solid var(--green-b)">Actif</div>
+    </div>`).join('');
+}
+
+// ═══ UTILS ═══
+function showToast(msg){
+  const t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1e2130;border:1px solid rgba(255,255,255,.2);color:#f0f1f5;padding:9px 18px;border-radius:20px;font-size:12px;z-index:9999;white-space:nowrap';
+  t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2400);
+}
+</script>
+</body>
+</html>

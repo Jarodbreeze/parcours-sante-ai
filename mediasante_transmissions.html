@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>ParcourSanté AI — Transmissions</title>
+<style>
+:root{
+  --bg:#0f1117;--bg2:#161820;--bg3:#1e2130;
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.16);
+  --text:#f0f1f5;--text2:#8b8fa8;--text3:#565a72;
+  --purple:#7c6ff7;--purple-l:#a99ef9;--purple-bg:rgba(124,111,247,0.12);--purple-b:rgba(124,111,247,0.3);
+  --teal:#3ecfaa;--teal-bg:rgba(62,207,170,0.1);--teal-b:rgba(62,207,170,0.25);
+  --amber:#f0a43a;--amber-bg:rgba(240,164,58,0.1);--amber-b:rgba(240,164,58,0.25);
+  --red:#e05c6a;--red-bg:rgba(224,92,106,0.1);--red-b:rgba(224,92,106,0.25);
+  --green:#4cba82;--green-bg:rgba(76,186,130,0.1);--green-b:rgba(76,186,130,0.25);
+  --blue:#5b9ef7;--blue-bg:rgba(91,158,247,0.1);--blue-b:rgba(91,158,247,0.25);
+  --r:10px;--rs:7px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* TOP */
+.topbar{position:sticky;top:0;z-index:100;background:rgba(15,17,23,0.93);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 16px;height:52px;display:flex;align-items:center;justify-content:space-between}
+.logo{display:flex;align-items:center;gap:8px}
+.logo-dot{width:8px;height:8px;border-radius:50%;background:var(--blue)}
+.logo-text{font-size:14px;font-weight:600;letter-spacing:-.3px}
+.badge-mode{font-size:10px;font-weight:600;letter-spacing:.08em;padding:3px 8px;border-radius:20px;background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-b)}
+
+.api-bar{background:var(--bg2);border-bottom:1px solid var(--border);padding:8px 16px;display:flex;align-items:center;gap:8px}
+.api-label{font-size:11px;color:var(--text3);flex-shrink:0}
+.api-input{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:11px;padding:5px 8px;font-family:monospace;outline:none}
+.api-input:focus{border-color:var(--purple)}
+.api-save{font-size:11px;padding:5px 10px;border-radius:5px;background:var(--purple-bg);color:var(--purple-l);border:1px solid var(--purple-b);cursor:pointer}
+
+/* LAYOUT */
+.layout{display:flex;height:calc(100vh - 92px)}
+.sidebar{width:260px;flex-shrink:0;border-right:1px solid var(--border);background:var(--bg2);overflow-y:auto;display:flex;flex-direction:column}
+.content{flex:1;overflow-y:auto;display:flex;flex-direction:column}
+
+@media(max-width:600px){
+  .layout{flex-direction:column;height:auto}
+  .sidebar{width:100%;max-height:220px;border-right:none;border-bottom:1px solid var(--border);overflow-y:auto}
+  .content{min-height:60vh}
+}
+
+/* SIDEBAR */
+.sb-section{padding:10px 12px 4px;font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--text3);text-transform:uppercase}
+.patient-item{display:flex;align-items:center;gap:8px;padding:8px 12px;cursor:pointer;border-left:2px solid transparent;transition:all .15s}
+.patient-item:hover{background:var(--bg3)}
+.patient-item.active{border-left-color:var(--blue);background:var(--blue-bg)}
+.p-av{width:28px;height:28px;border-radius:50%;background:var(--purple-bg);border:1px solid var(--purple-b);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--purple-l);flex-shrink:0}
+.p-info{flex:1;min-width:0}
+.p-name{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.p-count{font-size:10px;color:var(--text3);margin-top:1px}
+.p-badge{font-size:9px;font-weight:700;padding:2px 5px;border-radius:4px;flex-shrink:0}
+.sb-add-btn{margin:8px 12px;padding:8px;border-radius:var(--rs);border:1px dashed var(--border2);background:transparent;color:var(--text3);font-size:12px;cursor:pointer;text-align:center;transition:all .15s}
+.sb-add-btn:hover{border-color:var(--blue-b);color:var(--blue)}
+
+/* CONTENT HEADER */
+.content-header{padding:14px 16px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:var(--bg2)}
+.ch-patient{display:flex;align-items:center;gap:10px}
+.ch-av{width:34px;height:34px;border-radius:50%;background:var(--purple-bg);border:1px solid var(--purple-b);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--purple-l);flex-shrink:0}
+.ch-name{font-size:14px;font-weight:600}
+.ch-id{font-size:11px;color:var(--text3);margin-top:1px}
+.ch-actions{display:flex;gap:6px}
+.ch-btn{padding:6px 10px;border-radius:var(--rs);border:1px solid var(--border);background:transparent;color:var(--text2);font-size:11px;cursor:pointer;white-space:nowrap;transition:all .15s}
+.ch-btn:hover{border-color:var(--border2);color:var(--text)}
+.ch-btn.primary{background:var(--blue-bg);color:var(--blue);border-color:var(--blue-b)}
+
+/* FILTRES */
+.filters-row{display:flex;gap:5px;padding:10px 16px;border-bottom:1px solid var(--border);overflow-x:auto;flex-shrink:0}
+.filter-tag{font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid var(--border);color:var(--text3);cursor:pointer;white-space:nowrap;transition:all .15s;flex-shrink:0}
+.filter-tag.active{font-weight:600}
+.filter-tag[data-type="all"].active{background:var(--bg3);border-color:var(--border2);color:var(--text)}
+.filter-tag[data-type="visite"].active{background:var(--green-bg);border-color:var(--green-b);color:var(--green)}
+.filter-tag[data-type="courrier"].active{background:var(--teal-bg);border-color:var(--teal-b);color:var(--teal)}
+.filter-tag[data-type="rdv"].active{background:var(--purple-bg);border-color:var(--purple-b);color:var(--purple-l)}
+.filter-tag[data-type="appel"].active{background:var(--amber-bg);border-color:var(--amber-b);color:var(--amber)}
+.filter-tag[data-type="staff"].active{background:rgba(91,158,247,0.15);border-color:var(--blue-b);color:var(--blue)}
+.filter-tag[data-type="droit"].active{background:var(--red-bg);border-color:var(--red-b);color:var(--red)}
+.filter-tag[data-type="note"].active{background:var(--bg3);border-color:var(--border2);color:var(--text2)}
+
+/* TIMELINE */
+.timeline{flex:1;overflow-y:auto;padding:16px}
+.timeline-empty{text-align:center;padding:48px 20px;color:var(--text3)}
+.timeline-empty-icon{font-size:36px;margin-bottom:10px}
+.timeline-empty-title{font-size:14px;font-weight:600;margin-bottom:5px;color:var(--text2)}
+.timeline-empty-desc{font-size:12px;line-height:1.6}
+.day-group{margin-bottom:20px}
+.day-label{font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--text3);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.day-label::after{content:'';flex:1;height:1px;background:var(--border)}
+.transmission-item{display:flex;gap:10px;margin-bottom:8px;align-items:flex-start}
+.ti-line{display:flex;flex-direction:column;align-items:center;flex-shrink:0;padding-top:4px}
+.ti-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.ti-trail{width:1px;flex:1;background:var(--border);margin-top:4px;min-height:20px}
+.ti-card{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;transition:border-color .15s}
+.ti-card:hover{border-color:var(--border2)}
+.ti-header{display:flex;align-items:center;gap:8px;padding:10px 12px;cursor:pointer}
+.ti-type-badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;text-transform:uppercase;letter-spacing:.06em;flex-shrink:0}
+.ti-title{font-size:13px;font-weight:500;color:var(--text);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ti-time{font-size:10px;color:var(--text3);flex-shrink:0}
+.ti-chev{font-size:9px;color:var(--text3);flex-shrink:0;transition:transform .2s}
+.ti-chev.open{transform:rotate(180deg)}
+.ti-body{display:none;padding:0 12px 12px;border-top:1px solid var(--border)}
+.ti-body.open{display:block}
+.ti-content{font-size:13px;color:var(--text2);line-height:1.7;padding-top:10px;white-space:pre-wrap}
+.ti-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
+.ti-meta-item{font-size:10px;color:var(--text3);display:flex;align-items:center;gap:3px}
+.ti-actions{display:flex;gap:6px;margin-top:8px}
+.ti-action-btn{font-size:10px;padding:3px 8px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;font-family:inherit}
+.ti-action-btn:hover{border-color:var(--border2);color:var(--text)}
+.ti-action-btn.danger{color:var(--red);border-color:var(--red-b)}
+
+/* FORM NOUVELLE TRANSMISSION */
+.new-form{border-top:1px solid var(--border);padding:12px 16px;background:var(--bg2);flex-shrink:0}
+.form-type-row{display:flex;gap:5px;margin-bottom:10px;overflow-x:auto;padding-bottom:2px}
+.type-btn{font-size:11px;padding:5px 10px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .15s;font-family:inherit}
+.type-btn.sel{font-weight:600}
+.form-row{display:flex;gap:8px;align-items:flex-start}
+.form-main{flex:1}
+input.form-title{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:13px;padding:8px 11px;outline:none;font-family:inherit;margin-bottom:6px}
+input.form-title:focus{border-color:var(--blue)}
+textarea.form-content{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:13px;padding:8px 11px;outline:none;font-family:inherit;resize:none;line-height:1.6;min-height:70px;max-height:160px}
+textarea.form-content:focus{border-color:var(--blue)}
+textarea.form-content::placeholder{color:var(--text3)}
+.form-bottom{display:flex;align-items:center;gap:8px;margin-top:6px}
+.form-extras{display:flex;gap:6px;flex:1;overflow-x:auto}
+.extra-field{font-size:11px;padding:5px 9px;border-radius:var(--rs);border:1px solid var(--border);background:var(--bg);color:var(--text2);outline:none;font-family:inherit;min-width:0}
+.extra-field:focus{border-color:var(--blue)}
+.btn-send{padding:8px 16px;border-radius:var(--rs);background:var(--blue);border:none;color:#fff;font-size:13px;font-weight:600;cursor:pointer;flex-shrink:0;font-family:inherit;transition:opacity .15s}
+.btn-send:hover{opacity:.85}
+.btn-send:disabled{opacity:.4;cursor:not-allowed}
+.voice-btn{width:32px;height:32px;border-radius:var(--rs);border:1px solid var(--border);background:var(--bg);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;transition:all .15s}
+.voice-btn.recording{background:var(--red-bg);border-color:var(--red-b);color:var(--red);animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.ia-btn{width:32px;height:32px;border-radius:var(--rs);border:1px solid var(--purple-b);background:var(--purple-bg);color:var(--purple-l);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;transition:all .15s}
+.ia-btn:hover{background:rgba(124,111,247,0.2)}
+
+/* NO PATIENT */
+.no-patient{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;text-align:center;color:var(--text3)}
+.no-patient-icon{font-size:40px;margin-bottom:12px}
+.no-patient-title{font-size:15px;font-weight:600;color:var(--text2);margin-bottom:6px}
+.no-patient-desc{font-size:13px;line-height:1.6}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:flex;align-items:flex-end;justify-content:center}
+.modal-overlay.hidden{display:none}
+.modal{background:var(--bg2);border-top:1px solid var(--border);border-radius:16px 16px 0 0;padding:20px;width:100%;max-width:500px;max-height:75vh;overflow-y:auto}
+.modal-title{font-size:16px;font-weight:700;margin-bottom:14px}
+.modal-close{float:right;background:none;border:none;color:var(--text2);font-size:18px;cursor:pointer;margin-top:-4px}
+.d-item{padding:10px 12px;border-radius:var(--rs);border:1px solid var(--border);background:var(--bg3);margin-bottom:6px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:border-color .15s}
+.d-item:hover{border-color:var(--border2)}
+.d-av2{width:32px;height:32px;border-radius:50%;background:var(--purple-bg);border:1px solid var(--purple-b);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--purple-l);flex-shrink:0}
+.d-name{font-size:13px;font-weight:600}.d-id{font-size:11px;color:var(--text3)}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:2px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-dot"></div>
+    <span class="logo-text">ParcourSanté AI</span>
+  </div>
+  <span class="badge-mode">TRANSMISSIONS</span>
+</div>
+
+<div class="api-bar">
+  <span class="api-label">Clé API :</span>
+  <input type="password" class="api-input" id="apiKeyInput" placeholder="sk-ant-..." />
+  <button class="api-save" onclick="saveApiKey()">OK</button>
+</div>
+
+<div class="layout">
+
+<!-- ═══ SIDEBAR ═══ -->
+<div class="sidebar">
+  <div class="sb-section">Dossiers actifs</div>
+  <div id="patientList">
+    <div style="padding:14px 12px;font-size:12px;color:var(--text3)">Aucun dossier chargé.</div>
+  </div>
+  <button class="sb-add-btn" onclick="openModal()">+ Ouvrir un dossier</button>
+</div>
+
+<!-- ═══ CONTENT ═══ -->
+<div class="content" id="contentArea">
+  <div class="no-patient">
+    <div class="no-patient-icon">📋</div>
+    <div class="no-patient-title">Sélectionnez un dossier</div>
+    <div class="no-patient-desc">Ouvrez un dossier patient pour voir et ajouter des transmissions.</div>
+  </div>
+</div>
+
+</div>
+
+<!-- MODAL PATIENT -->
+<div class="modal-overlay hidden" id="patientModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <div class="modal-title">Ouvrir un dossier</div>
+    <div id="dossierList"></div>
+  </div>
+</div>
+
+<script>
+// ═══ CONFIG TYPES ═══
+const TYPES = {
+  visite:   {label:'Visite',      color:'var(--green)',   bg:'var(--green-bg)',   border:'var(--green-b)',   dot:'#4cba82', icon:'🏠'},
+  courrier: {label:'Courrier',    color:'var(--teal)',    bg:'var(--teal-bg)',    border:'var(--teal-b)',    dot:'#3ecfaa', icon:'✉️'},
+  rdv:      {label:'RDV',         color:'var(--purple-l)',bg:'var(--purple-bg)',  border:'var(--purple-b)',  dot:'#7c6ff7', icon:'📅'},
+  appel:    {label:'Appel',       color:'var(--amber)',   bg:'var(--amber-bg)',   border:'var(--amber-b)',   dot:'#f0a43a', icon:'📞'},
+  staff:    {label:'Staff',       color:'var(--blue)',    bg:'var(--blue-bg)',    border:'var(--blue-b)',    dot:'#5b9ef7', icon:'👥'},
+  droit:    {label:'Droit',       color:'var(--red)',     bg:'var(--red-bg)',     border:'var(--red-b)',     dot:'#e05c6a', icon:'⚖️'},
+  note:     {label:'Note',        color:'var(--text2)',   bg:'var(--bg3)',        border:'var(--border2)',   dot:'#8b8fa8', icon:'📝'},
+};
+
+// ═══ STATE ═══
+let currentPatientId = null;
+let currentFilter = 'all';
+let openPatients = [];
+let recording = false;
+let mediaRecorder = null;
+let audioChunks = [];
+let selectedType = 'note';
+
+// ═══ API ═══
+function saveApiKey(){const k=document.getElementById('apiKeyInput').value.trim();if(k){localStorage.setItem('mediasante_api_key',k);showToast('Clé enregistrée ✓')}}
+function getApiKey(){return localStorage.getItem('mediasante_api_key')||''}
+window.addEventListener('load',()=>{
+  const k=getApiKey();if(k)document.getElementById('apiKeyInput').value=k.slice(0,12)+'...';
+  loadOpenPatients();
+});
+
+// ═══ DONNÉES ═══
+function getDossiers(){return JSON.parse(localStorage.getItem('mediasante_dossiers')||'[]')}
+
+function getTransmissions(patientId){
+  const key='transmissions_'+patientId;
+  return JSON.parse(localStorage.getItem(key)||'[]');
+}
+function saveTransmission(patientId, entry){
+  const key='transmissions_'+patientId;
+  const list=getTransmissions(patientId);
+  list.unshift(entry);
+  localStorage.setItem(key,JSON.stringify(list));
+}
+function deleteTransmission(patientId, entryId){
+  const key='transmissions_'+patientId;
+  const list=getTransmissions(patientId).filter(e=>e.id!==entryId);
+  localStorage.setItem(key,JSON.stringify(list));
+}
+
+function loadOpenPatients(){
+  const stored=JSON.parse(localStorage.getItem('open_patients')||'[]');
+  openPatients=stored;
+  renderSidebar();
+}
+function saveOpenPatients(){
+  localStorage.setItem('open_patients',JSON.stringify(openPatients));
+}
+
+// ═══ MODAL ═══
+function openModal(){
+  const dossiers=getDossiers();
+  const list=document.getElementById('dossierList');
+  if(!dossiers.length){
+    list.innerHTML='<div style="text-align:center;padding:20px;font-size:13px;color:var(--text3)">Aucun dossier patient trouvé.<br>Créez d\'abord un dossier via le module d'admission.</div>';
+  } else {
+    list.innerHTML=dossiers.map(d=>{
+      const p=d.data?.patient||{};
+      const ini=((p.prenom||'?')[0]+(p.nom||'?')[0]).toUpperCase();
+      const name=[p.prenom,p.nom].filter(Boolean).join(' ')||'Patient inconnu';
+      const txCount=getTransmissions(d.id).length;
+      return`<div class="d-item" onclick="openPatient('${d.id}')">
+        <div class="d-av2">${ini}</div>
+        <div><div class="d-name">${name}</div><div class="d-id">${d.id} · ${txCount} transmission(s)</div></div>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('patientModal').classList.remove('hidden');
+}
+function closeModal(){document.getElementById('patientModal').classList.add('hidden')}
+
+function openPatient(id){
+  if(!openPatients.includes(id)){
+    openPatients.unshift(id);
+    if(openPatients.length>8)openPatients=openPatients.slice(0,8);
+    saveOpenPatients();
+  }
+  closeModal();
+  renderSidebar();
+  selectPatient(id);
+}
+
+// ═══ SIDEBAR ═══
+function renderSidebar(){
+  const el=document.getElementById('patientList');
+  if(!openPatients.length){
+    el.innerHTML='<div style="padding:14px 12px;font-size:12px;color:var(--text3)">Aucun dossier ouvert.</div>';
+    return;
+  }
+  const dossiers=getDossiers();
+  el.innerHTML=openPatients.map(id=>{
+    const d=dossiers.find(x=>x.id===id);
+    if(!d)return'';
+    const p=d.data?.patient||{};
+    const ini=((p.prenom||'?')[0]+(p.nom||'?')[0]).toUpperCase();
+    const name=[p.prenom,p.nom].filter(Boolean).join(' ')||'Patient';
+    const txList=getTransmissions(id);
+    const unread=txList.filter(t=>!t.read).length;
+    const isActive=currentPatientId===id;
+    return`<div class="patient-item${isActive?' active':''}" onclick="selectPatient('${id}')">
+      <div class="p-av">${ini}</div>
+      <div class="p-info">
+        <div class="p-name">${name}</div>
+        <div class="p-count">${txList.length} transmission(s)</div>
+      </div>
+      ${unread?`<div class="p-badge" style="background:var(--blue-bg);color:var(--blue)">${unread}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function selectPatient(id){
+  currentPatientId=id;
+  currentFilter='all';
+  renderSidebar();
+  renderContent();
+}
+
+// ═══ CONTENT ═══
+function renderContent(){
+  if(!currentPatientId){
+    document.getElementById('contentArea').innerHTML=`<div class="no-patient"><div class="no-patient-icon">📋</div><div class="no-patient-title">Sélectionnez un dossier</div><div class="no-patient-desc">Ouvrez un dossier pour voir et ajouter des transmissions.</div></div>`;
+    return;
+  }
+  const dossiers=getDossiers();
+  const d=dossiers.find(x=>x.id===currentPatientId);
+  if(!d)return;
+  const p=d.data?.patient||{};
+  const name=[p.prenom,p.nom].filter(Boolean).join(' ')||'Patient';
+  const ini=((p.prenom||'?')[0]+(p.nom||'?')[0]).toUpperCase();
+
+  document.getElementById('contentArea').innerHTML=`
+    <div class="content-header">
+      <div class="ch-patient">
+        <div class="ch-av">${ini}</div>
+        <div><div class="ch-name">${name}</div><div class="ch-id">${currentPatientId}</div></div>
+      </div>
+      <div class="ch-actions">
+        <button class="ch-btn" onclick="exportTimeline()">↓ Exporter</button>
+        <button class="ch-btn primary" onclick="showNewForm()">+ Nouvelle</button>
+      </div>
+    </div>
+
+    <div class="filters-row" id="filtersRow">
+      <div class="filter-tag active" data-type="all" onclick="setFilter('all')">Toutes</div>
+      <div class="filter-tag" data-type="visite" onclick="setFilter('visite')">🏠 Visites</div>
+      <div class="filter-tag" data-type="courrier" onclick="setFilter('courrier')">✉️ Courriers</div>
+      <div class="filter-tag" data-type="rdv" onclick="setFilter('rdv')">📅 RDV</div>
+      <div class="filter-tag" data-type="appel" onclick="setFilter('appel')">📞 Appels</div>
+      <div class="filter-tag" data-type="staff" onclick="setFilter('staff')">👥 Staffs</div>
+      <div class="filter-tag" data-type="droit" onclick="setFilter('droit')">⚖️ Droits</div>
+      <div class="filter-tag" data-type="note" onclick="setFilter('note')">📝 Notes</div>
+    </div>
+
+    <div class="timeline" id="timeline"></div>
+
+    <div class="new-form" id="newForm" style="display:none">
+      <div class="form-type-row" id="typeRow"></div>
+      <div class="form-row">
+        <div class="form-main">
+          <input type="text" class="form-title" id="txTitle" placeholder="Titre (ex: Visite à domicile Mme X)" />
+          <textarea class="form-content" id="txContent" placeholder="Détail de la transmission... Ce qui a été fait, dit, décidé. Soyez précis." rows="3"></textarea>
+          <div class="form-bottom">
+            <div class="form-extras">
+              <input type="text" class="extra-field" id="txInterv" placeholder="Intervenants" style="width:120px" />
+              <input type="text" class="extra-field" id="txSuite" placeholder="Suite prévue" style="width:120px" />
+            </div>
+            <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()" title="Note vocale">🎙</button>
+            <button class="ia-btn" onclick="enhanceWithIA()" title="Structurer avec l'IA">✨</button>
+            <button class="btn-send" onclick="submitTransmission()">Enregistrer</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  buildTypeButtons();
+  renderTimeline();
+}
+
+function buildTypeButtons(){
+  const el=document.getElementById('typeRow');
+  if(!el)return;
+  el.innerHTML=Object.entries(TYPES).map(([key,t])=>
+    `<button class="type-btn${key===selectedType?' sel':''}" style="${key===selectedType?`background:${t.bg};border-color:${t.border};color:${t.color}`:''}" onclick="selectType('${key}')">${t.icon} ${t.label}</button>`
+  ).join('');
+}
+
+function selectType(type){
+  selectedType=type;
+  buildTypeButtons();
+}
+
+function showNewForm(){
+  const f=document.getElementById('newForm');
+  if(!f)return;
+  const visible=f.style.display!=='none';
+  f.style.display=visible?'none':'block';
+  if(!visible)document.getElementById('txTitle')?.focus();
+}
+
+// ═══ TIMELINE ═══
+function renderTimeline(){
+  const el=document.getElementById('timeline');
+  if(!el)return;
+  let list=getTransmissions(currentPatientId);
+  if(currentFilter!=='all')list=list.filter(t=>t.type===currentFilter);
+
+  if(!list.length){
+    el.innerHTML=`<div class="timeline-empty">
+      <div class="timeline-empty-icon">${currentFilter==='all'?'📋':TYPES[currentFilter]?.icon||'📋'}</div>
+      <div class="timeline-empty-title">Aucune transmission${currentFilter!=='all'?' de ce type':''}</div>
+      <div class="timeline-empty-desc">Utilisez le bouton "+" pour ajouter la première transmission de ce dossier.</div>
+    </div>`;
+    return;
+  }
+
+  // Grouper par jour
+  const groups={};
+  list.forEach(t=>{
+    const day=new Date(t.date).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    if(!groups[day])groups[day]=[];
+    groups[day].push(t);
+  });
+
+  el.innerHTML=Object.entries(groups).map(([day,items])=>`
+    <div class="day-group">
+      <div class="day-label">${day}</div>
+      ${items.map((t,i)=>renderTxItem(t,i===items.length-1)).join('')}
+    </div>`).join('');
+}
+
+function renderTxItem(t,isLast){
+  const tp=TYPES[t.type]||TYPES.note;
+  const time=new Date(t.date).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  return`<div class="transmission-item">
+    <div class="ti-line">
+      <div class="ti-dot" style="background:${tp.dot}"></div>
+      ${!isLast?'<div class="ti-trail"></div>':''}
+    </div>
+    <div class="ti-card" id="tic-${t.id}">
+      <div class="ti-header" onclick="toggleTx('${t.id}')">
+        <div class="ti-type-badge" style="background:${tp.bg};color:${tp.color};border:1px solid ${tp.border}">${tp.label}</div>
+        <div class="ti-title">${t.title||'(sans titre)'}</div>
+        <div class="ti-time">${time}</div>
+        <div class="ti-chev" id="chev-${t.id}">▼</div>
+      </div>
+      <div class="ti-body" id="body-${t.id}">
+        <div class="ti-content">${(t.content||'').replace(/</g,'&lt;')}</div>
+        <div class="ti-meta">
+          ${t.interv?`<div class="ti-meta-item">👥 ${t.interv}</div>`:''}
+          ${t.suite?`<div class="ti-meta-item">→ ${t.suite}</div>`:''}
+          <div class="ti-meta-item">✍ ${t.author||'Médiateur'}</div>
+        </div>
+        <div class="ti-actions">
+          <button class="ti-action-btn" onclick="editTx('${t.id}')">Modifier</button>
+          <button class="ti-action-btn danger" onclick="deleteTx('${t.id}')">Supprimer</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function toggleTx(id){
+  const body=document.getElementById('body-'+id);
+  const chev=document.getElementById('chev-'+id);
+  if(!body)return;
+  const open=body.classList.toggle('open');
+  chev?.classList.toggle('open',open);
+}
+
+function deleteTx(id){
+  if(!confirm('Supprimer cette transmission ?'))return;
+  deleteTransmission(currentPatientId,id);
+  renderTimeline();
+  renderSidebar();
+  showToast('Transmission supprimée');
+}
+
+function editTx(id){
+  const list=getTransmissions(currentPatientId);
+  const t=list.find(x=>x.id===id);
+  if(!t)return;
+  showNewForm();
+  document.getElementById('txTitle').value=t.title||'';
+  document.getElementById('txContent').value=t.content||'';
+  document.getElementById('txInterv').value=t.interv||'';
+  document.getElementById('txSuite').value=t.suite||'';
+  selectType(t.type||'note');
+  deleteTransmission(currentPatientId,id);
+  renderTimeline();
+}
+
+// ═══ SOUMETTRE ═══
+function submitTransmission(){
+  const title=document.getElementById('txTitle')?.value.trim();
+  const content=document.getElementById('txContent')?.value.trim();
+  if(!title&&!content){showToast('Titre ou contenu requis');return}
+  const entry={
+    id:Date.now().toString(),
+    date:new Date().toISOString(),
+    type:selectedType,
+    title:title||'(sans titre)',
+    content,
+    interv:document.getElementById('txInterv')?.value.trim(),
+    suite:document.getElementById('txSuite')?.value.trim(),
+    author:localStorage.getItem('mediasante_user')||'Médiateur',
+    read:true,
+  };
+  saveTransmission(currentPatientId,entry);
+  // Reset form
+  if(document.getElementById('txTitle'))document.getElementById('txTitle').value='';
+  if(document.getElementById('txContent'))document.getElementById('txContent').value='';
+  if(document.getElementById('txInterv'))document.getElementById('txInterv').value='';
+  if(document.getElementById('txSuite'))document.getElementById('txSuite').value='';
+  document.getElementById('newForm').style.display='none';
+  renderTimeline();
+  renderSidebar();
+  showToast('Transmission enregistrée ✓');
+}
+
+// ═══ FILTRE ═══
+function setFilter(type){
+  currentFilter=type;
+  document.querySelectorAll('.filter-tag').forEach(t=>{
+    t.classList.toggle('active',t.dataset.type===type);
+  });
+  renderTimeline();
+}
+
+// ═══ VOIX ═══
+async function toggleVoice(){
+  if(recording){
+    mediaRecorder?.stop();
+    recording=false;
+    document.getElementById('voiceBtn').classList.remove('recording');
+    document.getElementById('voiceBtn').textContent='🎙';
+    return;
+  }
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    mediaRecorder=new MediaRecorder(stream);
+    audioChunks=[];
+    mediaRecorder.ondataavailable=e=>audioChunks.push(e.data);
+    mediaRecorder.onstop=async()=>{
+      stream.getTracks().forEach(t=>t.stop());
+      const blob=new Blob(audioChunks,{type:'audio/webm'});
+      await transcribeAudio(blob);
+    };
+    mediaRecorder.start();
+    recording=true;
+    document.getElementById('voiceBtn').classList.add('recording');
+    document.getElementById('voiceBtn').textContent='⏹';
+    showToast('Enregistrement en cours...');
+  }catch(e){showToast('Micro non disponible')}
+}
+
+async function transcribeAudio(blob){
+  const apiKey=getApiKey();
+  if(!apiKey.startsWith('sk-')){
+    showToast('Clé API requise pour la transcription');
+    return;
+  }
+  showToast('Transcription en cours...');
+  // Fallback: prompt utilisateur pour saisir manuellement
+  // (Whisper nécessite une clé OpenAI séparée — on propose la saisie manuelle)
+  const manual=prompt('Note vocale enregistrée.\nTranscrivez ou résumez le contenu :');
+  if(manual){
+    const ta=document.getElementById('txContent');
+    if(ta)ta.value=(ta.value?ta.value+'\n\n':'')+manual;
+  }
+}
+
+// ═══ IA STRUCTURATION ═══
+async function enhanceWithIA(){
+  const content=document.getElementById('txContent')?.value.trim();
+  if(!content){showToast('Saisissez du contenu à structurer');return}
+  const apiKey=getApiKey();
+  if(!apiKey.startsWith('sk-')){showToast('Clé API requise');return}
+  showToast('Structuration en cours...');
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
+      body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:600,messages:[{role:'user',content:`Tu es un médiateur en santé au DAC 93 Nord. Structure et améliore cette note de transmission de manière professionnelle et concise. Conserve tous les faits, améliore la clarté. Format : paragraphes courts, langage professionnel mais accessible. Ne commence pas par "Voici" ou autre intro. Donne directement la note structurée :\n\n${content}`}]})
+    });
+    const data=await resp.json();
+    const text=data.content?.[0]?.text||content;
+    const ta=document.getElementById('txContent');
+    if(ta)ta.value=text;
+    showToast('Note structurée ✓');
+  }catch(e){showToast('Erreur API')}
+}
+
+// ═══ EXPORT ═══
+function exportTimeline(){
+  const dossiers=getDossiers();
+  const d=dossiers.find(x=>x.id===currentPatientId);
+  const p=d?.data?.patient||{};
+  const name=[p.prenom,p.nom].filter(Boolean).join(' ')||'Patient';
+  const list=getTransmissions(currentPatientId);
+  if(!list.length){showToast('Aucune transmission à exporter');return}
+
+  let txt=`JOURNAL DE TRANSMISSIONS\n`;
+  txt+=`Patient : ${name} (${currentPatientId})\n`;
+  txt+=`Export le : ${new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'})}\n`;
+  txt+=`═`.repeat(60)+'\n\n';
+
+  const groups={};
+  list.forEach(t=>{
+    const day=new Date(t.date).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    if(!groups[day])groups[day]=[];
+    groups[day].push(t);
+  });
+
+  Object.entries(groups).forEach(([day,items])=>{
+    txt+=`── ${day.toUpperCase()} ──\n\n`;
+    items.forEach(t=>{
+      const tp=TYPES[t.type]||TYPES.note;
+      const time=new Date(t.date).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+      txt+=`[${time}] [${tp.label.toUpperCase()}] ${t.title}\n`;
+      if(t.content)txt+=t.content+'\n';
+      if(t.interv)txt+=`Intervenants : ${t.interv}\n`;
+      if(t.suite)txt+=`Suite : ${t.suite}\n`;
+      txt+=`Par : ${t.author||'Médiateur'}\n\n`;
+    });
+  });
+
+  const blob=new Blob([txt],{type:'text/plain;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`transmissions_${name.replace(/ /g,'_')}_${new Date().toISOString().split('T')[0]}.txt`;
+  a.click();URL.revokeObjectURL(url);
+  showToast('Export téléchargé ✓');
+}
+
+// ═══ SEED DATA DEMO ═══
+function seedDemoIfEmpty(){
+  // Si un dossier existe mais n'a pas de transmissions, on en crée quelques-unes pour démo
+  const dossiers=getDossiers();
+  if(!dossiers.length)return;
+  const d=dossiers[0];
+  const existing=getTransmissions(d.id);
+  if(existing.length)return;
+  const demos=[
+    {id:'demo1',date:new Date(Date.now()-86400000*3).toISOString(),type:'visite',title:'Première visite à domicile',content:'Visite réalisée au domicile du patient. Évaluation AGGIR GIR 4. IADL 4/8. Habitat adapté mais quelques aménagements recommandés. Patient coopératif, aidant présent.',interv:'Médiateur + IDE',suite:'Initier dossier APA + SSIAD',author:'Médiateur'},
+    {id:'demo2',date:new Date(Date.now()-86400000*2).toISOString(),type:'courrier',title:'Courrier CSS envoyé CPAM 93',content:'Courrier de renouvellement CSS envoyé par courrier recommandé. AR attendu. Dossier complet joint.',interv:'CPAM 93',suite:'Attendre AR — relancer si pas de réponse sous 15j',author:'Médiateur'},
+    {id:'demo3',date:new Date(Date.now()-86400000).toISOString(),type:'appel',title:'Appel médecin traitant Dr Martin',content:'Appel pour informer du suivi médiation. MT informé du dossier CSS en cours et de l\'évaluation AGGIR. Accord pour initier SSIAD. Prochaine consultation prévue la semaine prochaine.',interv:'Dr Martin (MT)',suite:'RDV médecin la semaine prochaine',author:'Médiateur'},
+    {id:'demo4',date:new Date().toISOString(),type:'droit',title:'Dossier APA initié CD93',content:'Dossier APA déposé au Conseil Départemental 93. N° de dépôt : [À COMPLÉTER]. Délai de traitement estimé : 2 mois. Alerte créée pour relance à J+60.',interv:'CD93',suite:'Alerte relance dans 60 jours',author:'Médiateur'},
+  ];
+  demos.forEach(e=>saveTransmission(d.id,e));
+  openPatients=[d.id];
+  saveOpenPatients();
+  renderSidebar();
+  selectPatient(d.id);
+  showToast('Données de démonstration chargées');
+}
+
+function showToast(msg){
+  const t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:9px 18px;border-radius:20px;font-size:12px;z-index:9999;white-space:nowrap';
+  t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2200);
+}
+
+// Init
+setTimeout(()=>{
+  if(getDossiers().length&&!openPatients.length)seedDemoIfEmpty();
+},100);
+</script>
+</body>
+</html>

@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>ParcourSanté AI — Module d'admission</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --bg2: #161820;
+    --bg3: #1e2130;
+    --border: rgba(255,255,255,0.08);
+    --border-hover: rgba(255,255,255,0.18);
+    --text: #f0f1f5;
+    --text2: #8b8fa8;
+    --text3: #565a72;
+    --purple: #7c6ff7;
+    --purple-light: #a99ef9;
+    --purple-bg: rgba(124,111,247,0.12);
+    --purple-border: rgba(124,111,247,0.3);
+    --teal: #3ecfaa;
+    --teal-bg: rgba(62,207,170,0.1);
+    --amber: #f0a43a;
+    --amber-bg: rgba(240,164,58,0.1);
+    --red: #e05c6a;
+    --red-bg: rgba(224,92,106,0.1);
+    --green: #4cba82;
+    --green-bg: rgba(76,186,130,0.1);
+    --radius: 10px;
+    --radius-sm: 7px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ─── TOP BAR ─── */
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(15,17,23,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 16px;
+    height: 52px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .logo { display: flex; align-items: center; gap: 8px; }
+  .logo-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--purple); }
+  .logo-text { font-size: 14px; font-weight: 600; letter-spacing: -0.3px; }
+  .logo-sub { font-size: 11px; color: var(--text3); margin-left: 2px; }
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+  .badge-mode {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.08em;
+    padding: 3px 8px; border-radius: 20px;
+    background: var(--purple-bg); color: var(--purple-light);
+    border: 1px solid var(--purple-border);
+  }
+
+  /* ─── PROGRESS ─── */
+  .progress-wrap {
+    padding: 16px 16px 0;
+  }
+  .progress-steps {
+    display: flex; gap: 6px; margin-bottom: 10px;
+    overflow-x: auto; padding-bottom: 2px;
+  }
+  .ps {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 11px; color: var(--text3);
+    padding: 5px 10px; border-radius: 20px;
+    border: 1px solid var(--border);
+    white-space: nowrap; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .ps.active { color: var(--purple-light); border-color: var(--purple-border); background: var(--purple-bg); }
+  .ps.done { color: var(--teal); border-color: rgba(62,207,170,0.25); background: var(--teal-bg); }
+  .ps-num {
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--bg3); font-size: 9px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .ps.active .ps-num { background: var(--purple); color: #fff; }
+  .ps.done .ps-num { background: var(--teal); color: var(--bg); }
+  .progress-bar { height: 3px; background: var(--bg3); border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--purple), var(--teal)); border-radius: 2px; transition: width 0.4s ease; }
+
+  /* ─── MAIN ─── */
+  .main { padding: 16px; max-width: 600px; margin: 0 auto; }
+
+  /* ─── PANEL HEADER ─── */
+  .panel-header { margin-bottom: 20px; }
+  .panel-tag {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 10px; font-weight: 600; letter-spacing: 0.1em;
+    color: var(--text3); text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .panel-title { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 4px; }
+  .panel-desc { font-size: 13px; color: var(--text2); line-height: 1.5; }
+
+  /* ─── PANELS ─── */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* ─── FORM ELEMENTS ─── */
+  .field { margin-bottom: 14px; }
+  .field-label {
+    font-size: 12px; font-weight: 600; color: var(--text2);
+    margin-bottom: 6px; display: flex; align-items: center; gap: 5px;
+  }
+  .req { color: var(--red); font-size: 10px; }
+
+  input[type="text"], input[type="date"], input[type="tel"], input[type="email"], select, textarea {
+    width: 100%; background: var(--bg2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); color: var(--text);
+    font-size: 14px; font-family: inherit;
+    padding: 10px 12px; outline: none;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--purple); }
+  input::placeholder, textarea::placeholder { color: var(--text3); }
+  select { cursor: pointer; }
+  select option { background: var(--bg2); }
+  textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+
+  /* ─── SECTION CARD ─── */
+  .section-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 14px;
+    margin-bottom: 12px;
+  }
+  .section-card-header {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 14px; padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 28px; height: 28px; border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; flex-shrink: 0;
+  }
+  .section-card-title { font-size: 13px; font-weight: 600; }
+  .section-card-sub { font-size: 11px; color: var(--text3); margin-top: 1px; }
+
+  /* ─── ALERT CHECKBOXES ─── */
+  .alert-grid { display: flex; flex-direction: column; gap: 6px; }
+  .alert-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 9px 11px; border-radius: var(--radius-sm);
+    border: 1px solid var(--border); background: var(--bg);
+    cursor: pointer; transition: all 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .alert-item:active { opacity: 0.8; }
+  .alert-item.checked { border-color: var(--purple-border); background: var(--purple-bg); }
+  .alert-item.checked .alert-text { color: var(--text); }
+  .alert-checkbox {
+    width: 18px; height: 18px; border-radius: 5px; flex-shrink: 0;
+    border: 1.5px solid var(--text3);
+    display: flex; align-items: center; justify-content: center;
+    margin-top: 1px; transition: all 0.15s;
+  }
+  .alert-item.checked .alert-checkbox {
+    background: var(--purple); border-color: var(--purple);
+  }
+  .checkmark { width: 10px; height: 10px; display: none; }
+  .alert-item.checked .checkmark { display: block; }
+  .alert-text { font-size: 13px; color: var(--text2); line-height: 1.4; }
+  .alert-badge {
+    margin-left: auto; flex-shrink: 0;
+    font-size: 9px; font-weight: 700; letter-spacing: 0.08em;
+    padding: 2px 6px; border-radius: 4px; text-transform: uppercase;
+  }
+
+  /* ─── MOTIF BLOC ─── */
+  .motif-block {
+    background: var(--bg3); border-radius: var(--radius-sm);
+    padding: 12px; margin-bottom: 8px; border: 1px solid var(--border);
+  }
+  .motif-label { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; color: var(--text3); margin-bottom: 8px; text-transform: uppercase; }
+
+  /* ─── INTERVENANTS TABLE ─── */
+  .interv-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: center; margin-bottom: 6px; }
+  .interv-remove { width: 28px; height: 28px; background: var(--red-bg); border: 1px solid rgba(224,92,106,0.2); border-radius: 6px; color: var(--red); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; flex-shrink: 0; }
+  .btn-add { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--teal); cursor: pointer; margin-top: 6px; background: none; border: none; font-family: inherit; padding: 0; }
+
+  /* ─── SYNTHÈSE IA ─── */
+  .ia-synth {
+    background: var(--purple-bg); border: 1px solid var(--purple-border);
+    border-radius: var(--radius); padding: 14px; margin-bottom: 14px;
+  }
+  .ia-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .ia-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--purple); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  .ia-title { font-size: 12px; font-weight: 600; color: var(--purple-light); }
+  .ia-content { font-size: 13px; color: var(--text2); line-height: 1.6; }
+  .ia-loading { font-size: 13px; color: var(--text3); font-style: italic; }
+
+  /* ─── COMPLEXITY SCORE ─── */
+  .score-row { display: flex; gap: 8px; margin: 10px 0; }
+  .score-badge {
+    flex: 1; padding: 10px; border-radius: var(--radius-sm);
+    text-align: center; cursor: pointer; border: 1.5px solid transparent;
+    transition: all 0.2s;
+  }
+  .score-badge.active-1 { background: var(--green-bg); border-color: var(--green); }
+  .score-badge.active-2 { background: var(--amber-bg); border-color: var(--amber); }
+  .score-badge.active-3 { background: var(--red-bg); border-color: var(--red); }
+  .score-num { font-size: 18px; font-weight: 700; }
+  .score-lbl { font-size: 10px; color: var(--text3); margin-top: 2px; }
+
+  /* ─── CREUSAGE ─── */
+  .creusage-item {
+    display: flex; gap: 10px; align-items: flex-start;
+    padding: 10px 12px; background: var(--bg);
+    border-radius: var(--radius-sm); border: 1px solid var(--border);
+    margin-bottom: 6px;
+  }
+  .creusage-num {
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--amber-bg); color: var(--amber);
+    font-size: 10px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 1px;
+  }
+  .creusage-text { font-size: 12px; color: var(--text2); line-height: 1.5; }
+  .creusage-who { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+  /* ─── ORIENTATION ─── */
+  .orient-card {
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: 12px; margin-bottom: 8px; cursor: pointer;
+    transition: all 0.2s; background: var(--bg);
+  }
+  .orient-card.selected { border-color: var(--purple-border); background: var(--purple-bg); }
+  .orient-head { display: flex; align-items: center; gap: 8px; }
+  .orient-radio { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--text3); flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .orient-card.selected .orient-radio { border-color: var(--purple); background: var(--purple); }
+  .orient-inner { width: 8px; height: 8px; border-radius: 50%; background: #fff; display: none; }
+  .orient-card.selected .orient-inner { display: block; }
+  .orient-title { font-size: 13px; font-weight: 600; }
+  .orient-desc { font-size: 12px; color: var(--text2); margin-top: 4px; margin-left: 24px; line-height: 1.4; }
+
+  /* ─── BUTTONS ─── */
+  .btn-primary {
+    width: 100%; padding: 14px; border-radius: var(--radius);
+    background: var(--purple); color: #fff; font-size: 15px;
+    font-weight: 600; font-family: inherit; border: none;
+    cursor: pointer; letter-spacing: -0.2px;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+  .btn-primary:active { transform: scale(0.98); opacity: 0.9; }
+  .btn-secondary {
+    width: 100%; padding: 12px; border-radius: var(--radius);
+    background: transparent; color: var(--text2); font-size: 14px;
+    font-family: inherit; border: 1px solid var(--border);
+    cursor: pointer; transition: border-color 0.2s;
+    margin-bottom: 10px;
+  }
+  .btn-secondary:active { opacity: 0.7; }
+  .btn-row { display: flex; gap: 8px; }
+  .btn-row .btn-primary { flex: 2; }
+  .btn-row .btn-secondary { flex: 1; font-size: 13px; }
+
+  /* ─── ALERT INFO ─── */
+  .info-box {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 10px 12px;
+    font-size: 12px; color: var(--text3); line-height: 1.5;
+    margin-bottom: 12px;
+  }
+  .info-box strong { color: var(--text2); }
+
+  /* ─── MINI DIVIDER ─── */
+  .divider { height: 1px; background: var(--border); margin: 14px 0; }
+
+  /* ─── SUCCESS STATE ─── */
+  .success-wrap { text-align: center; padding: 32px 0; }
+  .success-icon { font-size: 48px; margin-bottom: 16px; }
+  .success-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+  .success-desc { font-size: 14px; color: var(--text2); line-height: 1.6; margin-bottom: 20px; }
+  .success-code { font-family: monospace; font-size: 22px; font-weight: 700; color: var(--teal); letter-spacing: 2px; background: var(--teal-bg); padding: 10px 20px; border-radius: var(--radius-sm); display: inline-block; margin-bottom: 20px; }
+  .next-actions { display: flex; flex-direction: column; gap: 8px; }
+  .next-btn {
+    padding: 12px 16px; border-radius: var(--radius-sm);
+    border: 1px solid var(--border); background: var(--bg2);
+    color: var(--text); font-size: 13px; font-family: inherit;
+    cursor: pointer; text-align: left; display: flex; align-items: center; gap: 10px;
+  }
+  .next-btn-icon { font-size: 16px; }
+  .next-btn-text { flex: 1; }
+  .next-btn-arrow { color: var(--text3); }
+
+  /* ─── SCROLLBAR ─── */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 2px; }
+
+  .api-key-bar {
+    background: var(--bg2); border-bottom: 1px solid var(--border);
+    padding: 8px 16px; display: flex; align-items: center; gap: 8px;
+  }
+  .api-key-label { font-size: 11px; color: var(--text3); flex-shrink: 0; }
+  .api-key-input { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 11px; padding: 5px 8px; font-family: monospace; outline: none; }
+  .api-key-input:focus { border-color: var(--purple); }
+  .api-save { font-size: 11px; padding: 5px 10px; border-radius: 5px; background: var(--purple-bg); color: var(--purple-light); border: 1px solid var(--purple-border); cursor: pointer; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-dot"></div>
+    <span class="logo-text">ParcourSanté AI</span>
+    <span class="logo-sub">Admission</span>
+  </div>
+  <div class="topbar-right">
+    <span class="badge-mode">ADMISSION</span>
+  </div>
+</div>
+
+<!-- API KEY BAR -->
+<div class="api-key-bar">
+  <span class="api-key-label">Clé API Claude :</span>
+  <input type="password" class="api-key-input" id="apiKeyInput" placeholder="sk-ant-..." />
+  <button class="api-save" onclick="saveApiKey()">Enregistrer</button>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-wrap">
+  <div class="progress-steps" id="progressSteps">
+    <div class="ps active" data-step="0"><div class="ps-num">1</div>Demandeur</div>
+    <div class="ps" data-step="1"><div class="ps-num">2</div>Patient</div>
+    <div class="ps" data-step="2"><div class="ps-num">3</div>Intervenants</div>
+    <div class="ps" data-step="3"><div class="ps-num">4</div>Santé</div>
+    <div class="ps" data-step="4"><div class="ps-num">5</div>Autonomie</div>
+    <div class="ps" data-step="5"><div class="ps-num">6</div>Environnement</div>
+    <div class="ps" data-step="6"><div class="ps-num">7</div>Habitat</div>
+    <div class="ps" data-step="7"><div class="ps-num">8</div>Administratif</div>
+    <div class="ps" data-step="8"><div class="ps-num">9</div>Orientation IA</div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:11%"></div></div>
+</div>
+
+<div class="main" id="mainContent">
+
+<!-- ══════════════════════════════════════════
+     PANEL 0 — DEMANDEUR
+═══════════════════════════════════════════ -->
+<div class="panel active" id="panel-0">
+  <div class="panel-header">
+    <div class="panel-tag">Étape 1 / 9</div>
+    <div class="panel-title">Professionnel demandeur</div>
+    <div class="panel-desc">Qui envoie cette demande d'appui au DAC 93 Nord ?</div>
+  </div>
+
+  <div class="field">
+    <div class="field-label">Nom et prénom <span class="req">*</span></div>
+    <input type="text" id="d_nom" placeholder="Dr. Martin Sophie" />
+  </div>
+  <div class="field">
+    <div class="field-label">Structure / Service <span class="req">*</span></div>
+    <input type="text" id="d_structure" placeholder="SSIAD, Cabinet médical, Hôpital..." />
+  </div>
+  <div class="grid2">
+    <div class="field">
+      <div class="field-label">Téléphone <span class="req">*</span></div>
+      <input type="tel" id="d_tel" placeholder="06 12 34 56 78" />
+    </div>
+    <div class="field">
+      <div class="field-label">Email</div>
+      <input type="email" id="d_email" placeholder="dr.martin@..." />
+    </div>
+  </div>
+  <div class="field">
+    <div class="field-label">Profil</div>
+    <select id="d_profil">
+      <option value="">Sélectionner...</option>
+      <option>Médecin généraliste</option>
+      <option>Médecin spécialiste</option>
+      <option>Infirmier(e) libéral(e)</option>
+      <option>Infirmier(e) hospitalier(e)</option>
+      <option>Assistante sociale</option>
+      <option>Aide-soignant(e)</option>
+      <option>SSIAD</option>
+      <option>EHPAD / ESMS</option>
+      <option>Service hospitalier</option>
+      <option>CCAS</option>
+      <option>Autre</option>
+    </select>
+  </div>
+
+  <div class="divider"></div>
+  <div class="field">
+    <div class="field-label">La personne concernée a été informée de la transmission ?</div>
+    <div class="grid3">
+      <div class="orient-card selected" data-group="consent" data-val="oui" onclick="selectRadio(this,'consent')">
+        <div class="orient-head"><div class="orient-radio"><div class="orient-inner"></div></div><div class="orient-title" style="font-size:12px">Oui</div></div>
+      </div>
+      <div class="orient-card" data-group="consent" data-val="non" onclick="selectRadio(this,'consent')">
+        <div class="orient-head"><div class="orient-radio"><div class="orient-inner"></div></div><div class="orient-title" style="font-size:12px">Non</div></div>
+      </div>
+      <div class="orient-card" data-group="consent" data-val="nsp" onclick="selectRadio(this,'consent')">
+        <div class="orient-head"><div class="orient-radio"><div class="orient-inner"></div></div><div class="orient-title" style="font-size:12px">Ne sait pas</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-primary" onclick="nextStep()">Continuer →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PANEL 1 — PATIENT
+═══════════════════════════════════════════ -->
+<div class="panel" id="panel-1">
+  <div class="panel-header">
+    <div class="panel-tag">Étape 2 / 9</div>
+    <div class="panel-title">Identification du patient</div>
+    <div class="panel-desc">Informations de base sur la personne concernée.</div>
+  </div>
+
+  <div class="grid2">
+    <div class="field">
+      <div class="field-label">Nom de naissance <span class="req">*</span></div>
+      <input type="text" id="p_nom" placeholder="DUPONT" style="text-transform:uppercase" />
+    </div>
+    <div class="field">
+      <div class="field-label">Prénom <span class="req">*</span></div>
+      <input type="text" id="p_prenom" placeholder="Marie" />
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="field">
+      <div class="field-label">Date de naissance <span class="req">*</span></div>
+      <input type="date" id="p_ddn" />
+    </div>
+    <div class="field">
+      <div class="field-label">Âge (calculé)</div>
+      <input type="text" id="p_age" placeholder="—" readonly style="background:var(--bg3);color:var(--text2)" />
+    </div>
+  </div>
+  <div class="field">
+    <div class="field-label">Adresse <span class="req">*</span></div>
+    <input type="text" id="p_adresse" placeholder="15 rue des Lilas, Épinay-sur-Seine" />
+  </div>
+  <div class="grid2">
+    <div class="field">
+      <div class="field-label">Téléphone</div>
+      <input type="tel" id="p_tel" placeholder="06..." />
+    </div>
+    <div class="field">
+      <div class="field-label">Situation</div>
+      <select id="p_situation">
+        <option value="">...</option>
+        <option>Seul(e)</option>
+        <option>En couple</option>
+        <option>En famille</option>
+        <option>Hébergé(e)</option>
+        <option>Sans domicile fixe</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+  <div class="field">
+    <div class="field-label">Personne ressource / Aidant</div>
+  </div>
+  <div class="grid2">
+    <div class="field">
+      <div class="field-label">Nom & prénom</div>
+      <input type="text" id="pr_nom" placeholder="Dupont Jean" />
+    </div>
+    <div class="field">
+      <div class="field-label">Lien</div>
+      <select id="pr_lien">
+        <option value="">...</option>
+        <option>Famille</option>
+        <option>Conjoint(e)</option>
+        <option>Voisin(e)</option>
+        <option>Tuteur/Curateur</option>
+        <option>Professionnel</option>
+      </select>
+    </div>
+  </div>
+  <div class="field">
+    <div class="field-label">Téléphone aidant</div>
+    <input type="tel" id="pr_tel" placeholder="06..." />
+  </div>
+
+  <div class="divider"></div>
+  <div class="field">
+    <div class="field-label">Médecin traitant</div>
+    <div class="grid3" style="margin-bottom:8px">
+      <div class="orient-card selected" data-group="mt" data-val="oui" onclick="selectRadio(this,'mt')">
+        <div class="orient-head"><div class="orient-radio"><div class="orient-inner"></div></div><div class="orient-title" style="font-size:12px">A un MT</div></div>
+      </div>
+      <div class="orient-card" data-group="mt" data-val="non" onclick="selectRadio(this,'mt')">
+        <div class="orient-head"><div class="orient-radio"><div class="orient-inner"></div></div><div class="orient-title" style="font-size:12px">Pas de MT</div></div>
+      </div>
+      <div class="orient-card" data-group="mt" data-val="nsp" onclick="selectRadio(this,'mt')">
+        <div class="orient-head"><div class="orient-radio"><div class="orient-inner"></div></div><div class="orient-title" style="font-size:12px">Inconnu</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="field">
+      <div class="field-label">Nom du MT</div>
+      <input type="text" id="mt_nom" placeholder="Dr. ..." />
+    </div>
+    <div class="field">
+      <div class="field-label">Tél. MT</div>
+      <input type="tel" id="mt_tel" placeholder="01..." />
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-secondary" onclick="prevStep()">← Retour</button>
+    <button class="btn-primary" onclick="nextStep()">Continuer →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PANEL 2 — INTERVENANTS EN PLACE
+═══════════════════════════════════════════ -->
+<div class="panel" id="panel-2">
+  <div class="panel-header">
+    <div class="panel-tag">Étape 3 / 9</div>
+    <div class="panel-title">Intervenants connus</div>
+    <div class="panel-desc">Professionnels et services déjà en place autour du patient.</div>
+  </div>
+
+  <div class="info-box">
+    <strong>Pourquoi c'est important :</strong> Le creusage IA s'appuiera sur ces informations pour identifier les contacts à appeler et les informations à compléter.
+  </div>
+
+  <div id="intervList">
+    <div class="interv-row" id="interv-0">
+      <select style="font-size:13px">
+        <option value="">Type de structure...</option>
+        <option>Médecin spécialiste</option>
+        <option>Infirmier(e) libéral(e)</option>
+        <option>SSIAD</option>
+        <option>Aide à domicile / SAAD</option>
+        <option>Assistante sociale</option>
+        <option>CCAS</option>
+        <option>EHPAD</option>
+        <option>Hôpital / service</option>
+        <option>Kiné / ergo / ortho</option>
+        <option>Psychologue / psy</option>
+        <option>Tuteur / mandataire</option>
+        <option>Autre</option>
+      </select>
+      <input type="text" placeholder="Nom / tél." style="font-size:13px" />
+      <div class="interv-remove" onclick="removeInterv(0)">×</div>
+    </div>
+  </div>
+  <button class="btn-add" onclick="addInterv()">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#3ecfaa" stroke-width="1.5"/><path d="M7 4v6M4 7h6" stroke="#3ecfaa" stroke-width="1.5" stroke-linecap="round"/></svg>
+    Ajouter un intervenant
+  </button>
+
+  <div class="divider"></div>
+  <div class="field">
+    <div class="field-label">Demande exprimée par la personne</div>
+    <textarea id="demande_exprimee" placeholder="Ce que le patient ou sa famille souhaite obtenir..."></textarea>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-secondary" onclick="prevStep()">← Retour</button>
+    <button class="btn-primary" onclick="nextStep()">Continuer →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PANEL 3 — DOMAINE SANTÉ
+═══════════════════════════════════════════ -->
+<div class="panel" id="panel-3">
+  <div class="panel-header">
+    <div class="panel-tag">Étape 4 / 9 · Dimension 1</div>
+    <div class="panel-title">Domaine de la santé</div>
+    <div class="panel-desc">Cochez les alertes repérées (physique et psychologique).</div>
+  </div>
+
+  <div class="alert-grid" id="alerts-sante">
+    <div class="alert-item" onclick="toggleAlert(this,'sante')">
+      <div class="alert-checkbox"><svg class="checkmark" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+      <div class="alert-text">Absence de suivi médical (avec ou sans médecin traitant)</div>
+      <div class="alert-badge" style="background:var(--red-bg);color:var(--red)">URGENT</div>
+    </div>
+    <div class="alert-item" onclick="toggleAlert(this,'sante')">
+      <div class="alert-checkbox"><svg class="checkmark" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+      <div class="alert-text">Mauvais état de santé ressenti ou épuisement exprimé</div>
+    </div>
+    <div class="alert-item" onclick="toggleAlert(this,'sante')">
+      <div class="alert-checkbox"><svg class="checkmark" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+      <div class="alert-text">Symptômes physiques (essoufflement, chutes, plaies, baisse de mobilité...)</div>
+    </div>
+    <div class="alert-item" onclick="toggleAlert(this,'sante')">
+      <div class="alert-checkbox"><svg class="checkmark" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+      <div class="alert-text">Troubles cognitifs (mémoire, orientation, déni de la maladie...)</div>
+    </div>
+    <div class="alert-item" onclick="toggleAlert(this,'sante')">
+      <div class="alert-checkbox"><svg class="checkmark" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+      <div class="alert-text">Troubles du comportement (déambulation, agressivité, repli sur soi...)</div>
+    </div>
+    <div class="alert-item" onclick="toggleAlert(this,'sante')">
+      <div class="alert-checkbox"><svg class="checkmark" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+      <div class="alert-text">Troubles nutritionnels (perte de poids, difficultés à se nourrir...)</div>
+    </div>
+    <div class="alert-item" onclick="toggleAlert(this,'sante')">
+      <div class="alert-checkbox"><svg class="checkmark" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+      <div class="alert-text">Troubles psychiques (anxiété, tristesse, idées suicidaires, troubles du sommeil...)</div>
+      <div class="alert-badge" style="background:var(--red-bg);color:var(--red)">URGENT</div>
+    </div>
+    <div class="alert-item" onclick="toggleAlert(this,'sante')">
+      <div class="alert-checkbox"><svg class="checkmark" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+      <div class="alert-text">Troubles sensoriels (baisse de la vue, de l'ouïe, du goût...)</div>
+    </div>
+  </div>
+  <div class="field" style="margin-top:12px">
+    <div class="field-label">Observations libres — santé</div>
+    <textarea id="obs_sante" placeholder="Précisions sur les alertes cochées..."></textarea>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-secondary" onclick="prevStep()">← Retour</button>
+    <button class="btn-primary" onclick="nextStep()">Continuer →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PANEL 4 — AUTONOMIE
+═══════════════════════════════════════════ -->
+<div class="panel" id="panel-4">
+  <div class="panel-header">
+    <div class="panel-tag">Étape 5 / 9 · Dimension 2</div>
+    <div class="panel-title">Autonomie fonctionnelle</div>
+    <div class="panel-desc">Difficultés dans la vie quotidienne.</div>
+  </div>
+
+  <div class="alert-grid" id="alerts-autonomie">
+    <div class="alert-item" onclick="toggleAlert(this,'autonomie')">
+      <div class="alert-checkbox"><svg class="checkmark" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+      <div class="alert-text">Problèmes dans les actes essentiels (se nourrir, se laver, s'habiller, se déplacer, aller aux toilettes)</div>
+    </div>
+    <div class="alert-item" onclick="toggleAlert(this,'autonomie')">
+      <div class="alert-checkbox"><svg class="checkmark" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+      <div class="alert-text">Problèmes dans les activités domestiques (courses, ménage, repas, médicaments, courrier...)</div>
+    </div>
+    <div class="alert-item" onclick="toggleAlert(this,'autonomie')">
+      <div class="alert-checkbox"><svg class="checkmark" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+      <div class="alert-text">Baisse ou arrêt des activités (professionnelles, personnelles, loisirs)</div>
+    </div>
+  </div>
+  <div class="field" style="margin-top:12px">
+    <div class="field-label">Observations libres — autonomie</div>
+    <textarea id="obs_autonomie" placeholder="Précisions..."></textarea>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-secondary" onclick="prevStep()">← Retour</button>
+    <button class="btn-primary" onclick="nextStep()">Continuer →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PANEL 5 — ENVIRONNEMENT
+═══════════════════════════════════════════ -->
+<div class="panel" id="panel-5">
+  <div class="panel-header">
+    <div class="panel-tag">Étape 6 / 9 · Dimension 3</div>
+    <div class="panel-title">Environnement familial & sécurité</div>
+    <div class="panel-desc">Situation de l'entourage et risques sociaux.</div>
+  </div>
+
+  <div class="alert-grid" id="alerts-env">
+    <div class="alert-item" onclick="toggleAlert(this,'env')">
+      <div class="alert-checkbox"><svg class="checkmark" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+      <div class="alert-text">Épuisement ou incapacité de l'aidant principal</div>
+    </div>
+    <div class="alert-item" onclick="toggleAlert(this,'env')">
+      <div class="alert-checkbox"><svg class="checkmark" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+      <div class="alert-text">Isolement problématique (décès aidant, changement brutal, absence de lien)</div>
+    </div>
+    <div class="alert-item" onclick="toggleAlert(this,'env')">
+      <div class="alert-checkbox"><svg class="checkmark" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+      <div class="alert-text">Problème compromettant le maintien à domicile (refus institution, cohabitation difficile...)</div>
+    </div>
+    <div class="alert-item" onclick="toggleAlert(this,'env')">
+      <div class="alert-checkbox"><svg class="checkmark" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+      <div class="alert-text">Risque ou suspicion de maltraitance (physique, psychologique, négligence)</div>
+      <div class="alert-badge" style="background:var(--red-bg);color:var(--red)">URGENT</div>
+    </div>
+    <div class="alert-item" onclick="toggleAlert(this,'env')">
+      <div class="alert-checkbox"><svg class="checkmark" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+      <div class="alert-text">Refus d'aide et de soins (de la personne ou de son entourage)</div>
+    </div>
+    <div class="alert-item" onclick="toggleAlert(this,'env')">
+      <div class="alert-checkbox"><svg class="checkmark" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+      <div class="alert-text">Difficultés de communication (ne parle pas/plus le français, ne le comprend pas)</div>
+      <div class="alert-badge" style="background:var(--purple-bg);color:var(--purple-light)">MÉDIATEUR</div>
+    </div>
+  </div>
+  <div class="field" style="margin-top:12px">
+    <div class="field-label">Observations libres — environnement</div>
+    <textarea id="obs_env" placeholder="Précisions..."></textarea>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-secondary" onclick="prevStep()">← Retour</button>
+    <button class="btn-primary" onclick="nextStep()">Continuer →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PANEL 6 — HABITAT
+═══════════════════════════════════════════ -->
+<div class="panel" id="panel-6">
+  <div class="panel-header">
+    <div class="panel-tag">Étape 7 / 9 · Dimension 4</div>
+    <div class="panel-title">Domaine de l'habitat</div>
+    <div class="panel-desc">Conditions de logement et risques associés.</div>
+  </div>
+
+  <div class="alert-grid" id="alerts-habitat">
+    <div class="alert-item" onclick="toggleAlert(this,'habitat')">
+      <div class="alert-checkbox"><svg class="checkmark" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+      <div class="alert-text">Habitat inadapté (SDB/WC inadaptés, mobilier détérioré, risques de chutes)</div>
+    </div>
+    <div class="alert-item" onclick="toggleAlert(this,'habitat')">
+      <div class="alert-checkbox"><svg class="checkmark" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+      <div class="alert-text">Insalubrité, vétusté ou appartement encombré</div>
+    </div>
+    <div class="alert-item" onclick="toggleAlert(this,'habitat')">
+      <div class="alert-checkbox"><svg class="checkmark" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+      <div class="alert-text">Problème d'accessibilité (absence ascenseur, escaliers...)</div>
+    </div>
+    <div class="alert-item" onclick="toggleAlert(this,'habitat')">
+      <div class="alert-checkbox"><svg class="checkmark" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+      <div class="alert-text">Risque ou mesure d'expulsion en cours</div>
+      <div class="alert-badge" style="background:var(--red-bg);color:var(--red)">URGENT</div>
+    </div>
+  </div>
+  <div class="field" style="margin-top:12px">
+    <div class="field-label">Observations libres — habitat</div>
+    <textarea id="obs_habitat" placeholder="Précisions..."></textarea>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-secondary" onclick="prevStep()">← Retour</button>
+    <button class="btn-primary" onclick="nextStep()">Continuer →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PANEL 7 — ADMINISTRATIF
+═══════════════════════════════════════════ -->
+<div class="panel" id="panel-7">
+  <div class="panel-header">
+    <div class="panel-tag">Étape 8 / 9 · Dimension 5</div>
+    <div class="panel-title">Aspects économiques & administratifs</div>
+    <div class="panel-desc">Situation des droits et ressources financières.</div>
+  </div>
+
+  <div class="alert-grid" id="alerts-admin">
+    <div class="alert-item" onclick="toggleAlert(this,'admin')">
+      <div class="alert-checkbox"><svg class="checkmark" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+      <div class="alert-text">Difficultés dans la gestion courante (papiers, factures impayées, carte invalidée)</div>
+    </div>
+    <div class="alert-item" onclick="toggleAlert(this,'admin')">
+      <div class="alert-checkbox"><svg class="checkmark" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+      <div class="alert-text">Perte ou difficulté d'accès aux droits (CSS, AME, AAH, RSA...)</div>
+      <div class="alert-badge" style="background:var(--purple-bg);color:var(--purple-light)">MÉDIATEUR</div>
+    </div>
+    <div class="alert-item" onclick="toggleAlert(this,'admin')">
+      <div class="alert-checkbox"><svg class="checkmark" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+      <div class="alert-text">Précarité économique (endettement, manque de ressources, budget déséquilibré)</div>
+    </div>
+    <div class="alert-item" onclick="toggleAlert(this,'admin')">
+      <div class="alert-checkbox"><svg class="checkmark" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+      <div class="alert-text">Situation administrative précaire (titre de séjour, sans papiers, statut incertain)</div>
+      <div class="alert-badge" style="background:var(--purple-bg);color:var(--purple-light)">MÉDIATEUR</div>
+    </div>
+  </div>
+
+  <div class="field" style="margin-top:12px">
+    <div class="field-label">Observations libres — administratif</div>
+    <textarea id="obs_admin" placeholder="Droits connus, démarches en cours..."></textarea>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-secondary" onclick="prevStep()">← Retour</button>
+    <button class="btn-primary" onclick="generateIA()">Analyser avec l'IA →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PANEL 8 — ANALYSE IA + ORIENTATION
+═══════════════════════════════════════════ -->
+<div class="panel" id="panel-8">
+  <div class="panel-header">
+    <div class="panel-tag">Étape 9 / 9</div>
+    <div class="panel-title">Synthèse IA & orientation</div>
+    <div class="panel-desc">Analyse automatique du FAMO et proposition d'orientation.</div>
+  </div>
+
+  <!-- Creusage -->
+  <div class="section-card">
+    <div class="section-card-header">
+      <div class="section-icon" style="background:var(--amber-bg)">🔍</div>
+      <div>
+        <div class="section-card-title">Check-list de creusage</div>
+        <div class="section-card-sub">Informations à compléter avant le mini staff</div>
+      </div>
+    </div>
+    <div id="creusageList">
+      <div style="font-size:13px;color:var(--text3);font-style:italic">Génération en cours...</div>
+    </div>
+  </div>
+
+  <!-- Synthèse IA -->
+  <div class="ia-synth">
+    <div class="ia-header">
+      <div class="ia-dot"></div>
+      <div class="ia-title">Synthèse Claude — Fiche de présentation mini staff</div>
+    </div>
+    <div class="ia-content" id="iaSynthContent">
+      <div class="ia-loading">Analyse du dossier en cours...</div>
+    </div>
+  </div>
+
+  <!-- Score complexité -->
+  <div class="section-card">
+    <div class="section-card-header">
+      <div class="section-icon" style="background:var(--purple-bg)">📊</div>
+      <div>
+        <div class="section-card-title">Niveau de coordination recommandé</div>
+        <div class="section-card-sub">Proposition IA — à valider par le médiateur</div>
+      </div>
+    </div>
+    <div class="score-row">
+      <div class="score-badge" id="score-1" onclick="selectScore(1)" style="border-color:var(--border);background:var(--bg3)">
+        <div class="score-num" style="color:var(--green)">N1</div>
+        <div class="score-lbl">Appui ponctuel</div>
+      </div>
+      <div class="score-badge" id="score-2" onclick="selectScore(2)" style="border-color:var(--border);background:var(--bg3)">
+        <div class="score-num" style="color:var(--amber)">N2</div>
+        <div class="score-lbl">Coordination usuelle</div>
+      </div>
+      <div class="score-badge" id="score-3" onclick="selectScore(3)" style="border-color:var(--border);background:var(--bg3)">
+        <div class="score-num" style="color:var(--red)">N3</div>
+        <div class="score-lbl">Coordination renforcée</div>
+      </div>
+    </div>
+    <div id="scoreDesc" style="font-size:12px;color:var(--text3);margin-top:8px;line-height:1.5"></div>
+  </div>
+
+  <!-- Motifs d'orientation -->
+  <div class="section-card">
+    <div class="section-card-header">
+      <div class="section-icon" style="background:var(--teal-bg)">🎯</div>
+      <div>
+        <div class="section-card-title">Motifs d'orientation</div>
+        <div class="section-card-sub">Jusqu'à 3 motifs prioritaires</div>
+      </div>
+    </div>
+    <div class="motif-block">
+      <div class="motif-label">Motif A — Principal</div>
+      <input type="text" id="motif_a" placeholder="Ex : Accès aux droits — CSS à renouveler urgence" />
+    </div>
+    <div class="motif-block">
+      <div class="motif-label">Motif B</div>
+      <input type="text" id="motif_b" placeholder="Ex : Évaluation gériatrique — troubles cognitifs suspectés" />
+    </div>
+    <div class="motif-block">
+      <div class="motif-label">Motif C</div>
+      <input type="text" id="motif_c" placeholder="Ex : Maintien à domicile — habitat inadapté" />
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-secondary" onclick="prevStep()">← Retour</button>
+    <button class="btn-primary" onclick="submitFAMO()">Valider & créer le dossier ✓</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PANEL SUCCESS
+═══════════════════════════════════════════ -->
+<div class="panel" id="panel-success">
+  <div class="success-wrap">
+    <div class="success-icon">✓</div>
+    <div class="success-title">Dossier créé</div>
+    <div class="success-desc">L'admission a été enregistrée et le dossier patient est disponible. La fiche de synthèse pour le mini staff a été générée.</div>
+    <div class="success-code" id="dossierId">DAC93N-0001</div>
+    <div class="next-actions">
+      <button class="next-btn" onclick="newFAMO()">
+        <span class="next-btn-icon">＋</span>
+        <span class="next-btn-text"><strong>Nouvelle admission</strong><br><small style="color:var(--text3)">Enregistrer une nouvelle demande</small></span>
+        <span class="next-btn-arrow">→</span>
+      </button>
+      <button class="next-btn" onclick="alert('Module courriers à venir — Sprint 2')">
+        <span class="next-btn-icon">✉</span>
+        <span class="next-btn-text"><strong>Générer un courrier</strong><br><small style="color:var(--text3)">Informer les partenaires</small></span>
+        <span class="next-btn-arrow">→</span>
+      </button>
+      <button class="next-btn" onclick="alert('Module Staff IA à venir — Sprint 3')">
+        <span class="next-btn-icon">🧠</span>
+        <span class="next-btn-text"><strong>Lancer le Staff IA</strong><br><small style="color:var(--text3)">Analyse des experts IA</small></span>
+        <span class="next-btn-arrow">→</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<script>
+let currentStep = 0;
+const TOTAL_STEPS = 9;
+let intervCount = 1;
+let selectedScore = null;
+let famoData = {};
+
+// ─── API KEY ───
+function saveApiKey() {
+  const k = document.getElementById('apiKeyInput').value.trim();
+  if(k) { localStorage.setItem('mediasante_api_key', k); showToast('Clé enregistrée'); }
+}
+function getApiKey() {
+  return localStorage.getItem('mediasante_api_key') || '';
+}
+window.addEventListener('load', () => {
+  const k = getApiKey();
+  if(k) document.getElementById('apiKeyInput').value = k.slice(0,15) + '...';
+});
+
+// ─── NAVIGATION ───
+function nextStep() {
+  if(currentStep < TOTAL_STEPS - 1) {
+    goToStep(currentStep + 1);
+  }
+}
+function prevStep() {
+  if(currentStep > 0) goToStep(currentStep - 1);
+}
+function goToStep(step) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  const target = document.getElementById('panel-' + step);
+  if(target) { target.classList.add('active'); currentStep = step; }
+  updateProgress();
+  document.getElementById('mainContent').scrollTop = 0;
+  window.scrollTo(0, 0);
+}
+function updateProgress() {
+  const steps = document.querySelectorAll('.ps');
+  steps.forEach((s, i) => {
+    s.classList.remove('active', 'done');
+    if(i < currentStep) s.classList.add('done');
+    else if(i === currentStep) s.classList.add('active');
+  });
+  const pct = Math.round((currentStep / (TOTAL_STEPS - 1)) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
+// ─── ALERTS TOGGLE ───
+function toggleAlert(el, domain) {
+  el.classList.toggle('checked');
+}
+
+// ─── RADIO SELECT ───
+function selectRadio(el, group) {
+  document.querySelectorAll('[data-group="'+group+'"]').forEach(x => x.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+// ─── INTERVENANTS ───
+function addInterv() {
+  const list = document.getElementById('intervList');
+  const id = intervCount++;
+  const row = document.createElement('div');
+  row.className = 'interv-row';
+  row.id = 'interv-' + id;
+  row.innerHTML = `
+    <select style="font-size:13px">
+      <option value="">Type de structure...</option>
+      <option>Médecin spécialiste</option>
+      <option>Infirmier(e) libéral(e)</option>
+      <option>SSIAD</option>
+      <option>Aide à domicile / SAAD</option>
+      <option>Assistante sociale</option>
+      <option>CCAS</option>
+      <option>EHPAD</option>
+      <option>Hôpital / service</option>
+      <option>Kiné / ergo / ortho</option>
+      <option>Psychologue / psy</option>
+      <option>Tuteur / mandataire</option>
+      <option>Autre</option>
+    </select>
+    <input type="text" placeholder="Nom / tél." style="font-size:13px" />
+    <div class="interv-remove" onclick="removeInterv(${id})">×</div>
+  `;
+  list.appendChild(row);
+}
+function removeInterv(id) {
+  const el = document.getElementById('interv-' + id);
+  if(el) el.remove();
+}
+
+// ─── AUTO-AGE ───
+document.addEventListener('change', function(e) {
+  if(e.target.id === 'p_ddn') {
+    const ddn = new Date(e.target.value);
+    if(!isNaN(ddn)) {
+      const age = Math.floor((new Date() - ddn) / (365.25 * 24 * 3600 * 1000));
+      document.getElementById('p_age').value = age + ' ans';
+    }
+  }
+});
+
+// ─── SCORE ───
+function selectScore(n) {
+  selectedScore = n;
+  [1,2,3].forEach(i => {
+    const el = document.getElementById('score-' + i);
+    el.classList.remove('active-1','active-2','active-3');
+    el.style.borderColor = 'var(--border)';
+    el.style.background = 'var(--bg3)';
+  });
+  document.getElementById('score-' + n).classList.add('active-' + n);
+  const descs = {
+    1: "Appui ponctuel : conseil, orientation, information. Pas de suivi intensif nécessaire.",
+    2: "Coordination usuelle : plusieurs intervenants à coordonner, suivi dans le temps.",
+    3: "Coordination renforcée (gestion de cas) : situation très complexe, multidimensionnelle, nécessitant un référent dédié."
+  };
+  document.getElementById('scoreDesc').textContent = descs[n];
+}
+
+// ─── COLLECTE DES DONNÉES ───
+function collectFAMO() {
+  const alerts = {};
+  ['sante','autonomie','env','habitat','admin'].forEach(domain => {
+    alerts[domain] = [];
+    document.querySelectorAll('#alerts-' + domain + ' .alert-item.checked .alert-text').forEach(el => {
+      alerts[domain].push(el.textContent.trim());
+    });
+  });
+  return {
+    demandeur: {
+      nom: document.getElementById('d_nom').value,
+      structure: document.getElementById('d_structure').value,
+      profil: document.getElementById('d_profil').value,
+    },
+    patient: {
+      nom: document.getElementById('p_nom').value,
+      prenom: document.getElementById('p_prenom').value,
+      age: document.getElementById('p_age').value,
+      adresse: document.getElementById('p_adresse').value,
+    },
+    demande: document.getElementById('demande_exprimee').value,
+    alerts,
+    obs: {
+      sante: document.getElementById('obs_sante').value,
+      autonomie: document.getElementById('obs_autonomie').value,
+      env: document.getElementById('obs_env').value,
+      habitat: document.getElementById('obs_habitat').value,
+      admin: document.getElementById('obs_admin').value,
+    }
+  };
+}
+
+// ─── GÉNÉRATION IA ───
+async function generateIA() {
+  famoData = collectFAMO();
+  goToStep(8);
+  generateCreusage();
+  await generateSynthese();
+}
+
+function generateCreusage() {
+  const missing = [];
+  if(!famoData.patient.nom) missing.push({ q: "Nom complet et date de naissance du patient", who: "Demandeur — " + (famoData.demandeur.nom || 'à rappeler') });
+  if(!famoData.patient.adresse) missing.push({ q: "Adresse exacte du domicile", who: "Demandeur" });
+  if(document.querySelector('[data-group="mt"].selected')?.dataset?.val === 'oui' && !document.getElementById('mt_nom').value) {
+    missing.push({ q: "Coordonnées du médecin traitant (nom + téléphone)", who: "Demandeur ou CPAM" });
+  }
+  const totalAlerts = Object.values(famoData.alerts).flat().length;
+  if(totalAlerts === 0) missing.push({ q: "Aucune alerte cochée — préciser la problématique principale", who: "Demandeur — " + (famoData.demandeur.nom || 'à rappeler') });
+  if(famoData.alerts.admin.length > 0) missing.push({ q: "Droits actuellement ouverts (CSS, AME, AAH, RSA...)", who: "CPAM 93 — 3646 ou DT93" });
+  if(famoData.alerts.sante.some(a => a.includes('psychique'))) missing.push({ q: "Suivi psychiatrique en place ? Nom du psychiatre ou CMP référent ?", who: "Médecin traitant — " + (document.getElementById('mt_nom').value || 'à identifier') });
+  if(famoData.alerts.habitat.some(a => a.includes('expulsion'))) missing.push({ q: "Bailleur social ou propriétaire ? Stade de la procédure ?", who: "CCAS ou assistante sociale" });
+  if(missing.length === 0) missing.push({ q: "Formulaire complet — aucune information critique manquante", who: "✓ Prêt pour le mini staff" });
+
+  const html = missing.map((m, i) => `
+    <div class="creusage-item">
+      <div class="creusage-num">${i+1}</div>
+      <div>
+        <div class="creusage-text">${m.q}</div>
+        <div class="creusage-who">→ ${m.who}</div>
+      </div>
+    </div>
+  `).join('');
+  document.getElementById('creusageList').innerHTML = html;
+}
+
+async function generateSynthese() {
+  const apiKey = getApiKey();
+  const contentEl = document.getElementById('iaSynthContent');
+  const totalAlerts = Object.values(famoData.alerts).flat().length;
+  const alertsText = Object.entries(famoData.alerts)
+    .filter(([,v]) => v.length > 0)
+    .map(([k,v]) => `${k.toUpperCase()}: ${v.join('; ')}`)
+    .join('\n');
+
+  // Auto-score
+  let autoScore = 1;
+  if(totalAlerts >= 4) autoScore = 2;
+  if(totalAlerts >= 7 || famoData.alerts.sante.some(a => a.includes('suicidaire') || a.includes('maltraitance'))) autoScore = 3;
+  if(famoData.alerts.habitat.some(a => a.includes('expulsion'))) autoScore = Math.max(autoScore, 2);
+  selectScore(autoScore);
+
+  if(!apiKey || !apiKey.startsWith('sk-')) {
+    const pts = totalAlerts;
+    const nom = famoData.patient.prenom || 'Le patient';
+    const age = famoData.patient.age || '?';
+    contentEl.innerHTML = `
+      <strong style="color:var(--text)">${nom}, ${age}</strong> — adressé(e) par ${famoData.demandeur.profil || famoData.demandeur.structure || 'un professionnel'}.<br><br>
+      <strong style="color:var(--text)">${pts} alerte(s) repérée(s)</strong>${pts > 0 ? ' : ' + Object.values(famoData.alerts).flat().slice(0,3).join(', ') + (pts > 3 ? '...' : '.') : ' — formulaire à compléter.'}<br><br>
+      <em style="color:var(--text3)">Configurez votre clé API Claude pour obtenir une synthèse complète et personnalisée.</em>
+    `;
+    return;
+  }
+
+  contentEl.innerHTML = '<div class="ia-loading">Analyse du dossier par Claude...</div>';
+  const prompt = `Tu es l'assistant IA du DAC 93 Nord (Seine-Saint-Denis). Tu dois rédiger une fiche de synthèse courte pour la présentation en mini staff.
+
+DONNÉES DU DOSSIER :
+Patient : ${famoData.patient.prenom} ${famoData.patient.nom}, ${famoData.patient.age}
+Demandeur : ${famoData.demandeur.nom} (${famoData.demandeur.profil || famoData.demandeur.structure})
+Demande exprimée : ${famoData.demande || 'Non précisée'}
+Alertes cochées (${totalAlerts} au total) :
+${alertsText || 'Aucune alerte cochée'}
+Observations : ${Object.values(famoData.obs).filter(Boolean).join(' | ') || 'Aucune'}
+
+Rédige en 5-7 lignes max une fiche de présentation pour le mini staff :
+1. Phrase d'accroche (qui est le patient, qui demande, pourquoi)
+2. Alertes prioritaires (2-3 max, les plus urgentes)
+3. Ce qui est déjà en place
+4. Recommandation d'orientation (niveau 1 appui ponctuel / niveau 2 coordination usuelle / niveau 3 coordination renforcée)
+
+Sois direct, factuel, sans jargon inutile. Utilise des phrases courtes.`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 500, messages: [{ role: 'user', content: prompt }] })
+    });
+    const data = await resp.json();
+    const text = data.content?.[0]?.text || 'Erreur de génération.';
+    contentEl.innerHTML = text.replace(/\n/g, '<br>');
+  } catch(e) {
+    contentEl.innerHTML = '<em style="color:var(--red)">Erreur API — vérifiez votre clé.</em>';
+  }
+}
+
+// ─── SUBMIT ───
+function submitFAMO() {
+  const id = 'DAC93N-' + String(Math.floor(Math.random()*9000)+1000);
+  const dossiers = JSON.parse(localStorage.getItem('mediasante_dossiers') || '[]');
+  dossiers.push({ id, date: new Date().toISOString(), data: famoData, score: selectedScore, motifs: [document.getElementById('motif_a').value, document.getElementById('motif_b').value, document.getElementById('motif_c').value] });
+  localStorage.setItem('mediasante_dossiers', JSON.stringify(dossiers));
+  document.getElementById('dossierId').textContent = id;
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-success').classList.add('active');
+  document.getElementById('progressFill').style.width = '100%';
+}
+
+function newFAMO() {
+  // Reset tous les champs texte
+  document.querySelectorAll('input[type="text"], input[type="date"], input[type="tel"], input[type="email"], select, textarea').forEach(el => { el.value = ''; });
+  // Reset alertes cochées
+  document.querySelectorAll('.alert-item').forEach(a => a.classList.remove('checked'));
+  // Reset radios
+  document.querySelectorAll('[data-group]').forEach(el => el.classList.remove('selected'));
+  // Reset sélections radio par défaut
+  const consentOui = document.querySelector('[data-group="consent"][data-val="oui"]');
+  const mtOui = document.querySelector('[data-group="mt"][data-val="oui"]');
+  if(consentOui) consentOui.classList.add('selected');
+  if(mtOui) mtOui.classList.add('selected');
+  // Reset date today
+  const dateEl = document.getElementById('visite_date');
+  if(dateEl) dateEl.value = new Date().toISOString().split('T')[0];
+  // Réinitialiser résultats IA
+  document.getElementById('iaSynthContent').innerHTML = '<div class="ia-loading">Analyse du dossier en cours...</div>';
+  document.getElementById('creusageList').innerHTML = '<div style="font-size:13px;color:var(--text3);font-style:italic">Génération en cours...</div>';
+  selectedScore = null;
+  [1,2,3].forEach(i => {
+    const el = document.getElementById('score-' + i);
+    if(el) { el.className = 'score-badge'; el.style.borderColor = 'var(--border)'; el.style.background = 'var(--bg3)'; }
+  });
+  document.getElementById('scoreDesc').textContent = '';
+  // Remettre à l'étape 0
+  goToStep(0);
+  window.scrollTo(0,0);
+}
+
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:8px 16px;border-radius:20px;font-size:12px;z-index:9999';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2000);
+}
+</script>
+</body>
+</html>

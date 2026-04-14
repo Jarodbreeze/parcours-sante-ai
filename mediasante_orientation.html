@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>ParcourSanté AI — Orientation</title>
+<style>
+:root{
+  --bg:#0f1117;--bg2:#161820;--bg3:#1e2130;
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.16);
+  --text:#f0f1f5;--text2:#8b8fa8;--text3:#565a72;
+  --purple:#7c6ff7;--purple-l:#a99ef9;--purple-bg:rgba(124,111,247,0.12);--purple-b:rgba(124,111,247,0.3);
+  --teal:#3ecfaa;--teal-bg:rgba(62,207,170,0.1);--teal-b:rgba(62,207,170,0.25);
+  --amber:#f0a43a;--amber-bg:rgba(240,164,58,0.1);--amber-b:rgba(240,164,58,0.25);
+  --red:#e05c6a;--red-bg:rgba(224,92,106,0.1);--red-b:rgba(224,92,106,0.25);
+  --green:#4cba82;--green-bg:rgba(76,186,130,0.1);--green-b:rgba(76,186,130,0.25);
+  --blue:#5b9ef7;--blue-bg:rgba(91,158,247,0.1);--blue-b:rgba(91,158,247,0.25);
+  --r:10px;--rs:7px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+.topbar{position:sticky;top:0;z-index:100;background:rgba(15,17,23,0.93);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 16px;height:52px;display:flex;align-items:center;justify-content:space-between}
+.logo{display:flex;align-items:center;gap:8px}
+.logo-dot{width:8px;height:8px;border-radius:50%;background:var(--amber)}
+.logo-text{font-size:14px;font-weight:600;letter-spacing:-.3px}
+.logo-sub{font-size:11px;color:var(--text3);margin-left:2px}
+.badge-mode{font-size:10px;font-weight:600;letter-spacing:.08em;padding:3px 8px;border-radius:20px;background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-b)}
+
+.api-bar{background:var(--bg2);border-bottom:1px solid var(--border);padding:8px 16px;display:flex;align-items:center;gap:8px}
+.api-label{font-size:11px;color:var(--text3);flex-shrink:0}
+.api-input{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:11px;padding:5px 8px;font-family:monospace;outline:none}
+.api-input:focus{border-color:var(--purple)}
+.api-save{font-size:11px;padding:5px 10px;border-radius:5px;background:var(--purple-bg);color:var(--purple-l);border:1px solid var(--purple-b);cursor:pointer}
+
+/* LAYOUT */
+.layout{display:flex;height:calc(100vh - 92px)}
+.sidebar{width:280px;flex-shrink:0;border-right:1px solid var(--border);background:var(--bg2);display:flex;flex-direction:column;overflow:hidden}
+.main-area{flex:1;overflow-y:auto}
+
+@media(max-width:640px){
+  .layout{flex-direction:column;height:auto}
+  .sidebar{width:100%;max-height:300px;border-right:none;border-bottom:1px solid var(--border)}
+}
+
+/* SIDEBAR — FILTRES */
+.sb-header{padding:12px 14px 8px;border-bottom:1px solid var(--border)}
+.sb-title{font-size:13px;font-weight:600;margin-bottom:8px}
+.search-box{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:20px;color:var(--text);font-size:12px;padding:7px 12px;outline:none;font-family:inherit;margin-bottom:8px}
+.search-box:focus{border-color:var(--purple-b)}
+.ia-orient-btn{width:100%;padding:9px;border-radius:var(--rs);background:var(--purple);border:none;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;transition:opacity .15s}
+.ia-orient-btn:hover{opacity:.85}
+
+.sb-scroll{flex:1;overflow-y:auto;padding:8px 0}
+.filter-group{margin-bottom:4px}
+.filter-group-header{display:flex;align-items:center;gap:6px;padding:7px 14px;cursor:pointer;font-size:12px;font-weight:600;color:var(--text2);user-select:none}
+.filter-group-header:hover{background:var(--bg3)}
+.fg-icon{font-size:13px}
+.fg-count{margin-left:auto;font-size:10px;padding:1px 6px;border-radius:10px;background:var(--bg3);color:var(--text3)}
+.fg-arrow{font-size:9px;color:var(--text3);transition:transform .2s}
+.fg-arrow.open{transform:rotate(90deg)}
+.filter-items{display:none;padding:0 0 4px 0}
+.filter-items.open{display:block}
+.filter-item{display:flex;align-items:center;gap:8px;padding:6px 14px 6px 34px;cursor:pointer;font-size:12px;color:var(--text2);transition:all .15s;border-left:2px solid transparent}
+.filter-item:hover{background:var(--bg3);color:var(--text)}
+.filter-item.active{color:var(--amber);border-left-color:var(--amber);background:var(--amber-bg)}
+.fi-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+
+/* MAIN — RESULTS */
+.main-header{padding:14px 16px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--bg2);position:sticky;top:0;z-index:5}
+.results-count{font-size:13px;font-weight:600}
+.results-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.view-btns{display:flex;gap:4px}
+.view-btn{width:28px;height:28px;border-radius:var(--rs);border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;transition:all .15s}
+.view-btn.active{background:var(--amber-bg);border-color:var(--amber-b);color:var(--amber)}
+
+.results-grid{padding:14px 16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
+.results-list{padding:10px 16px}
+
+/* STRUCTURE CARD */
+.struct-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;transition:border-color .15s;cursor:pointer}
+.struct-card:hover{border-color:var(--border2)}
+.struct-card.featured{border-color:var(--amber-b)}
+.struct-header{padding:12px 14px 8px;display:flex;align-items:flex-start;gap:10px}
+.struct-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.struct-info{flex:1;min-width:0}
+.struct-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;line-height:1.3}
+.struct-type{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:4px;display:inline-block;margin-bottom:4px}
+.struct-ville{font-size:11px;color:var(--text3)}
+.struct-body{padding:0 14px 10px}
+.struct-desc{font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:8px}
+.struct-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
+.struct-tag{font-size:10px;padding:2px 7px;border-radius:4px;background:var(--bg3);color:var(--text3)}
+.struct-footer{display:flex;align-items:center;gap:6px;padding:8px 14px;border-top:1px solid var(--border);background:var(--bg3)}
+.struct-tel{font-size:11px;color:var(--text2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.orient-btn{font-size:11px;padding:5px 10px;border-radius:var(--rs);background:var(--amber);border:none;color:var(--bg);font-weight:600;cursor:pointer;font-family:inherit;flex-shrink:0;transition:opacity .15s}
+.orient-btn:hover{opacity:.85}
+.fiche-btn{font-size:11px;padding:5px 10px;border-radius:var(--rs);background:transparent;border:1px solid var(--border);color:var(--text2);cursor:pointer;font-family:inherit;flex-shrink:0}
+
+/* LIST VIEW */
+.struct-list-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.struct-list-item:last-child{border-bottom:none}
+.sli-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.sli-body{flex:1;min-width:0}
+.sli-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sli-sub{font-size:11px;color:var(--text3);margin-top:1px}
+.sli-actions{display:flex;gap:5px;flex-shrink:0}
+.sli-btn{font-size:11px;padding:4px 8px;border-radius:var(--rs);border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;font-family:inherit;white-space:nowrap}
+.sli-btn.primary{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-b)}
+
+/* IA PANEL */
+.ia-panel{margin:14px 16px;background:var(--purple-bg);border:1px solid var(--purple-b);border-radius:var(--r);padding:14px}
+.ia-header{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.ia-dot{width:7px;height:7px;border-radius:50%;background:var(--purple);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.ia-title{font-size:13px;font-weight:600;color:var(--purple-l)}
+.ia-content{font-size:13px;color:var(--text2);line-height:1.7}
+.ia-reco-list{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.ia-reco{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;background:var(--bg2);border-radius:var(--rs);border:1px solid var(--border)}
+.ia-reco-num{width:20px;height:20px;border-radius:5px;background:var(--purple-bg);color:var(--purple-l);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.ia-reco-body{flex:1}
+.ia-reco-name{font-size:13px;font-weight:600;color:var(--text)}
+.ia-reco-why{font-size:11px;color:var(--text3);margin-top:2px;line-height:1.4}
+.ia-reco-btn{flex-shrink:0;font-size:10px;padding:3px 8px;border-radius:4px;background:var(--teal-bg);color:var(--teal);border:1px solid var(--teal-b);cursor:pointer;font-family:inherit}
+
+/* FICHE MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:200;display:flex;align-items:flex-end;justify-content:center}
+.modal-overlay.hidden{display:none}
+.modal{background:var(--bg2);border-top:1px solid var(--border);border-radius:16px 16px 0 0;padding:20px;width:100%;max-width:580px;max-height:85vh;overflow-y:auto}
+.modal-close{float:right;background:none;border:none;color:var(--text2);font-size:18px;cursor:pointer;margin-top:-4px}
+.modal-struct-header{display:flex;gap:12px;margin-bottom:14px}
+.m-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.m-name{font-size:17px;font-weight:700;margin-bottom:3px}
+.m-type{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.m-ville{font-size:12px;color:var(--text3);margin-top:2px}
+.m-section{margin-bottom:14px}
+.m-section-title{font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--text3);text-transform:uppercase;margin-bottom:6px}
+.m-detail-row{display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:13px}
+.m-detail-row:last-child{border-bottom:none}
+.m-detail-label{color:var(--text3);width:100px;flex-shrink:0}
+.m-detail-val{color:var(--text);flex:1}
+.m-btn-primary{width:100%;padding:12px;border-radius:var(--r);background:var(--amber);border:none;color:var(--bg);font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:4px;transition:opacity .15s}
+.m-btn-primary:hover{opacity:.85}
+.m-btn-secondary{width:100%;padding:10px;border-radius:var(--r);background:transparent;border:1px solid var(--border);color:var(--text2);font-size:13px;cursor:pointer;font-family:inherit;margin-top:6px}
+
+/* ORIENT MODAL */
+.orient-form{display:flex;flex-direction:column;gap:10px}
+.o-label{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;display:block}
+.o-input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:13px;padding:9px 11px;outline:none;font-family:inherit}
+.o-input:focus{border-color:var(--amber-b)}
+.o-select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:13px;padding:9px 11px;outline:none;font-family:inherit;-webkit-appearance:none}
+.o-select:focus{border-color:var(--amber-b)}
+.o-textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:13px;padding:9px 11px;outline:none;font-family:inherit;resize:vertical;min-height:80px;line-height:1.5}
+.o-textarea:focus{border-color:var(--amber-b)}
+
+/* HISTORIQUE ORIENTATIONS */
+.hist-item{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border)}
+.hist-item:last-child{border-bottom:none}
+.hist-status{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.hist-body{flex:1}
+.hist-struct{font-size:13px;font-weight:600}
+.hist-patient{font-size:11px;color:var(--text3);margin-top:2px}
+.hist-date{font-size:10px;color:var(--text3);flex-shrink:0}
+
+/* MAILLAGE LINK */
+.maillage-bar{margin:12px 16px 0;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);display:flex;align-items:center;gap:10px;cursor:pointer;transition:border-color .15s}
+.maillage-bar:hover{border-color:var(--teal-b)}
+.maillage-icon{font-size:18px;flex-shrink:0}
+.maillage-text{flex:1}
+.maillage-title{font-size:13px;font-weight:600}
+.maillage-sub{font-size:11px;color:var(--text3);margin-top:1px}
+.maillage-arrow{color:var(--teal);font-size:12px}
+
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:2px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-dot"></div>
+    <span class="logo-text">ParcourSanté AI</span>
+    <span class="logo-sub">Orientation</span>
+  </div>
+  <span class="badge-mode">ANNUAIRE 93</span>
+</div>
+
+<div class="api-bar">
+  <span class="api-label">Clé API :</span>
+  <input type="password" class="api-input" id="apiKeyInput" placeholder="sk-ant-..." />
+  <button class="api-save" onclick="saveApiKey()">OK</button>
+</div>
+
+<div class="layout">
+
+<!-- ═══ SIDEBAR ═══ -->
+<div class="sidebar">
+  <div class="sb-header">
+    <div class="sb-title">Recherche & filtres</div>
+    <input type="text" class="search-box" id="searchBox" placeholder="Nom, ville, type..." oninput="applyFilters()" />
+    <button class="ia-orient-btn" onclick="openIAOrient()">
+      <span style="animation:pulse 2s infinite;display:inline-block;width:7px;height:7px;border-radius:50%;background:#fff"></span>
+      Orientation IA par situation
+    </button>
+  </div>
+
+  <div class="sb-scroll">
+    <div id="filterGroups"></div>
+
+    <!-- Lien Maillage 93 -->
+    <div style="padding:8px 14px;margin-top:4px">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--text3);text-transform:uppercase;margin-bottom:6px">Ressources externes</div>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:8px 10px;cursor:pointer;transition:border-color .15s" onclick="openLink('https://maillage93.sante-idf.fr')" onmouseover="this.style.borderColor='var(--teal-b)'" onmouseout="this.style.borderColor='var(--border)'">
+        <div style="font-size:12px;font-weight:600;color:var(--text)">🗂 Maillage 93</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:2px">Annuaire officiel DAC 93 — 350+ structures</div>
+        <div style="font-size:10px;color:var(--teal);margin-top:3px">Ouvrir le portail →</div>
+      </div>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:8px 10px;cursor:pointer;margin-top:6px;transition:border-color .15s" onclick="openLink('https://www.pour-les-personnes-agees.gouv.fr/annuaire-ehpad-et-comparateur-de-prix-et-restes-a-charge/seine-saint-denis-93')" onmouseover="this.style.borderColor='var(--blue-b)'" onmouseout="this.style.borderColor='var(--border)'">
+        <div style="font-size:12px;font-weight:600;color:var(--text)">🏥 Pour les personnes âgées</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:2px">Annuaire officiel EHPAD / SSIAD / SAAD 93</div>
+        <div style="font-size:10px;color:var(--blue);margin-top:3px">Ouvrir →</div>
+      </div>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:8px 10px;cursor:pointer;margin-top:6px;transition:border-color .15s" onclick="openOrientHist()" onmouseover="this.style.borderColor='var(--amber-b)'" onmouseout="this.style.borderColor='var(--border)'">
+        <div style="font-size:12px;font-weight:600;color:var(--text)">📋 Mes orientations</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:2px">Historique des orientations réalisées</div>
+        <div style="font-size:10px;color:var(--amber);margin-top:3px">Voir l'historique →</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MAIN AREA ═══ -->
+<div class="main-area">
+
+  <div class="main-header" id="mainHeader">
+    <div>
+      <div class="results-count" id="resultsCount">Toutes les structures</div>
+      <div class="results-sub" id="resultsSub">Seine-Saint-Denis (93) · Annuaire ParcourSanté AI</div>
+    </div>
+    <div class="view-btns">
+      <button class="view-btn active" id="btnGrid" onclick="setView('grid')" title="Vue grille">⊞</button>
+      <button class="view-btn" id="btnList" onclick="setView('list')" title="Vue liste">☰</button>
+    </div>
+  </div>
+
+  <div id="iaPanelArea"></div>
+  <div id="resultsArea"></div>
+
+</div>
+</div>
+
+<!-- MODAL FICHE STRUCTURE -->
+<div class="modal-overlay hidden" id="ficheModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('ficheModal')">×</button>
+    <div id="ficheContent"></div>
+  </div>
+</div>
+
+<!-- MODAL ORIENTATION -->
+<div class="modal-overlay hidden" id="orientModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('orientModal')">×</button>
+    <div class="modal-title" style="font-size:16px;font-weight:700;margin-bottom:4px" id="orientModalTitle">Orienter vers...</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:14px" id="orientModalSub"></div>
+    <div class="orient-form">
+      <div>
+        <label class="o-label">Dossier patient concerné</label>
+        <select class="o-select" id="orientPatient">
+          <option value="">Sélectionner un patient...</option>
+        </select>
+      </div>
+      <div>
+        <label class="o-label">Motif de l'orientation</label>
+        <select class="o-select" id="orientMotif">
+          <option value="">Sélectionner...</option>
+          <option>Entrée en établissement</option>
+          <option>Maintien à domicile — renforcement</option>
+          <option>Hébergement d'urgence</option>
+          <option>Évaluation spécialisée</option>
+          <option>Prise en charge sociale</option>
+          <option>Soins de suite et réadaptation</option>
+          <option>Accompagnement psychiatrique</option>
+          <option>Aide à domicile — SAAD</option>
+          <option>Soins infirmiers — SSIAD</option>
+          <option>Autre</option>
+        </select>
+      </div>
+      <div>
+        <label class="o-label">Urgence</label>
+        <select class="o-select" id="orientUrgence">
+          <option value="normale">Normale — sous 1 mois</option>
+          <option value="prioritaire">Prioritaire — sous 15 jours</option>
+          <option value="urgente">Urgente — sous 72h</option>
+        </select>
+      </div>
+      <div>
+        <label class="o-label">Notes / éléments à transmettre</label>
+        <textarea class="o-textarea" id="orientNotes" placeholder="GIR, IADL, situation sociale, droits ouverts..."></textarea>
+      </div>
+      <button class="m-btn-primary" onclick="submitOrientation()">Enregistrer l'orientation ✓</button>
+      <button class="m-btn-secondary" onclick="closeModal('orientModal')">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL IA ORIENTATION -->
+<div class="modal-overlay hidden" id="iaOrientModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('iaOrientModal')">×</button>
+    <div style="font-size:16px;font-weight:700;margin-bottom:4px">Orientation IA</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:14px">Décrivez la situation — l'IA recommande les structures adaptées</div>
+    <div>
+      <label class="o-label">Dossier patient (optionnel)</label>
+      <select class="o-select" id="iaPatientSel" style="margin-bottom:8px">
+        <option value="">Sans dossier — saisie libre</option>
+      </select>
+    </div>
+    <div>
+      <label class="o-label">Situation et besoins</label>
+      <textarea class="o-textarea" id="iaSituationInput" placeholder="Ex: Femme de 78 ans, GIR 3, isolée, CSS en cours, logement inadapté, pas d'aidant. Cherche maintien à domicile renforcé ou solution d'hébergement adaptée..."></textarea>
+    </div>
+    <button class="m-btn-primary" style="margin-top:10px" onclick="runIAOrientation()">Analyser et recommander →</button>
+    <button class="m-btn-secondary" onclick="closeModal('iaOrientModal')">Annuler</button>
+  </div>
+</div>
+
+<!-- MODAL HISTORIQUE -->
+<div class="modal-overlay hidden" id="histModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('histModal')">×</button>
+    <div style="font-size:16px;font-weight:700;margin-bottom:14px">Mes orientations</div>
+    <div id="histContent"></div>
+  </div>
+</div>
+
+<script>
+// ═══ API ═══
+function saveApiKey(){const k=document.getElementById('apiKeyInput').value.trim();if(k){localStorage.setItem('mediasante_api_key',k);showToast('Clé enregistrée ✓')}}
+function getApiKey(){return localStorage.getItem('mediasante_api_key')||''}
+window.addEventListener('load',()=>{
+  const k=getApiKey();if(k)document.getElementById('apiKeyInput').value=k.slice(0,12)+'...';
+  buildFilterGroups();
+  applyFilters();
+  loadPatientSelects();
+});
+
+// ═══ DONNÉES STRUCTURES 93 ═══
+const TYPE_CONFIG = {
+  ehpad:    {label:'EHPAD',         icon:'🏠', color:'var(--teal)',   bg:'var(--teal-bg)',   dot:'#3ecfaa'},
+  ssiad:    {label:'SSIAD',         icon:'💉', color:'var(--green)',  bg:'var(--green-bg)',  dot:'#4cba82'},
+  saad:     {label:'SAAD',          icon:'🤝', color:'var(--green)',  bg:'var(--green-bg)',  dot:'#4cba82'},
+  samsah:   {label:'SAMSAH',        icon:'♿', color:'var(--blue)',   bg:'var(--blue-bg)',   dot:'#5b9ef7'},
+  savs:     {label:'SAVS',          icon:'🌟', color:'var(--blue)',   bg:'var(--blue-bg)',   dot:'#5b9ef7'},
+  chrs:     {label:'CHRS',          icon:'🏠', color:'var(--amber)',  bg:'var(--amber-bg)',  dot:'#f0a43a'},
+  siao:     {label:'SIAO',          icon:'🆘', color:'var(--red)',    bg:'var(--red-bg)',    dot:'#e05c6a'},
+  cmp:      {label:'CMP',           icon:'🧠', color:'var(--purple-l)',bg:'var(--purple-bg)',dot:'#7c6ff7'},
+  ccas:     {label:'CCAS',          icon:'🏛️', color:'var(--text2)',  bg:'var(--bg3)',       dot:'#8b8fa8'},
+  hopital:  {label:'Hôpital',       icon:'🏥', color:'var(--red)',    bg:'var(--red-bg)',    dot:'#e05c6a'},
+  had:      {label:'HAD',           icon:'🏡', color:'var(--teal)',   bg:'var(--teal-bg)',   dot:'#3ecfaa'},
+  esat:     {label:'ESAT',          icon:'⚙️', color:'var(--amber)',  bg:'var(--amber-bg)',  dot:'#f0a43a'},
+  ssr:      {label:'SSR',           icon:'🔄', color:'var(--blue)',   bg:'var(--blue-bg)',   dot:'#5b9ef7'},
+  ej:       {label:'Accueil de jour',icon:'☀️',color:'var(--amber)',  bg:'var(--amber-bg)',  dot:'#f0a43a'},
+  cpam:     {label:'CPAM',          icon:'💊', color:'var(--teal)',   bg:'var(--teal-bg)',   dot:'#3ecfaa'},
+  mdph:     {label:'MDPH',          icon:'📋', color:'var(--purple-l)',bg:'var(--purple-bg)',dot:'#7c6ff7'},
+  autre:    {label:'Autre',         icon:'📍', color:'var(--text2)',  bg:'var(--bg3)',       dot:'#8b8fa8'},
+};
+
+const COMMUNES_NORD = ['Épinay-sur-Seine','Saint-Denis','Villetaneuse','Pierrefitte-sur-Seine','Stains','La Courneuve','Aubervilliers','Saint-Ouen','L\'Île-Saint-Denis','Dugny'];
+const COMMUNES_SUD = ['Bondy','Noisy-le-Sec','Bobigny','Pantin','Les Lilas','Bagnolet','Montreuil','Vincennes','Romainville','Villemomble','Neuilly-Plaisance','Noisy-le-Grand','Gagny','Rosny-sous-Bois'];
+const COMMUNES_ALL = [...COMMUNES_NORD,...COMMUNES_SUD,'Aulnay-sous-Bois','Le Blanc-Mesnil','Drancy','Livry-Gargan','Montfermeil','Clichy-sous-Bois'];
+
+const STRUCTURES = [
+  // EHPAD
+  {id:'e1',type:'ehpad',name:'EHPAD Les Lumières d\'Automne',ville:'Saint-Ouen',adresse:'12 rue du Général Leclerc, 93400',tel:'01 49 45 XX XX',public:'Personnes âgées dépendantes GIR 1-4',capacite:'80 lits',desc:'Établissement public, spécialisé Alzheimer, unité protégée disponible.',tags:['Alzheimer','Unité protégée','Public'],dispo:true,featured:false},
+  {id:'e2',type:'ehpad',name:'EHPAD DomusVi Épinay',ville:'Épinay-sur-Seine',adresse:'28 av. de la République, 93800',tel:'01 48 26 XX XX',public:'Personnes âgées 60+',capacite:'90 lits',desc:'Établissement privé, accueil permanent et temporaire. Tarif social accessible.',tags:['Accueil temporaire','Privé','APA acceptée'],dispo:true,featured:true},
+  {id:'e3',type:'ehpad',name:'EHPAD emeis Les Lilas',ville:'Les Lilas',adresse:'5 rue Pasteur, 93260',tel:'01 43 62 XX XX',public:'Personnes âgées GIR 1-5',capacite:'72 lits',desc:'Ancien groupe Korian. Activités thérapeutiques, psychologue sur site.',tags:['Alzheimer','Psychologue','Privé'],dispo:false,featured:false},
+  {id:'e4',type:'ehpad',name:'EHPAD Hôpital Casanova',ville:'Saint-Denis',adresse:'5 rue Madeleine Vionnet, 93200',tel:'01 42 35 XX XX',public:'Personnes âgées en perte d\'autonomie',capacite:'120 lits',desc:'EHPAD public hospitalier adossé au centre gériatrique Casanova. Filière gériatrique complète.',tags:['Public hospitalier','Gériatrie','Soins palliatifs'],dispo:true,featured:false},
+
+  // SSIAD / SAAD
+  {id:'s1',type:'ssiad',name:'SSIAD CCAS Épinay-sur-Seine',ville:'Épinay-sur-Seine',adresse:'Place Jean Grandel, 93800',tel:'01 48 26 XX XX',public:'Personnes âgées et handicapées à domicile',capacite:'60 places',desc:'Service de soins infirmiers à domicile du CCAS. Toilettes, pansements, injections. GIR 1-4.',tags:['GIR 1-4','Toilettes','Pansements','Public'],dispo:true,featured:true},
+  {id:'s2',type:'ssiad',name:'SSIAD Villetaneuse',ville:'Villetaneuse',adresse:'2 allée des Roses, 93430',tel:'01 49 98 XX XX',public:'60 ans et plus, handicap',capacite:'40 places',desc:'Rattaché au CCAS. Secteur Nord 93.',tags:['Nord 93','CCAS'],dispo:true,featured:false},
+  {id:'s3',type:'saad',name:'SAAD Aide & Présence 93',ville:'Saint-Denis',adresse:'15 rue de la Légion d\'Honneur, 93200',tel:'01 48 09 XX XX',public:'Personnes âgées et en situation de handicap',capacite:'Illimité',desc:'Service d\'aide à domicile agréé. Ménage, courses, repas, garde de nuit. Tarif horaire conventionné.',tags:['Ménage','Courses','Garde nuit','Agréé'],dispo:true,featured:false},
+  {id:'s4',type:'had',name:'HAD Seine-Saint-Denis',ville:'Bobigny',adresse:'178 rue Garibaldi, 93000',tel:'01 41 60 XX XX',public:'Patients nécessitant soins complexes à domicile',capacite:'Variable',desc:'Hospitalisation à domicile. Soins palliatifs, chimiothérapie, post-op. Sur prescription médicale.',tags:['Soins palliatifs','Chimio','Post-op','Sur prescription'],dispo:true,featured:false},
+
+  // SAMSAH / SAVS (Handicap)
+  {id:'h1',type:'samsah',name:'SAMSAH TSA 93',ville:'Pantin',adresse:'3 rue du Pré-Saint-Gervais, 93500',tel:'01 41 71 XX XX',public:'Adultes TSA (Troubles du Spectre Autistique)',capacite:'25 places',desc:'Accompagnement médico-social pour adultes autistes. Équipe pluridisciplinaire, projet de vie individualisé.',tags:['TSA','Autisme','Adultes','Pluri-pro'],dispo:false,featured:false},
+  {id:'h2',type:'samsah',name:'SAMSAH Agora 93',ville:'Bobigny',adresse:'12 rue du Chemin Vert, 93000',tel:'01 48 30 XX XX',public:'Adultes handicap psychique',capacite:'30 places',desc:'Partenaire historique DAC 93. Accompagnement domicile, soutien psychiatrique, insertion sociale.',tags:['Handicap psychique','Partenaire DAC','Insertion'],dispo:true,featured:true},
+  {id:'h3',type:'savs',name:'SAVS APF France Handicap 93',ville:'Montreuil',adresse:'8 av. de Rosny, 93100',tel:'01 42 87 XX XX',public:'Adultes handicap moteur et polyhandicap',capacite:'50 places',desc:'Service d\'accompagnement dans la vie sociale. Aide administrative, loisirs, emploi.',tags:['Handicap moteur','Administratif','Emploi'],dispo:true,featured:false},
+
+  // CHRS / Hébergement
+  {id:'c1',type:'chrs',name:'CHRS Emmaüs Alternatives Épinay',ville:'Épinay-sur-Seine',adresse:'14 rue des Fusillés, 93800',tel:'01 48 26 XX XX',public:'Personnes en situation de grande précarité',capacite:'45 places',desc:'Centre d\'hébergement et réinsertion sociale. Accompagnement vers le logement autonome.',tags:['Précarité','Réinsertion','Logement','Femmes acceptées'],dispo:true,featured:false},
+  {id:'c2',type:'siao',name:'SIAO 93 — Insertion',ville:'Bobigny',adresse:'Hôtel du Département, 93000',tel:'01 43 93 XX XX',public:'Personnes sans domicile ou en risque',capacite:'Régulation',desc:'Service Intégré d\'Accueil et d\'Orientation. Régule toutes les demandes d\'hébergement du 93. Saisine via fiche SIAO.',tags:['Urgence','Hébergement','Régulation 93','Fiche SIAO'],dispo:true,featured:true},
+  {id:'c3',type:'chrs',name:'CHRS Groupe SOS Solidarités',ville:'Aubervilliers',adresse:'2 rue du Landy, 93300',tel:'01 48 34 XX XX',public:'Hommes et femmes 18+',capacite:'60 places',desc:'Hébergement stabilisation + accompagnement social intensif. Partenaire SIAO 93.',tags:['Stabilisation','Mixte','SIAO'],dispo:true,featured:false},
+
+  // CMP / Psychiatrie
+  {id:'p1',type:'cmp',name:'CMP Adultes Épinay-sur-Seine',ville:'Épinay-sur-Seine',adresse:'6 rue de la Paix, 93800',tel:'01 48 26 XX XX',public:'Adultes troubles psychiques',capacite:'Consultation',desc:'Centre médico-psychologique. Psychiatres, psychologues, infirmiers. Sans rendez-vous urgent le matin.',tags:['Psychiatrie','Psychologie','Sans RDV matin'],dispo:true,featured:true},
+  {id:'p2',type:'cmp',name:'CMP Saint-Denis Centre',ville:'Saint-Denis',adresse:'22 rue du Bois, 93200',tel:'01 42 43 XX XX',public:'Adultes et adolescents',capacite:'Consultation',desc:'Sectorisé. File active importante — délai 3-6 semaines sauf urgence. Équipe mobile à domicile possible.',tags:['Sectorisé','Équipe mobile','Ados+Adultes'],dispo:true,featured:false},
+  {id:'p3',type:'cmp',name:'CMP Bondy',ville:'Bondy',adresse:'8 av. de la République, 93140',tel:'01 48 02 XX XX',public:'Adultes',capacite:'Consultation',desc:'Rattaché au CH de Ville-Évrard. Spécialités : addictions, trauma, précarité.',tags:['Addictions','Trauma','Précarité'],dispo:true,featured:false},
+
+  // Hôpitaux
+  {id:'ho1',type:'hopital',name:'Hôpital Avicenne — Bobigny',ville:'Bobigny',adresse:'125 route de Stalingrad, 93000',tel:'01 48 95 55 55',public:'Tous publics — MCO + gériatrie',capacite:'500+ lits',desc:'CHU de référence Nord 93. Gériatrie, urgences, psychiatrie, soins palliatifs. Partenaire DAC 93.',tags:['CHU','Gériatrie','Urgences','Partenaire DAC'],dispo:true,featured:false},
+  {id:'ho2',type:'hopital',name:'Hôpital Casanova — Saint-Denis',ville:'Saint-Denis',adresse:'5 rue Madeleine Vionnet, 93200',tel:'01 42 35 61 00',public:'Gériatrie / SSR',capacite:'200 lits',desc:'Hôpital gériatrique de référence. SSR, soins palliatifs, EHPAD adossé, consultation mémoire.',tags:['Gériatrie','SSR','Soins palliatifs','Mémoire'],dispo:true,featured:false},
+  {id:'ho3',type:'ssr',name:'SSR La Roseraie — Aubervilliers',ville:'Aubervilliers',adresse:'7 av. de la Division Leclerc, 93300',tel:'01 48 36 XX XX',public:'Post-hospitalisation, rééducation',capacite:'80 lits',desc:'Soins de suite et réadaptation. Rééducation orthopédique, neurologique, gériatrique.',tags:['Rééducation','Post-op','Ortho','Neuro'],dispo:true,featured:false},
+
+  // CCAS
+  {id:'cc1',type:'ccas',name:'CCAS Épinay-sur-Seine',ville:'Épinay-sur-Seine',adresse:'Place Jean Grandel, 93800',tel:'01 48 26 06 06',public:'Habitants d\'Épinay',capacite:'Services',desc:'Aide alimentaire, aide financière d\'urgence, accompagnement administratif, accès aux droits.',tags:['Aide alimentaire','Urgence financière','Droits','RSA'],dispo:true,featured:true},
+  {id:'cc2',type:'ccas',name:'CCAS Saint-Denis',ville:'Saint-Denis',adresse:'2 place Victor Hugo, 93200',tel:'01 49 33 66 66',public:'Habitants de Saint-Denis',capacite:'Services',desc:'Grande structure. Permanences sociales, épicerie solidaire, SSIAD intégré.',tags:['Épicerie solidaire','SSIAD','Social'],dispo:true,featured:false},
+  {id:'cc3',type:'ccas',name:'CCAS Villetaneuse',ville:'Villetaneuse',adresse:'4 av. de la Commune de Paris, 93430',tel:'01 49 98 21 00',public:'Habitants de Villetaneuse',capacite:'Services',desc:'Service social polyvalent. Aide aux démarches, orientation logement, repas à domicile.',tags:['Repas domicile','Logement','Démarches'],dispo:true,featured:false},
+
+  // Institutions
+  {id:'i1',type:'cpam',name:'CPAM Seine-Saint-Denis',ville:'Bobigny',adresse:'2 rue des Archives, 93000',tel:'3646',public:'Tous assurés du 93',capacite:'Guichet',desc:'Droits maladie, CSS, AME, ALD. Service social CPAM pour situations complexes. Partenaire DAC.',tags:['CSS','AME','ALD','Service social'],dispo:true,featured:false},
+  {id:'i2',type:'mdph',name:'MDPH Seine-Saint-Denis',ville:'Bobigny',adresse:'225 av. Paul Vaillant-Couturier, 93000',tel:'01 43 93 XX XX',public:'Personnes en situation de handicap',capacite:'Guichet',desc:'AAH, RQTH, PCH, AEEH, orientations. Délai traitement : 4-6 mois. Dépôt dossier en ligne possible.',tags:['AAH','RQTH','PCH','AEEH'],dispo:true,featured:false},
+
+  // Accueil de jour
+  {id:'aj1',type:'ej',name:'Accueil de jour Alzheimer Pantin',ville:'Pantin',adresse:'12 rue Watt, 93500',tel:'01 41 71 XX XX',public:'Personnes atteintes d\'Alzheimer ou pathologies apparentées',capacite:'15 places/jour',desc:'Accueil de jour thérapeutique. Ateliers mémoire, activités adaptées, soutien aux aidants.',tags:['Alzheimer','Aidants','Thérapeutique','Jour uniquement'],dispo:true,featured:false},
+  {id:'aj2',type:'ej',name:'Centre d\'Accueil de Jour Le Bourget',ville:'Le Bourget',adresse:'3 rue des Marronniers, 93350',tel:'01 48 35 XX XX',public:'Personnes âgées GIR 1-3',capacite:'12 places/jour',desc:'Répit aidants. Transport assuré. Repas, animations, bain thérapeutique.',tags:['Répit aidants','Transport','GIR 1-3'],dispo:true,featured:false},
+
+  // ESAT
+  {id:'es1',type:'esat',name:'ESAT Horizon 93',ville:'Bondy',adresse:'1 rue des Chantiers, 93140',tel:'01 48 48 XX XX',public:'Adultes en situation de handicap (RQTH)',capacite:'80 places travail',desc:'Établissement et service d\'aide par le travail. Espaces verts, sous-traitance industrielle légère.',tags:['RQTH requis','Espaces verts','Insertion pro'],dispo:true,featured:false},
+];
+
+// ═══ STATE ═══
+let currentView = 'grid';
+let activeFilters = { types:[], zones:[], dispo:null };
+let currentStructId = null;
+let filteredStructures = [...STRUCTURES];
+
+// ═══ FILTRES ═══
+const FILTER_GROUPS = [
+  { id:'type', label:'Type de structure', icon:'🏗️', items:[
+    {val:'ehpad',label:'EHPAD'},
+    {val:'ssiad',label:'SSIAD'},
+    {val:'saad',label:'SAAD / Aide à domicile'},
+    {val:'had',label:'HAD'},
+    {val:'samsah',label:'SAMSAH'},
+    {val:'savs',label:'SAVS'},
+    {val:'chrs',label:'CHRS / Hébergement'},
+    {val:'siao',label:'SIAO'},
+    {val:'cmp',label:'CMP / Psychiatrie'},
+    {val:'hopital',label:'Hôpital / SSR'},
+    {val:'ej',label:'Accueil de jour'},
+    {val:'ccas',label:'CCAS'},
+    {val:'esat',label:'ESAT'},
+    {val:'cpam',label:'CPAM / MDPH'},
+  ]},
+  { id:'zone', label:'Zone géographique', icon:'📍', items:[
+    {val:'nord',label:'Nord 93 (DAC Nord)'},
+    {val:'sud',label:'Sud 93 (DAC Sud)'},
+  ]},
+  { id:'dispo', label:'Disponibilité', icon:'✅', items:[
+    {val:'dispo',label:'Places disponibles'},
+    {val:'indispo',label:'Liste d\'attente'},
+  ]},
+];
+
+function buildFilterGroups(){
+  const el=document.getElementById('filterGroups');
+  el.innerHTML=FILTER_GROUPS.map(g=>`
+    <div class="filter-group">
+      <div class="filter-group-header" onclick="toggleFG('${g.id}')">
+        <span class="fg-icon">${g.icon}</span>
+        ${g.label}
+        <span class="fg-count" id="fgc-${g.id}">0</span>
+        <span class="fg-arrow" id="fga-${g.id}">▶</span>
+      </div>
+      <div class="filter-items" id="fgi-${g.id}">
+        ${g.items.map(item=>`
+          <div class="filter-item" id="fi-${g.id}-${item.val}" onclick="toggleFilter('${g.id}','${item.val}')">
+            <div class="fi-dot" style="background:${getDotColor(g.id,item.val)}"></div>
+            ${item.label}
+          </div>`).join('')}
+      </div>
+    </div>`).join('');
+  // Ouvrir le premier groupe par défaut
+  toggleFG('type');
+}
+
+function getDotColor(group,val){
+  if(group==='type')return TYPE_CONFIG[val]?.dot||'#565a72';
+  if(group==='dispo')return val==='dispo'?'#4cba82':'#e05c6a';
+  return '#565a72';
+}
+
+function toggleFG(id){
+  const items=document.getElementById('fgi-'+id);
+  const arrow=document.getElementById('fga-'+id);
+  if(!items)return;
+  const open=items.classList.toggle('open');
+  if(arrow)arrow.classList.toggle('open',open);
+}
+
+function toggleFilter(group,val){
+  const el=document.getElementById(`fi-${group}-${val}`);
+  if(group==='type'){
+    const idx=activeFilters.types.indexOf(val);
+    if(idx>=0)activeFilters.types.splice(idx,1);
+    else activeFilters.types.push(val);
+    el?.classList.toggle('active');
+  } else if(group==='zone'){
+    const idx=activeFilters.zones.indexOf(val);
+    if(idx>=0)activeFilters.zones.splice(idx,1);
+    else activeFilters.zones.push(val);
+    el?.classList.toggle('active');
+  } else if(group==='dispo'){
+    if(activeFilters.dispo===val){activeFilters.dispo=null;el?.classList.remove('active');}
+    else{
+      document.querySelectorAll('[id^="fi-dispo-"]').forEach(e=>e.classList.remove('active'));
+      activeFilters.dispo=val;el?.classList.add('active');
+    }
+  }
+  // Update counts
+  const count=group==='type'?activeFilters.types.length:group==='zone'?activeFilters.zones.length:activeFilters.dispo?1:0;
+  const cEl=document.getElementById('fgc-'+group);
+  if(cEl){cEl.textContent=count;cEl.style.background=count?'var(--amber-bg)':'var(--bg3)';cEl.style.color=count?'var(--amber)':'var(--text3)';}
+  applyFilters();
+}
+
+function applyFilters(){
+  const search=document.getElementById('searchBox')?.value.toLowerCase().trim()||'';
+  filteredStructures=STRUCTURES.filter(s=>{
+    if(activeFilters.types.length&&!activeFilters.types.includes(s.type))return false;
+    if(activeFilters.zones.length){
+      const inNord=COMMUNES_NORD.some(c=>s.ville.includes(c));
+      const inSud=COMMUNES_SUD.some(c=>s.ville.includes(c));
+      const matchZone=(activeFilters.zones.includes('nord')&&inNord)||(activeFilters.zones.includes('sud')&&inSud);
+      if(!matchZone)return false;
+    }
+    if(activeFilters.dispo==='dispo'&&!s.dispo)return false;
+    if(activeFilters.dispo==='indispo'&&s.dispo)return false;
+    if(search&&!s.name.toLowerCase().includes(search)&&!s.ville.toLowerCase().includes(search)&&!s.type.includes(search)&&!s.tags.some(t=>t.toLowerCase().includes(search)))return false;
+    return true;
+  });
+  const count=filteredStructures.length;
+  document.getElementById('resultsCount').textContent=`${count} structure${count>1?'s':''} trouvée${count>1?'s':''}`;
+  document.getElementById('resultsSub').textContent=buildSubLabel();
+  renderResults();
+}
+
+function buildSubLabel(){
+  const parts=[];
+  if(activeFilters.types.length)parts.push(activeFilters.types.map(t=>TYPE_CONFIG[t]?.label||t).join(', '));
+  if(activeFilters.zones.length)parts.push(activeFilters.zones.map(z=>z==='nord'?'Nord 93':'Sud 93').join(' + '));
+  if(activeFilters.dispo)parts.push(activeFilters.dispo==='dispo'?'Places dispo':'Liste d\'attente');
+  return parts.length?parts.join(' · '):'Seine-Saint-Denis (93) · ParcourSanté AI';
+}
+
+// ═══ RENDU ═══
+function setView(v){
+  currentView=v;
+  document.getElementById('btnGrid').classList.toggle('active',v==='grid');
+  document.getElementById('btnList').classList.toggle('active',v==='list');
+  renderResults();
+}
+
+function renderResults(){
+  const area=document.getElementById('resultsArea');
+  if(!filteredStructures.length){
+    area.innerHTML=`<div style="text-align:center;padding:48px 20px;color:var(--text3)"><div style="font-size:36px;margin-bottom:12px">🔍</div><div style="font-size:14px;font-weight:600;color:var(--text2);margin-bottom:6px">Aucune structure trouvée</div><div style="font-size:12px;line-height:1.6">Modifiez vos filtres ou élargissez la recherche.</div></div>`;
+    return;
+  }
+  if(currentView==='grid'){
+    area.innerHTML=`<div class="results-grid">${filteredStructures.map(s=>renderCard(s)).join('')}</div>`;
+  } else {
+    area.innerHTML=`<div class="results-list">${filteredStructures.map(s=>renderListItem(s)).join('')}</div>`;
+  }
+}
+
+function renderCard(s){
+  const tp=TYPE_CONFIG[s.type]||TYPE_CONFIG.autre;
+  return`<div class="struct-card${s.featured?' featured':''}" onclick="openFiche('${s.id}')">
+    <div class="struct-header">
+      <div class="struct-icon" style="background:${tp.bg}">${tp.icon}</div>
+      <div class="struct-info">
+        <div class="struct-type" style="background:${tp.bg};color:${tp.color}">${tp.label}</div>
+        <div class="struct-name">${s.name}</div>
+        <div class="struct-ville">📍 ${s.ville}</div>
+      </div>
+    </div>
+    <div class="struct-body">
+      <div class="struct-desc">${s.desc}</div>
+      <div class="struct-tags">${s.tags.slice(0,3).map(t=>`<span class="struct-tag">${t}</span>`).join('')}</div>
+    </div>
+    <div class="struct-footer">
+      <div class="struct-tel" style="color:${s.dispo?'var(--green)':'var(--red)'}">
+        ${s.dispo?'✓ Disponible':'⏳ Liste d\'attente'}
+      </div>
+      <button class="fiche-btn" onclick="event.stopPropagation();openFiche('${s.id}')">Fiche</button>
+      <button class="orient-btn" onclick="event.stopPropagation();openOrientModal('${s.id}')">Orienter</button>
+    </div>
+  </div>`;
+}
+
+function renderListItem(s){
+  const tp=TYPE_CONFIG[s.type]||TYPE_CONFIG.autre;
+  return`<div class="struct-list-item">
+    <div class="sli-icon" style="background:${tp.bg}">${tp.icon}</div>
+    <div class="sli-body">
+      <div class="sli-name">${s.name}</div>
+      <div class="sli-sub">${tp.label} · ${s.ville} · ${s.dispo?'<span style="color:var(--green)">Disponible</span>':'<span style="color:var(--red)">Liste d\'attente</span>'}</div>
+    </div>
+    <div class="sli-actions">
+      <button class="sli-btn" onclick="openFiche('${s.id}')">Fiche</button>
+      <button class="sli-btn primary" onclick="openOrientModal('${s.id}')">Orienter</button>
+    </div>
+  </div>`;
+}
+
+// ═══ FICHE STRUCTURE ═══
+function openFiche(id){
+  const s=STRUCTURES.find(x=>x.id===id);if(!s)return;
+  currentStructId=id;
+  const tp=TYPE_CONFIG[s.type]||TYPE_CONFIG.autre;
+  document.getElementById('ficheContent').innerHTML=`
+    <div class="modal-struct-header">
+      <div class="m-icon" style="background:${tp.bg}">${tp.icon}</div>
+      <div>
+        <div class="m-name">${s.name}</div>
+        <div class="m-type" style="color:${tp.color}">${tp.label}</div>
+        <div class="m-ville">📍 ${s.ville} · ${s.adresse||''}</div>
+      </div>
+    </div>
+    <div class="m-section">
+      <div class="m-section-title">Informations</div>
+      <div class="m-detail-row"><div class="m-detail-label">Public</div><div class="m-detail-val">${s.public||'—'}</div></div>
+      <div class="m-detail-row"><div class="m-detail-label">Capacité</div><div class="m-detail-val">${s.capacite||'—'}</div></div>
+      <div class="m-detail-row"><div class="m-detail-label">Disponibilité</div><div class="m-detail-val" style="color:${s.dispo?'var(--green)':'var(--red)'}">${s.dispo?'Places disponibles — à confirmer':'Liste d\'attente'}</div></div>
+      <div class="m-detail-row"><div class="m-detail-label">Téléphone</div><div class="m-detail-val" style="color:var(--teal)">${s.tel||'—'}</div></div>
+    </div>
+    <div class="m-section">
+      <div class="m-section-title">Description</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.6">${s.desc}</div>
+    </div>
+    <div class="m-section">
+      <div class="m-section-title">Caractéristiques</div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px">${s.tags.map(t=>`<span class="struct-tag">${t}</span>`).join('')}</div>
+    </div>
+    <button class="m-btn-primary" onclick="closeModal('ficheModal');openOrientModal('${s.id}')">Orienter ce patient →</button>
+    <button class="m-btn-secondary" onclick="closeModal('ficheModal')">Fermer</button>`;
+  document.getElementById('ficheModal').classList.remove('hidden');
+}
+
+// ═══ ORIENTATION ═══
+function openOrientModal(structId){
+  currentStructId=structId;
+  const s=STRUCTURES.find(x=>x.id===structId);
+  if(!s)return;
+  document.getElementById('orientModalTitle').textContent=`Orienter vers : ${s.name}`;
+  document.getElementById('orientModalSub').textContent=`${TYPE_CONFIG[s.type]?.label||''} · ${s.ville}`;
+  document.getElementById('orientModal').classList.remove('hidden');
+}
+
+function loadPatientSelects(){
+  const dossiers=JSON.parse(localStorage.getItem('mediasante_dossiers')||'[]');
+  ['orientPatient','iaPatientSel'].forEach(selId=>{
+    const sel=document.getElementById(selId);if(!sel)return;
+    const defaultOpt=sel.querySelector('option[value=""]');
+    sel.innerHTML='';
+    if(defaultOpt)sel.appendChild(defaultOpt);
+    else sel.innerHTML=`<option value="">${selId==='iaPatientSel'?'Sans dossier — saisie libre':'Sélectionner un patient...'}</option>`;
+    dossiers.forEach(d=>{
+      const p=d.data?.patient||{};
+      const name=[p.prenom,p.nom].filter(Boolean).join(' ')||'Patient';
+      const opt=document.createElement('option');
+      opt.value=d.id;opt.textContent=`${name} (${d.id})`;
+      sel.appendChild(opt);
+    });
+  });
+}
+
+function submitOrientation(){
+  const s=STRUCTURES.find(x=>x.id===currentStructId);if(!s)return;
+  const patientId=document.getElementById('orientPatient').value;
+  const motif=document.getElementById('orientMotif').value;
+  const urgence=document.getElementById('orientUrgence').value;
+  const notes=document.getElementById('orientNotes').value;
+  if(!motif){showToast('Sélectionnez un motif');return}
+
+  const entry={
+    id:Date.now().toString(),
+    date:new Date().toISOString(),
+    structId:s.id,structName:s.name,structType:s.type,structVille:s.ville,
+    patientId:patientId||null,
+    motif,urgence,notes,
+    status:'en_cours',
+  };
+
+  // Sauvegarder dans l'historique
+  const hist=JSON.parse(localStorage.getItem('ps_orientations')||'[]');
+  hist.unshift(entry);
+  localStorage.setItem('ps_orientations',JSON.stringify(hist.slice(0,50)));
+
+  // Sauvegarder dans le dossier patient si lié
+  if(patientId){
+    const dossiers=JSON.parse(localStorage.getItem('mediasante_dossiers')||'[]');
+    const idx=dossiers.findIndex(d=>d.id===patientId);
+    if(idx>=0){
+      if(!dossiers[idx].orientations)dossiers[idx].orientations=[];
+      dossiers[idx].orientations.push(entry);
+      localStorage.setItem('mediasante_dossiers',JSON.stringify(dossiers));
+    }
+    // Ajouter aussi dans les transmissions
+    const txKey='transmissions_'+patientId;
+    const txList=JSON.parse(localStorage.getItem(txKey)||'[]');
+    txList.unshift({
+      id:'orient_'+entry.id,
+      date:new Date().toISOString(),
+      type:'droit',
+      title:`Orientation vers ${s.name}`,
+      content:`Motif : ${motif}\nUrgence : ${urgence}\n${notes?'Notes : '+notes:''}`,
+      interv:s.name,
+      suite:`Contacter ${s.name} — ${s.tel}`,
+      author:'Médiateur',
+      read:true,
+    });
+    localStorage.setItem(txKey,JSON.stringify(txList));
+  }
+
+  closeModal('orientModal');
+  // Reset form
+  document.getElementById('orientPatient').value='';
+  document.getElementById('orientMotif').value='';
+  document.getElementById('orientNotes').value='';
+  showToast(`Orientation enregistrée — ${s.name} ✓`);
+}
+
+// ═══ IA ORIENTATION ═══
+function openIAOrient(){
+  loadPatientSelects();
+  const dossiers=JSON.parse(localStorage.getItem('mediasante_dossiers')||'[]');
+  const sel=document.getElementById('iaPatientSel');
+  if(sel&&dossiers.length&&document.getElementById('iaSituationInput').value===''){
+    // Pré-remplir depuis le premier dossier si disponible
+    const d=dossiers[0];
+    const p=d.data?.patient||{};
+    const alerts=Object.values(d.data?.alerts||{}).flat();
+    const name=[p.prenom,p.nom].filter(Boolean).join(' ');
+    if(name)document.getElementById('iaSituationInput').placeholder=`Ex: ${name}, ${p.age||'âge inconnu'}, ${alerts.slice(0,2).join(', ')||'situation à décrire'}...`;
+  }
+  document.getElementById('iaOrientModal').classList.remove('hidden');
+}
+
+async function runIAOrientation(){
+  const situation=document.getElementById('iaSituationInput').value.trim();
+  if(!situation){showToast('Décrivez la situation');return}
+  const apiKey=getApiKey();
+  closeModal('iaOrientModal');
+
+  document.getElementById('iaPanelArea').innerHTML=`
+    <div class="ia-panel">
+      <div class="ia-header"><div class="ia-dot"></div><div class="ia-title">Analyse IA en cours...</div></div>
+      <div class="ia-content" style="color:var(--text3);font-style:italic">Recherche des structures adaptées...</div>
+    </div>`;
+
+  if(!apiKey.startsWith('sk-')){
+    renderIAReco(situation,[
+      {name:'SAMSAH Agora 93',type:'samsah',ville:'Bobigny',why:'Accompagnement médico-social adapté aux situations complexes avec handicap psychique'},
+      {name:'CCAS Épinay-sur-Seine',type:'ccas',ville:'Épinay-sur-Seine',why:'Premier recours pour aide administrative et accès aux droits'},
+      {name:'CMP Adultes Épinay',type:'cmp',ville:'Épinay-sur-Seine',why:'Évaluation psychiatrique si troubles comportementaux identifiés'},
+    ]);
+    return;
+  }
+
+  const structList=STRUCTURES.map(s=>`- ${s.name} (${TYPE_CONFIG[s.type]?.label||s.type}, ${s.ville}): ${s.desc} [public: ${s.public}] [dispo: ${s.dispo?'oui':'liste attente'}]`).join('\n');
+
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
+      body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:800,messages:[{role:'user',content:`Tu es un coordinateur de parcours expert en orientation médico-sociale en Seine-Saint-Denis (93).
+
+SITUATION SOUMISE :
+${situation}
+
+STRUCTURES DISPONIBLES DANS L'ANNUAIRE :
+${structList}
+
+Recommande les 3 structures les plus adaptées. Réponds UNIQUEMENT en JSON valide, sans markdown :
+{"recos":[{"name":"nom exact","type":"type","ville":"ville","why":"raison courte en 1 phrase","urgence":"haute|normale"},...]}`}]})
+    });
+    const data=await resp.json();
+    let text=data.content?.[0]?.text||'{}';
+    text=text.replace(/```json|```/g,'').trim();
+    const result=JSON.parse(text);
+    renderIAReco(situation,result.recos||[]);
+  }catch(e){
+    renderIAReco(situation,[{name:'Erreur',type:'autre',ville:'',why:'Vérifiez votre clé API et réessayez.'}]);
+  }
+}
+
+function renderIAReco(situation,recos){
+  document.getElementById('iaPanelArea').innerHTML=`
+    <div class="ia-panel">
+      <div class="ia-header"><div class="ia-dot" style="animation:none;background:var(--teal)"></div><div class="ia-title">Recommandations IA — ${recos.length} structure(s) identifiée(s)</div></div>
+      <div class="ia-content" style="margin-bottom:10px;color:var(--text3);font-size:12px">Basé sur : "${situation.slice(0,80)}${situation.length>80?'...':''}"</div>
+      <div class="ia-reco-list">
+        ${recos.map((r,i)=>{
+          const tp=TYPE_CONFIG[r.type]||TYPE_CONFIG.autre;
+          const s=STRUCTURES.find(x=>x.name===r.name);
+          return`<div class="ia-reco">
+            <div class="ia-reco-num">${i+1}</div>
+            <div class="ia-reco-body">
+              <div class="ia-reco-name">${tp.icon} ${r.name}${r.ville?' · '+r.ville:''}</div>
+              <div class="ia-reco-why">${r.why||''}</div>
+            </div>
+            ${s?`<button class="ia-reco-btn" onclick="openOrientModal('${s.id}')">Orienter →</button>`:''}
+          </div>`;
+        }).join('')}
+      </div>
+      <button onclick="document.getElementById('iaPanelArea').innerHTML=''" style="margin-top:10px;background:none;border:none;color:var(--text3);font-size:11px;cursor:pointer">Fermer l'analyse ×</button>
+    </div>`;
+}
+
+// ═══ HISTORIQUE ═══
+function openOrientHist(){
+  const hist=JSON.parse(localStorage.getItem('ps_orientations')||'[]');
+  const el=document.getElementById('histContent');
+  if(!hist.length){
+    el.innerHTML='<div style="text-align:center;padding:24px;font-size:13px;color:var(--text3)">Aucune orientation enregistrée.</div>';
+  } else {
+    const statusConfig={en_cours:{color:'var(--amber)',label:'En cours'},validee:{color:'var(--green)',label:'Validée'},refusee:{color:'var(--red)',label:'Refusée'}};
+    el.innerHTML=hist.map(h=>{
+      const sc=statusConfig[h.status]||statusConfig.en_cours;
+      const tp=TYPE_CONFIG[h.structType]||TYPE_CONFIG.autre;
+      return`<div class="hist-item">
+        <div class="hist-status" style="background:${sc.color}"></div>
+        <div class="hist-body">
+          <div class="hist-struct">${tp.icon} ${h.structName}</div>
+          <div class="hist-patient">${h.motif}${h.patientId?' · Dossier '+h.patientId:''} · <span style="color:${sc.color}">${sc.label}</span></div>
+        </div>
+        <div class="hist-date">${new Date(h.date).toLocaleDateString('fr-FR')}</div>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('histModal').classList.remove('hidden');
+}
+
+// ═══ UTILS ═══
+function closeModal(id){document.getElementById(id)?.classList.add('hidden')}
+function openLink(url){window.open(url,'_blank')}
+function showToast(msg){
+  const t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--bg3);border:1px solid rgba(255,255,255,.2);color:var(--text);padding:9px 18px;border-radius:20px;font-size:12px;z-index:9999;white-space:nowrap';
+  t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2400);
+}
+</script>
+</body>
+</html>

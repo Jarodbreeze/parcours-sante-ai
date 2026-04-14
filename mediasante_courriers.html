@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>ParcourSanté AI — Courriers</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+:root {
+  --bg:#0f1117;--bg2:#161820;--bg3:#1e2130;
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.15);
+  --text:#f0f1f5;--text2:#8b8fa8;--text3:#565a72;
+  --purple:#7c6ff7;--purple-l:#a99ef9;--purple-bg:rgba(124,111,247,0.12);--purple-b:rgba(124,111,247,0.3);
+  --teal:#3ecfaa;--teal-bg:rgba(62,207,170,0.1);--teal-b:rgba(62,207,170,0.25);
+  --amber:#f0a43a;--amber-bg:rgba(240,164,58,0.1);
+  --red:#e05c6a;--red-bg:rgba(224,92,106,0.1);
+  --green:#4cba82;--green-bg:rgba(76,186,130,0.1);
+  --r:10px;--rs:7px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* TOPBAR */
+.topbar{position:sticky;top:0;z-index:100;background:rgba(15,17,23,0.93);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 16px;height:52px;display:flex;align-items:center;justify-content:space-between}
+.logo{display:flex;align-items:center;gap:8px}
+.logo-dot{width:8px;height:8px;border-radius:50%;background:var(--teal)}
+.logo-text{font-size:14px;font-weight:600;letter-spacing:-.3px}
+.logo-sub{font-size:11px;color:var(--text3);margin-left:2px}
+.badge-mode{font-size:10px;font-weight:600;letter-spacing:.08em;padding:3px 8px;border-radius:20px;background:var(--teal-bg);color:var(--teal);border:1px solid var(--teal-b)}
+
+/* API BAR */
+.api-bar{background:var(--bg2);border-bottom:1px solid var(--border);padding:8px 16px;display:flex;align-items:center;gap:8px}
+.api-label{font-size:11px;color:var(--text3);flex-shrink:0}
+.api-input{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:11px;padding:5px 8px;font-family:monospace;outline:none}
+.api-input:focus{border-color:var(--purple)}
+.api-save{font-size:11px;padding:5px 10px;border-radius:5px;background:var(--purple-bg);color:var(--purple-l);border:1px solid var(--purple-b);cursor:pointer}
+
+/* LAYOUT */
+.layout{display:flex;height:calc(100vh - 92px)}
+.sidebar{width:260px;flex-shrink:0;border-right:1px solid var(--border);background:var(--bg2);overflow-y:auto;display:flex;flex-direction:column}
+.editor{flex:1;overflow-y:auto;padding:20px}
+
+@media(max-width:640px){
+  .layout{flex-direction:column;height:auto}
+  .sidebar{width:100%;max-height:260px;border-right:none;border-bottom:1px solid var(--border)}
+  .editor{padding:14px}
+}
+
+/* SIDEBAR */
+.sidebar-section{padding:12px 12px 4px;font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--text3);text-transform:uppercase}
+.cat-header{display:flex;align-items:center;gap:6px;padding:8px 12px;cursor:pointer;font-size:12px;font-weight:600;color:var(--text2);user-select:none}
+.cat-header:hover{background:var(--bg3)}
+.cat-icon{width:20px;height:20px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0}
+.cat-arrow{margin-left:auto;font-size:10px;color:var(--text3);transition:transform .2s}
+.cat-arrow.open{transform:rotate(90deg)}
+.cat-items{display:none}
+.cat-items.open{display:block}
+.model-item{padding:7px 12px 7px 38px;font-size:12px;color:var(--text2);cursor:pointer;border-left:2px solid transparent;transition:all .15s;line-height:1.3}
+.model-item:hover{background:var(--bg3);color:var(--text)}
+.model-item.active{color:var(--teal);border-left-color:var(--teal);background:var(--teal-bg)}
+
+/* PATIENT SELECTOR */
+.patient-sel{margin:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:8px 10px;cursor:pointer;display:flex;align-items:center;gap:8px}
+.patient-sel:hover{border-color:var(--border2)}
+.patient-avatar{width:28px;height:28px;border-radius:50%;background:var(--purple-bg);border:1px solid var(--purple-b);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--purple-l);flex-shrink:0}
+.patient-info{flex:1;min-width:0}
+.patient-name{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.patient-id{font-size:10px;color:var(--text3)}
+.patient-chevron{color:var(--text3);font-size:10px}
+
+/* EDITOR */
+.editor-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;gap:10px}
+.editor-title{font-size:18px;font-weight:700;letter-spacing:-.4px}
+.editor-meta{font-size:12px;color:var(--text3);margin-top:3px}
+.action-btns{display:flex;gap:6px;flex-shrink:0}
+.btn-icon{width:34px;height:34px;border-radius:var(--rs);border:1px solid var(--border);background:var(--bg2);color:var(--text2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;transition:all .15s}
+.btn-icon:hover{border-color:var(--border2);color:var(--text)}
+
+/* LETTER AREA */
+.letter-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:14px}
+.letter-toolbar{display:flex;align-items:center;gap:6px;padding:8px 12px;border-bottom:1px solid var(--border);background:var(--bg3)}
+.toolbar-btn{font-size:11px;padding:4px 8px;border-radius:5px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;transition:all .15s;font-family:inherit}
+.toolbar-btn:hover{background:var(--bg2);color:var(--text)}
+.toolbar-divider{width:1px;height:16px;background:var(--border);margin:0 2px}
+.letter-body{padding:16px;min-height:400px;font-size:14px;line-height:1.8;color:var(--text);outline:none;white-space:pre-wrap}
+.letter-body:empty::before{content:'Sélectionnez un modèle dans la colonne gauche pour commencer...';color:var(--text3);pointer-events:none}
+
+/* IA PANEL */
+.ia-panel{background:var(--purple-bg);border:1px solid var(--purple-b);border-radius:var(--r);padding:14px;margin-bottom:14px}
+.ia-header{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.ia-dot{width:7px;height:7px;border-radius:50%;background:var(--purple);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.ia-title{font-size:12px;font-weight:600;color:var(--purple-l)}
+.ia-desc{font-size:12px;color:var(--text2);margin-bottom:10px;line-height:1.5}
+.ia-fields{display:flex;flex-direction:column;gap:8px}
+.ia-field label{font-size:11px;color:var(--text3);display:block;margin-bottom:3px}
+.ia-field input,
+.ia-field select,
+.ia-field textarea{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:13px;padding:8px 10px;outline:none;font-family:inherit}
+.ia-field input:focus,.ia-field select:focus,.ia-field textarea:focus{border-color:var(--purple)}
+.ia-field select option{background:var(--bg2)}
+.ia-field textarea{resize:vertical;min-height:60px;line-height:1.5}
+
+/* BUTTONS */
+.btn-generate{width:100%;padding:12px;border-radius:var(--r);background:var(--purple);color:#fff;font-size:14px;font-weight:600;font-family:inherit;border:none;cursor:pointer;transition:opacity .2s,transform .1s;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px}
+.btn-generate:active{transform:scale(.98);opacity:.9}
+.btn-generate:disabled{opacity:.5;cursor:not-allowed}
+.btn-secondary{width:100%;padding:10px;border-radius:var(--r);background:transparent;color:var(--text2);font-size:13px;font-family:inherit;border:1px solid var(--border);cursor:pointer;transition:border-color .2s;margin-bottom:6px}
+.btn-secondary:hover{border-color:var(--border2)}
+
+/* VARIABLES TAGS */
+.vars-wrap{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px}
+.var-tag{font-size:11px;padding:3px 8px;border-radius:4px;background:var(--amber-bg);color:var(--amber);border:1px solid rgba(240,164,58,0.2);cursor:pointer;font-family:monospace}
+.var-tag:hover{background:rgba(240,164,58,0.2)}
+
+/* STATUS BAR */
+.status-bar{display:flex;align-items:center;gap:10px;padding:8px 12px;border-top:1px solid var(--border);font-size:11px;color:var(--text3)}
+.status-dot{width:6px;height:6px;border-radius:50%}
+.word-count{margin-left:auto}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:flex;align-items:flex-end;justify-content:center}
+.modal-overlay.hidden{display:none}
+.modal{background:var(--bg2);border-top:1px solid var(--border);border-radius:16px 16px 0 0;padding:20px;width:100%;max-width:500px;max-height:70vh;overflow-y:auto}
+.modal-title{font-size:16px;font-weight:700;margin-bottom:14px}
+.modal-close{float:right;background:none;border:none;color:var(--text2);font-size:18px;cursor:pointer;margin-top:-4px}
+.dossier-item{padding:10px 12px;border-radius:var(--rs);border:1px solid var(--border);background:var(--bg3);margin-bottom:6px;cursor:pointer;display:flex;align-items:center;gap:10px}
+.dossier-item:hover{border-color:var(--border2)}
+.dossier-avatar{width:32px;height:32px;border-radius:50%;background:var(--purple-bg);border:1px solid var(--purple-b);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--purple-l);flex-shrink:0}
+.dossier-name{font-size:13px;font-weight:600}
+.dossier-id{font-size:11px;color:var(--text3)}
+.empty-state{text-align:center;padding:24px;color:var(--text3);font-size:13px}
+
+/* NOTICE ÉLIGIBILITÉ */
+.notice-btn{margin:8px 12px 4px;display:flex;align-items:center;gap:7px;padding:9px 11px;border-radius:var(--rs);border:1px solid var(--purple-b);background:var(--purple-bg);cursor:pointer;transition:all .15s;width:calc(100% - 24px)}
+.notice-btn:hover{background:rgba(124,111,247,0.2)}
+.notice-btn-icon{font-size:13px}
+.notice-btn-text{flex:1;font-size:12px;font-weight:600;color:var(--purple-l)}
+.notice-btn-count{font-size:10px;padding:2px 6px;border-radius:10px;background:var(--purple);color:#fff;font-weight:700}
+.notice-panel{display:none;margin:0 12px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);overflow:hidden;max-height:420px;overflow-y:auto}
+.notice-panel.open{display:block}
+.notice-header{padding:10px 12px 6px;display:flex;align-items:center;justify-content:space-between}
+.notice-title{font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--text3);text-transform:uppercase}
+.notice-close{font-size:14px;color:var(--text3);cursor:pointer;background:none;border:none;padding:0;line-height:1}
+.notice-loading{padding:14px 12px;font-size:12px;color:var(--text3);font-style:italic;display:flex;align-items:center;gap:6px}
+.notice-section{padding:6px 12px 2px}
+.notice-sec-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:5px}
+.droit-item{display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)}
+.droit-item:last-child{border-bottom:none}
+.droit-status{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.droit-status.eligible{background:var(--green)}
+.droit-status.verifier{background:var(--amber)}
+.droit-status.non{background:var(--text3)}
+.droit-body{flex:1;min-width:0}
+.droit-name{font-size:12px;font-weight:600;color:var(--text);line-height:1.3}
+.droit-reason{font-size:11px;color:var(--text3);margin-top:1px;line-height:1.4}
+.droit-action{flex-shrink:0;font-size:10px;padding:3px 7px;border-radius:4px;background:var(--teal-bg);color:var(--teal);border:1px solid var(--teal-b);cursor:pointer;white-space:nowrap;font-family:inherit}
+.droit-action:hover{background:rgba(62,207,170,0.2)}
+.notice-legend{display:flex;gap:10px;padding:8px 12px;border-top:1px solid var(--border);background:var(--bg2)}
+.leg-item{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text3)}
+.leg-dot{width:6px;height:6px;border-radius:50%}
+.notice-no-patient{padding:12px;font-size:12px;color:var(--text3);text-align:center;line-height:1.5}
+
+/* PDF PRINT */
+@media print {
+  body{background:#fff;color:#000}
+  .topbar,.api-bar,.sidebar,.action-btns,.ia-panel,.status-bar,.btn-generate,.btn-secondary,.letter-toolbar,.vars-wrap{display:none!important}
+  .layout{display:block;height:auto}
+  .editor{padding:20px;background:#fff}
+  .letter-wrap{border:none;background:#fff}
+  .letter-body{color:#000;font-family:Georgia,serif;font-size:12pt;line-height:1.8;min-height:auto}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-dot"></div>
+    <span class="logo-text">ParcourSanté AI</span>
+    <span class="logo-sub">Courriers</span>
+  </div>
+  <span class="badge-mode">COURRIERS</span>
+</div>
+
+<div class="api-bar">
+  <span class="api-label">Clé API Claude :</span>
+  <input type="password" class="api-input" id="apiKeyInput" placeholder="sk-ant-..." />
+  <button class="api-save" onclick="saveApiKey()">OK</button>
+</div>
+
+<div class="layout">
+
+<!-- ═══ SIDEBAR ═══ -->
+<div class="sidebar">
+
+  <!-- Patient actif -->
+  <div class="sidebar-section">Dossier actif</div>
+  <div class="patient-sel" onclick="openModal()">
+    <div class="patient-avatar" id="patientAvatar">?</div>
+    <div class="patient-info">
+      <div class="patient-name" id="patientName">Sélectionner un patient</div>
+      <div class="patient-id" id="patientId">Aucun dossier ouvert</div>
+    </div>
+    <span class="patient-chevron">▼</span>
+  </div>
+
+  <!-- NOTICE ÉLIGIBILITÉ -->
+  <button class="notice-btn" onclick="toggleNotice()" id="noticeBtn">
+    <span class="notice-btn-icon">⚡</span>
+    <span class="notice-btn-text">Analyser les droits</span>
+    <span class="notice-btn-count" id="noticeBadge" style="display:none">0</span>
+  </button>
+  <div class="notice-panel" id="noticePanel">
+    <div class="notice-header">
+      <span class="notice-title">Notice d'éligibilité</span>
+      <button class="notice-close" onclick="toggleNotice()">×</button>
+    </div>
+    <div id="noticeContent">
+      <div class="notice-no-patient">Sélectionnez un dossier patient pour analyser les droits potentiels.</div>
+    </div>
+    <div class="notice-legend">
+      <div class="leg-item"><div class="leg-dot" style="background:var(--green)"></div>Éligible</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--amber)"></div>À vérifier</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--text3)"></div>Non applicable</div>
+    </div>
+  </div>
+
+  <div class="sidebar-section">Modèles de courriers</div>
+
+  <!-- CPAM / Assurance Maladie -->
+  <div class="cat-header" onclick="toggleCat('cpam')">
+    <div class="cat-icon" style="background:var(--teal-bg);color:var(--teal)">C</div>
+    CPAM / Assurance Maladie
+    <span class="cat-arrow" id="arrow-cpam">▶</span>
+  </div>
+  <div class="cat-items" id="cat-cpam">
+    <div class="model-item" onclick="selectModel('cpam_css_renouvellement')">Renouvellement CSS / C2S</div>
+    <div class="model-item" onclick="selectModel('cpam_ame_demande')">Demande initiale AME</div>
+    <div class="model-item" onclick="selectModel('cpam_ame_renouvellement')">Renouvellement AME</div>
+    <div class="model-item" onclick="selectModel('cpam_relance')">Relance dossier en cours</div>
+    <div class="model-item" onclick="selectModel('cpam_attestation')">Demande attestation droits</div>
+    <div class="model-item" onclick="selectModel('cpam_mt_declaration')">Déclaration médecin traitant</div>
+  </div>
+
+  <!-- MDPH -->
+  <div class="cat-header" onclick="toggleCat('mdph')">
+    <div class="cat-icon" style="background:var(--purple-bg);color:var(--purple-l)">M</div>
+    MDPH / Handicap
+    <span class="cat-arrow" id="arrow-mdph">▶</span>
+  </div>
+  <div class="cat-items" id="cat-mdph">
+    <div class="model-item" onclick="selectModel('mdph_aah_demande')">Demande AAH</div>
+    <div class="model-item" onclick="selectModel('mdph_rqth')">Demande RQTH</div>
+    <div class="model-item" onclick="selectModel('mdph_pcv')">Demande PCH / AEEH</div>
+    <div class="model-item" onclick="selectModel('mdph_relance')">Relance instruction dossier</div>
+    <div class="model-item" onclick="selectModel('mdph_recours')">Recours amiable RAPO</div>
+  </div>
+
+  <!-- CAF / RSA / APL -->
+  <div class="cat-header" onclick="toggleCat('caf')">
+    <div class="cat-icon" style="background:var(--amber-bg);color:var(--amber)">F</div>
+    CAF / Aides sociales
+    <span class="cat-arrow" id="arrow-caf">▶</span>
+  </div>
+  <div class="cat-items" id="cat-caf">
+    <div class="model-item" onclick="selectModel('caf_rsa_demande')">Demande RSA</div>
+    <div class="model-item" onclick="selectModel('caf_apl_demande')">Demande APL</div>
+    <div class="model-item" onclick="selectModel('caf_relance')">Relance CAF dossier</div>
+    <div class="model-item" onclick="selectModel('caf_regularisation')">Régularisation indus</div>
+  </div>
+
+  <!-- Médecin / Santé -->
+  <div class="cat-header" onclick="toggleCat('med')">
+    <div class="cat-icon" style="background:var(--green-bg);color:var(--green)">S</div>
+    Médecin / Soins
+    <span class="cat-arrow" id="arrow-med">▶</span>
+  </div>
+  <div class="cat-items" id="cat-med">
+    <div class="model-item" onclick="selectModel('med_mt_liaison')">Fiche de liaison médecin traitant</div>
+    <div class="model-item" onclick="selectModel('med_specialiste')">Orientation vers spécialiste</div>
+    <div class="model-item" onclick="selectModel('med_hopital_sortie')">Courrier de sortie hospitalière</div>
+    <div class="model-item" onclick="selectModel('med_psychiatrie')">Demande évaluation psychiatrique</div>
+    <div class="model-item" onclick="selectModel('med_soins_infirmiers')">Demande soins infirmiers (SSIAD)</div>
+  </div>
+
+  <!-- Logement / Social -->
+  <div class="cat-header" onclick="toggleCat('log')">
+    <div class="cat-icon" style="background:var(--red-bg);color:var(--red)">L</div>
+    Logement / Social
+    <span class="cat-arrow" id="arrow-log">▶</span>
+  </div>
+  <div class="cat-items" id="cat-log">
+    <div class="model-item" onclick="selectModel('log_siao')">Demande SIAO hébergement</div>
+    <div class="model-item" onclick="selectModel('log_dalo')">Dépôt recours DALO</div>
+    <div class="model-item" onclick="selectModel('log_bailleur')">Courrier bailleur social</div>
+    <div class="model-item" onclick="selectModel('log_expulsion')">Urgence menace expulsion</div>
+    <div class="model-item" onclick="selectModel('log_ccas')">Saisine CCAS</div>
+    <div class="model-item" onclick="selectModel('log_as')">Courrier assistante sociale</div>
+  </div>
+
+  <!-- DAC / Coordination -->
+  <div class="cat-header" onclick="toggleCat('dac')">
+    <div class="cat-icon" style="background:rgba(124,111,247,0.2);color:var(--purple-l)">D</div>
+    DAC / Coordination
+    <span class="cat-arrow" id="arrow-dac">▶</span>
+  </div>
+  <div class="cat-items" id="cat-dac">
+    <div class="model-item" onclick="selectModel('dac_cr_accompagnement')">Compte-rendu d'accompagnement</div>
+    <div class="model-item" onclick="selectModel('dac_synthese_situation')">Synthèse de situation</div>
+    <div class="model-item" onclick="selectModel('dac_partenaire')">Courrier partenaire externe</div>
+    <div class="model-item" onclick="selectModel('dac_orientation')">Courrier d'orientation</div>
+    <div class="model-item" onclick="selectModel('dac_cr_resad')">Compte-rendu RESAD</div>
+  </div>
+
+  <!-- Tutelle / Protection -->
+  <div class="cat-header" onclick="toggleCat('tut')">
+    <div class="cat-icon" style="background:var(--bg3);color:var(--text2)">T</div>
+    Protection juridique
+    <span class="cat-arrow" id="arrow-tut">▶</span>
+  </div>
+  <div class="cat-items" id="cat-tut">
+    <div class="model-item" onclick="selectModel('tut_mandataire')">Courrier mandataire judiciaire</div>
+    <div class="model-item" onclick="selectModel('tut_signalement')">Signalement situation à risque</div>
+    <div class="model-item" onclick="selectModel('tut_mesure_protection')">Demande mesure de protection</div>
+  </div>
+
+</div><!-- /sidebar -->
+
+<!-- ═══ EDITOR ═══ -->
+<div class="editor">
+
+  <div class="editor-header">
+    <div>
+      <div class="editor-title" id="editorTitle">Générateur de courriers</div>
+      <div class="editor-meta" id="editorMeta">Sélectionnez un modèle pour commencer</div>
+    </div>
+    <div class="action-btns">
+      <div class="btn-icon" title="Copier" onclick="copyCourrier()">⎘</div>
+      <div class="btn-icon" title="Exporter PDF" onclick="exportPDF()">↓</div>
+      <div class="btn-icon" title="Imprimer" onclick="window.print()">⎙</div>
+    </div>
+  </div>
+
+  <!-- Variables rapides -->
+  <div class="vars-wrap" id="varsWrap" style="display:none">
+    <span style="font-size:11px;color:var(--text3);margin-right:4px">Insérer :</span>
+  </div>
+
+  <!-- Zone IA -->
+  <div class="ia-panel" id="iaPanel" style="display:none">
+    <div class="ia-header">
+      <div class="ia-dot"></div>
+      <div class="ia-title">Paramètres du courrier</div>
+    </div>
+    <div class="ia-desc" id="iaDesc">Précisez les informations nécessaires à la génération.</div>
+    <div class="ia-fields" id="iaFields"></div>
+  </div>
+
+  <button class="btn-generate" id="btnGenerate" style="display:none" onclick="generateCourrier()">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1l1.8 3.8L13 6l-3 3 .7 4.2L7 11l-3.7 2.2.7-4.2L1 6l4.2-1.2L7 1z" fill="#fff"/></svg>
+    Générer avec Claude
+  </button>
+
+  <!-- Zone courrier -->
+  <div class="letter-wrap" id="letterWrap">
+    <div class="letter-toolbar">
+      <button class="toolbar-btn" onclick="formatText('bold')"><strong>G</strong></button>
+      <button class="toolbar-btn" onclick="formatText('italic')"><em>I</em></button>
+      <div class="toolbar-divider"></div>
+      <button class="toolbar-btn" onclick="insertDate()">Date</button>
+      <button class="toolbar-btn" onclick="insertPatientInfo()">Patient</button>
+      <button class="toolbar-btn" onclick="insertStructure()">Structure</button>
+      <div class="toolbar-divider"></div>
+      <button class="toolbar-btn" onclick="clearLetter()" style="color:var(--red)">Effacer</button>
+    </div>
+    <div class="letter-body" id="letterBody" contenteditable="true" spellcheck="true"></div>
+    <div class="status-bar">
+      <div class="status-dot" id="statusDot" style="background:var(--text3)"></div>
+      <span id="statusText">Prêt</span>
+      <span class="word-count" id="wordCount">0 mots</span>
+    </div>
+  </div>
+
+  <button class="btn-secondary" id="btnRefine" style="display:none" onclick="refineCourrier()">
+    ↻ Reformuler / adapter le ton
+  </button>
+
+</div><!-- /editor -->
+</div><!-- /layout -->
+
+<!-- ═══ MODAL PATIENT ═══ -->
+<div class="modal-overlay hidden" id="patientModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <div class="modal-title">Sélectionner un dossier</div>
+    <div id="dossierList"></div>
+    <div style="margin-top:10px">
+      <button class="btn-secondary" onclick="newManualPatient()">+ Saisir manuellement</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MANUEL PATIENT FORM ═══ -->
+<div class="modal-overlay hidden" id="manualModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeManualModal()">×</button>
+    <div class="modal-title">Patient — saisie manuelle</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div>
+        <label style="font-size:11px;color:var(--text3);display:block;margin-bottom:3px">Prénom Nom</label>
+        <input type="text" id="m_nom" placeholder="Marie DUPONT" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:13px;padding:8px 10px;outline:none;font-family:inherit" />
+      </div>
+      <div>
+        <label style="font-size:11px;color:var(--text3);display:block;margin-bottom:3px">Date de naissance</label>
+        <input type="date" id="m_ddn" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:13px;padding:8px 10px;outline:none;font-family:inherit" />
+      </div>
+      <div>
+        <label style="font-size:11px;color:var(--text3);display:block;margin-bottom:3px">Adresse</label>
+        <input type="text" id="m_adresse" placeholder="15 rue des Lilas, Épinay-sur-Seine" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:13px;padding:8px 10px;outline:none;font-family:inherit" />
+      </div>
+      <div>
+        <label style="font-size:11px;color:var(--text3);display:block;margin-bottom:3px">N° Sécurité sociale</label>
+        <input type="text" id="m_secu" placeholder="1 85 09 93 123 456 78" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:13px;padding:8px 10px;outline:none;font-family:inherit;font-family:monospace" />
+      </div>
+    </div>
+    <button class="btn-generate" style="margin-top:12px" onclick="confirmManual()">Confirmer →</button>
+  </div>
+</div>
+
+<script>
+// ─── STATE ───
+let currentModel = null;
+let currentPatient = null;
+let isGenerating = false;
+
+const STRUCTURE = {
+  nom: "DAC 93 Nord",
+  adresse: "Seine-Saint-Denis (93)",
+  tel: "À compléter",
+  email: "À compléter"
+};
+
+// ─── API KEY ───
+function saveApiKey() {
+  const k = document.getElementById('apiKeyInput').value.trim();
+  if(k) { localStorage.setItem('mediasante_api_key', k); showToast('Clé API enregistrée ✓'); }
+}
+function getApiKey() { return localStorage.getItem('mediasante_api_key') || ''; }
+window.addEventListener('load', () => {
+  const k = getApiKey(); if(k) document.getElementById('apiKeyInput').value = k.slice(0,12)+'...';
+  updateWordCount();
+  toggleCat('cpam');
+});
+
+// ─── NOTICE D'ÉLIGIBILITÉ ───
+
+let noticeOpen = false;
+let noticeAnalysisDone = false;
+
+function toggleNotice() {
+  const panel = document.getElementById('noticePanel');
+  noticeOpen = !noticeOpen;
+  panel.classList.toggle('open', noticeOpen);
+  if(noticeOpen && currentPatient && !noticeAnalysisDone) {
+    analyserDroits();
+  } else if(noticeOpen && !currentPatient) {
+    document.getElementById('noticeContent').innerHTML = '<div class="notice-no-patient">Sélectionnez d\'abord un dossier patient pour analyser les droits potentiels.</div>';
+  }
+}
+
+async function analyserDroits() {
+  noticeAnalysisDone = false;
+  const content = document.getElementById('noticeContent');
+  content.innerHTML = '<div class="notice-loading"><span style="animation:pulse 1s infinite;display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--purple)"></span>Analyse des droits en cours...</div>';
+
+  const apiKey = getApiKey();
+  const alerts = currentPatient?.famo?.alerts || {};
+  const allAlerts = Object.values(alerts).flat();
+  const patient = currentPatient;
+  const age = parseInt(patient.age) || null;
+
+  if(!apiKey || !apiKey.startsWith('sk-')) {
+    // Analyse heuristique sans API
+    renderNoticeHeuristique(patient, allAlerts, age);
+    return;
+  }
+
+  const prompt = `Tu es un expert des droits sociaux en France, spécialisé dans l'accompagnement des personnes vulnérables en Seine-Saint-Denis (93).
+
+Analyse la situation suivante et génère une notice d'éligibilité structurée en JSON.
+
+PATIENT :
+- Nom : ${[patient.prenom, patient.nom].filter(Boolean).join(' ') || 'Inconnu'}
+- Âge : ${age || 'non précisé'}
+- Adresse : ${patient.adresse || 'Seine-Saint-Denis (93)'}
+
+ALERTES DU DOSSIER :
+${allAlerts.length ? allAlerts.join('\n') : 'Aucune alerte spécifique'}
+
+OBSERVATIONS :
+${Object.entries(patient.famo?.obs || {}).filter(([,v])=>v).map(([k,v])=>`${k}: ${v}`).join('\n') || 'Aucune'}
+
+Génère UNIQUEMENT un JSON valide (sans markdown, sans backticks) avec cette structure exacte :
+{
+  "sections": [
+    {
+      "titre": "Santé",
+      "droits": [
+        {
+          "nom": "Nom du droit",
+          "statut": "eligible" | "verifier" | "non",
+          "raison": "Explication courte en 1 phrase pourquoi éligible/à vérifier/non",
+          "courrier": "clé_modele_courrier" | null,
+          "urgent": true | false
+        }
+      ]
+    }
+  ],
+  "nb_eligibles": nombre,
+  "nb_verifier": nombre,
+  "alerte_urgente": "message d'alerte urgente si situation critique" | null
+}
+
+Sections à couvrir : Santé, Protection sociale, Logement, Handicap, Protection juridique.
+
+Droits à analyser selon la situation :
+SANTÉ: CSS/C2S, AME (si situation admin précaire ou barrière linguistique), ALD (si pathologie chronique), SSIAD (si perte autonomie), médecin traitant (si absent)
+PROTECTION SOCIALE: RSA (si précarité économique, âge > 25 ans), AAH (si handicap), ASPA (si > 65 ans + précarité), prime d'activité, APL
+LOGEMENT: DALO (si conditions logement dégradées + délai attente), SIAO (si risque expulsion ou hébergement), FSL (si difficultés paiement loyer), aide logement CAF
+HANDICAP: AAH, RQTH, PCH, carte mobilité inclusion, AEEH (si enfant)
+PROTECTION JURIDIQUE: sauvegarde de justice, curatelle, tutelle (si troubles cognitifs ou incapacité gestion)
+
+Sois réaliste : ne mets "eligible" que s'il y a des indices clairs dans les alertes. Mets "verifier" si c'est possible mais manque d'info. Mets "non" si clairement hors critères.
+Pour "courrier", utilise une de ces clés si applicable: cpam_css_renouvellement, cpam_ame_demande, cpam_ame_renouvellement, mdph_aah_demande, mdph_rqth, caf_rsa_demande, caf_apl_demande, log_dalo, log_siao, log_expulsion, tut_mesure_protection, tut_signalement`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'x-api-key': apiKey, 'anthropic-version':'2023-06-01' },
+      body: JSON.stringify({ model:'claude-sonnet-4-5', max_tokens:1500, messages:[{role:'user', content: prompt}] })
+    });
+    const data = await resp.json();
+    let text = data.content?.[0]?.text || '';
+    text = text.replace(/```json|```/g,'').trim();
+    const result = JSON.parse(text);
+    renderNoticeIA(result);
+    noticeAnalysisDone = true;
+  } catch(e) {
+    // Fallback heuristique si erreur API
+    renderNoticeHeuristique(patient, allAlerts, age);
+    noticeAnalysisDone = true;
+  }
+}
+
+function renderNoticeIA(result) {
+  const content = document.getElementById('noticeContent');
+  let html = '';
+
+  if(result.alerte_urgente) {
+    html += `<div style="margin:10px 12px 4px;padding:8px 10px;background:var(--red-bg);border:1px solid rgba(224,92,106,0.3);border-radius:var(--rs);font-size:11px;color:var(--red);line-height:1.4">
+      ⚠ <strong>Urgence :</strong> ${result.alerte_urgente}
+    </div>`;
+  }
+
+  const total = (result.nb_eligibles||0) + (result.nb_verifier||0);
+  const badge = document.getElementById('noticeBadge');
+  badge.textContent = total;
+  badge.style.display = total > 0 ? 'inline-flex' : 'none';
+
+  result.sections?.forEach(sec => {
+    const droitsVisibles = sec.droits?.filter(d => d.statut !== 'non') || [];
+    if(!droitsVisibles.length) return;
+    html += `<div class="notice-section"><div class="notice-sec-label">${sec.titre}</div>`;
+    droitsVisibles.forEach(d => {
+      const courrierBtn = d.courrier
+        ? `<button class="droit-action" onclick="selectModelFromNotice('${d.courrier}')">→ Courrier</button>`
+        : '';
+      html += `<div class="droit-item">
+        <div class="droit-status ${d.statut}"></div>
+        <div class="droit-body">
+          <div class="droit-name">${d.nom}${d.urgent ? ' <span style="color:var(--red);font-size:9px;font-weight:700">URGENT</span>' : ''}</div>
+          <div class="droit-reason">${d.raison}</div>
+        </div>
+        ${courrierBtn}
+      </div>`;
+    });
+    html += '</div>';
+  });
+
+  if(!html.includes('droit-item')) {
+    html = '<div class="notice-no-patient">Aucun droit prioritaire identifié avec les informations disponibles.<br><small>Complétez le dossier pour une analyse plus précise.</small></div>';
+  }
+
+  content.innerHTML = html;
+}
+
+function renderNoticeHeuristique(patient, allAlerts, age) {
+  // Analyse locale sans API basée sur les alertes cochées
+  const droits = [];
+  const hasAdminAlerts = allAlerts.some(a => a.includes('droit') || a.includes('administratif') || a.includes('précarité'));
+  const hasBarriereLangue = allAlerts.some(a => a.includes('français') || a.includes('communication'));
+  const hasCognitif = allAlerts.some(a => a.includes('cognitif') || a.includes('mémoire'));
+  const hasExpulsion = allAlerts.some(a => a.includes('expulsion'));
+  const hasHabitat = allAlerts.some(a => a.includes('habitat') || a.includes('insalubrité') || a.includes('accessibilité'));
+  const hasIsolement = allAlerts.some(a => a.includes('isolement') || a.includes('aidant'));
+  const hasAutonomie = allAlerts.some(a => a.includes('actes essentiels') || a.includes('domestique'));
+  const hasPsy = allAlerts.some(a => a.includes('psychique') || a.includes('anxiété') || a.includes('suicidaire'));
+  const hasMaltraitance = allAlerts.some(a => a.includes('maltraitance'));
+  const hasSymptomes = allAlerts.some(a => a.includes('symptômes') || a.includes('santé'));
+
+  const sections = [
+    {
+      titre: 'Santé',
+      droits: [
+        { nom:'CSS / C2S', statut: hasAdminAlerts||hasBarriereLangue ? 'eligible' : 'verifier', raison: hasAdminAlerts ? 'Précarité économique détectée — plafonds CSS probablement respectés' : 'À vérifier selon les ressources', courrier:'cpam_css_renouvellement' },
+        { nom:'AME', statut: hasBarriereLangue ? 'eligible' : 'verifier', raison: hasBarriereLangue ? 'Barrière linguistique — possible situation admin précaire' : 'À vérifier si titre de séjour absent', courrier:'cpam_ame_demande' },
+        { nom:'SSIAD (soins infirmiers)', statut: hasAutonomie ? 'verifier' : 'non', raison: hasAutonomie ? 'Perte d\'autonomie détectée — évaluer besoin soins à domicile' : 'Pas d\'indice de besoin', courrier:'med_soins_infirmiers', urgent: false },
+      ].filter(d => d.statut !== 'non')
+    },
+    {
+      titre: 'Protection sociale',
+      droits: [
+        { nom:'RSA', statut: hasAdminAlerts ? 'verifier' : 'non', raison: 'Précarité économique — vérifier ressources et âge (>25 ans requis)', courrier:'caf_rsa_demande' },
+        { nom:'AAH', statut: hasAutonomie || hasCognitif ? 'verifier' : 'non', raison: 'Perte d\'autonomie ou troubles cognitifs — évaluation MDPH à envisager', courrier:'mdph_aah_demande' },
+        { nom:'APL', statut: hasAdminAlerts || hasHabitat ? 'verifier' : 'non', raison: 'Précarité ou problème logement — vérifier éligibilité CAF', courrier:'caf_apl_demande' },
+      ].filter(d => d.statut !== 'non')
+    },
+    {
+      titre: 'Logement',
+      droits: [
+        { nom:'Recours DALO', statut: hasExpulsion ? 'eligible' : hasHabitat ? 'verifier' : 'non', raison: hasExpulsion ? 'Expulsion imminente — recours DALO prioritaire' : 'Conditions logement dégradées', courrier:'log_dalo', urgent: hasExpulsion },
+        { nom:'SIAO hébergement', statut: hasExpulsion ? 'eligible' : 'non', raison: 'Risque sans domicile — saisir le SIAO 93 en urgence', courrier:'log_siao', urgent: true },
+      ].filter(d => d.statut !== 'non')
+    },
+    {
+      titre: 'Protection juridique',
+      droits: [
+        { nom:'Mesure de protection', statut: hasCognitif ? 'verifier' : 'non', raison: 'Troubles cognitifs détectés — évaluer besoin curatelle/tutelle', courrier:'tut_mesure_protection' },
+        { nom:'Signalement maltraitance', statut: hasMaltraitance ? 'eligible' : 'non', raison: 'Situation à signaler sans délai au Procureur ou ARS', courrier:'tut_signalement', urgent: true },
+      ].filter(d => d.statut !== 'non')
+    }
+  ].filter(s => s.droits.length > 0);
+
+  const total = sections.reduce((n, s) => n + s.droits.length, 0);
+  const badge = document.getElementById('noticeBadge');
+  badge.textContent = total;
+  badge.style.display = total > 0 ? 'inline-flex' : 'none';
+
+  const urgents = sections.flatMap(s => s.droits).filter(d => d.urgent);
+  let html = '';
+  if(urgents.length) {
+    html += `<div style="margin:10px 12px 4px;padding:8px 10px;background:var(--red-bg);border:1px solid rgba(224,92,106,0.3);border-radius:var(--rs);font-size:11px;color:var(--red);line-height:1.4">
+      ⚠ <strong>${urgents.length} droit(s) urgent(s)</strong> à traiter en priorité.
+    </div>`;
+  }
+
+  if(!allAlerts.length) {
+    html += `<div style="margin:8px 12px;padding:8px 10px;background:var(--amber-bg);border:1px solid rgba(240,164,58,0.2);border-radius:var(--rs);font-size:11px;color:var(--amber);line-height:1.4">
+      ℹ Dossier incomplet — complétez les alertes pour une analyse précise. Résultats ci-dessous basés sur le profil général.
+    </div>`;
+  }
+
+  sections.forEach(sec => {
+    html += `<div class="notice-section"><div class="notice-sec-label">${sec.titre}</div>`;
+    sec.droits.forEach(d => {
+      const courrierBtn = d.courrier
+        ? `<button class="droit-action" onclick="selectModelFromNotice('${d.courrier}')">→ Courrier</button>`
+        : '';
+      html += `<div class="droit-item">
+        <div class="droit-status ${d.statut}"></div>
+        <div class="droit-body">
+          <div class="droit-name">${d.nom}${d.urgent ? ' <span style="color:var(--red);font-size:9px;font-weight:700">URGENT</span>' : ''}</div>
+          <div class="droit-reason">${d.raison}</div>
+        </div>
+        ${courrierBtn}
+      </div>`;
+    });
+    html += '</div>';
+  });
+
+  if(!html.includes('droit-item')) {
+    html = '<div class="notice-no-patient">Aucun droit prioritaire identifié. Complétez le dossier pour une analyse plus précise.</div>';
+  }
+  document.getElementById('noticeContent').innerHTML = html;
+}
+
+function selectModelFromNotice(key) {
+  // Ferme le panneau et sélectionne le modèle
+  toggleNotice();
+  // Ouvre la bonne catégorie et sélectionne
+  const catMap = {
+    cpam_css_renouvellement:'cpam', cpam_ame_demande:'cpam', cpam_ame_renouvellement:'cpam',
+    mdph_aah_demande:'mdph', mdph_rqth:'mdph',
+    caf_rsa_demande:'caf', caf_apl_demande:'caf',
+    med_soins_infirmiers:'med', med_mt_liaison:'med',
+    log_dalo:'log', log_siao:'log', log_expulsion:'log',
+    tut_mesure_protection:'tut', tut_signalement:'tut'
+  };
+  const cat = catMap[key];
+  if(cat) {
+    const catEl = document.getElementById('cat-'+cat);
+    const arrEl = document.getElementById('arrow-'+cat);
+    if(catEl && !catEl.classList.contains('open')) {
+      catEl.classList.add('open');
+      arrEl?.classList.add('open');
+    }
+  }
+  selectModel(key);
+  // Scroll vers le haut de l'editor
+  document.querySelector('.editor')?.scrollTo(0,0);
+}
+
+
+function getDossiers() {
+  return JSON.parse(localStorage.getItem('mediasante_dossiers') || '[]');
+}
+function openModal() {
+  const dossiers = getDossiers();
+  const list = document.getElementById('dossierList');
+  if(!dossiers.length) {
+    list.innerHTML = '<div class="empty-state">Aucun dossier patient trouvé.<br>Créez d\'abord un dossier via le module d'admission.</div>';
+  } else {
+    list.innerHTML = dossiers.map(d => {
+      const p = d.data?.patient || {};
+      const initials = ((p.prenom||'?')[0]+(p.nom||'?')[0]).toUpperCase();
+      const name = [p.prenom, p.nom].filter(Boolean).join(' ') || 'Patient inconnu';
+      return `<div class="dossier-item" onclick="selectPatient('${d.id}')">
+        <div class="dossier-avatar">${initials}</div>
+        <div><div class="dossier-name">${name}</div><div class="dossier-id">${d.id} · ${new Date(d.date).toLocaleDateString('fr-FR')}</div></div>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('patientModal').classList.remove('hidden');
+}
+function closeModal() { document.getElementById('patientModal').classList.add('hidden'); }
+function selectPatient(id) {
+  const dossiers = getDossiers();
+  const d = dossiers.find(x => x.id === id);
+  if(!d) return;
+  const p = d.data?.patient || {};
+  currentPatient = { ...p, id: d.id, famo: d.data, score: d.score };
+  updatePatientUI();
+  noticeAnalysisDone = false;
+  // Si le panneau est déjà ouvert, relancer l'analyse
+  if(noticeOpen) analyserDroits();
+  closeModal();
+}
+function updatePatientUI() {
+  if(!currentPatient) return;
+  const name = [currentPatient.prenom, currentPatient.nom].filter(Boolean).join(' ') || 'Patient';
+  const initials = ((currentPatient.prenom||'?')[0]+(currentPatient.nom||'?')[0]).toUpperCase();
+  document.getElementById('patientAvatar').textContent = initials;
+  document.getElementById('patientName').textContent = name;
+  document.getElementById('patientId').textContent = currentPatient.id || 'Manuel';
+}
+function newManualPatient() {
+  closeModal();
+  document.getElementById('manualModal').classList.remove('hidden');
+}
+function closeManualModal() { document.getElementById('manualModal').classList.add('hidden'); }
+function confirmManual() {
+  const nom = document.getElementById('m_nom').value;
+  const ddn = document.getElementById('m_ddn').value;
+  const adresse = document.getElementById('m_adresse').value;
+  const secu = document.getElementById('m_secu').value;
+  if(!nom) { showToast('Nom obligatoire'); return; }
+  const parts = nom.trim().split(' ');
+  currentPatient = { prenom: parts[0], nom: parts.slice(1).join(' ').toUpperCase(), adresse, ddn, secu, id: 'MANUEL' };
+  updatePatientUI();
+  noticeAnalysisDone = false;
+  if(noticeOpen) analyserDroits();
+  closeManualModal();
+}
+
+// ─── MODELS CATALOGUE ───
+const MODELS = {
+  cpam_css_renouvellement: {
+    title: "Renouvellement CSS / C2S", cat:"CPAM",
+    desc: "Courrier pour le renouvellement de la Complémentaire Santé Solidaire (anciennement CMU-C).",
+    fields: [
+      { id:"date_exp", label:"Date d'expiration actuelle", type:"date" },
+      { id:"motif_renouvellement", label:"Motif principal (situation du patient)", type:"textarea", ph:"Bénéficiaire isolée, ressources inférieures au plafond CSS, aucun changement de situation depuis le dernier renouvellement..." },
+    ],
+    vars: ["[NOM_PATIENT]","[DDN]","[ADRESSE]","[SECU]","[DATE_EXP]","[DATE_JOUR]"]
+  },
+  cpam_ame_demande: {
+    title: "Demande initiale AME", cat:"CPAM",
+    desc: "Courrier d'accompagnement pour une première demande d'Aide Médicale d'État.",
+    fields: [
+      { id:"duree_sejour", label:"Durée de séjour en France (estimée)", type:"text", ph:"3 ans" },
+      { id:"situation_admin", label:"Situation administrative", type:"select", opts:["Sans titre de séjour","Demandeur d'asile","Titre expiré","Autre"] },
+      { id:"motif_sante", label:"Problématique de santé principale", type:"textarea", ph:"Suivi pathologie chronique, absence de prise en charge médicale..." },
+    ],
+    vars: ["[NOM_PATIENT]","[DDN]","[ADRESSE]","[DATE_JOUR]"]
+  },
+  cpam_ame_renouvellement: {
+    title: "Renouvellement AME", cat:"CPAM",
+    desc: "Renouvellement annuel de l'AME.",
+    fields: [
+      { id:"date_exp_ame", label:"Date d'expiration de l'AME", type:"date" },
+      { id:"evolution_situation", label:"Évolution de la situation depuis le dernier renouvellement", type:"textarea", ph:"Situation inchangée / nouvelle problématique..." },
+    ],
+    vars: ["[NOM_PATIENT]","[DDN]","[DATE_EXP_AME]","[DATE_JOUR]"]
+  },
+  cpam_relance: {
+    title: "Relance CPAM — dossier en cours", cat:"CPAM",
+    desc: "Relance suite à absence de réponse ou dossier bloqué.",
+    fields: [
+      { id:"ref_dossier", label:"Référence dossier / type de demande", type:"text", ph:"Demande CSS déposée le 15/01/2025" },
+      { id:"delai_attente", label:"Délai d'attente actuel", type:"text", ph:"3 mois" },
+      { id:"urgence", label:"Niveau d'urgence", type:"select", opts:["Normale","Urgente — accès aux soins bloqué","Très urgente — hospitalisation nécessaire"] },
+    ],
+    vars: ["[NOM_PATIENT]","[REF_DOSSIER]","[DATE_DEPOT]","[DATE_JOUR]"]
+  },
+  cpam_attestation: {
+    title: "Demande attestation droits", cat:"CPAM",
+    desc: "Demande d'attestation officielle de droits ouverts.",
+    fields: [
+      { id:"type_droit", label:"Type de droit", type:"select", opts:["CSS / C2S","AME","Assurance maladie de base","Invalidité"] },
+      { id:"motif_attestation", label:"Motif de la demande", type:"text", ph:"Justificatif pour demande de logement social" },
+    ],
+    vars: ["[NOM_PATIENT]","[TYPE_DROIT]","[DATE_JOUR]"]
+  },
+  cpam_mt_declaration: {
+    title: "Déclaration médecin traitant", cat:"CPAM",
+    desc: "Accompagnement pour déclarer ou changer de médecin traitant.",
+    fields: [
+      { id:"nom_mt", label:"Nom du médecin traitant", type:"text", ph:"Dr. MARTIN Sophie" },
+      { id:"motif_changement", label:"Motif (si changement)", type:"text", ph:"Déménagement / départ du médecin / premier MT" },
+    ],
+    vars: ["[NOM_PATIENT]","[NOM_MT]","[DATE_JOUR]"]
+  },
+  mdph_aah_demande: {
+    title: "Demande AAH", cat:"MDPH",
+    desc: "Courrier d'accompagnement pour une demande d'Allocation Adulte Handicapé.",
+    fields: [
+      { id:"type_handicap", label:"Type de handicap / pathologie principale", type:"text", ph:"Handicap psychique, déficience intellectuelle, handicap moteur..." },
+      { id:"taux_incapacite", label:"Taux d'incapacité connu (si évalué)", type:"text", ph:"80% / non évalué" },
+      { id:"situation_pro", label:"Situation professionnelle", type:"select", opts:["Sans emploi","ESAT","Mi-temps thérapeutique","Inapte au travail","Autre"] },
+    ],
+    vars: ["[NOM_PATIENT]","[DDN]","[ADRESSE]","[DATE_JOUR]"]
+  },
+  mdph_rqth: {
+    title: "Demande RQTH", cat:"MDPH",
+    desc: "Reconnaissance de la Qualité de Travailleur Handicapé.",
+    fields: [
+      { id:"employeur", label:"Employeur actuel (si en emploi)", type:"text", ph:"Sans emploi / Nom entreprise" },
+      { id:"nature_handicap", label:"Nature du handicap", type:"textarea", ph:"..." },
+    ],
+    vars: ["[NOM_PATIENT]","[DDN]","[DATE_JOUR]"]
+  },
+  mdph_relance: {
+    title: "Relance instruction MDPH", cat:"MDPH",
+    desc: "Relance suite à absence de décision dans les délais légaux.",
+    fields: [
+      { id:"date_depot_mdph", label:"Date de dépôt du dossier", type:"date" },
+      { id:"type_demande_mdph", label:"Type de demande", type:"select", opts:["AAH","RQTH","PCH","AEEH","Orientation professionnelle","Carte mobilité inclusion"] },
+    ],
+    vars: ["[NOM_PATIENT]","[DATE_DEPOT]","[TYPE_DEMANDE]","[DATE_JOUR]"]
+  },
+  mdph_recours: {
+    title: "Recours amiable RAPO", cat:"MDPH",
+    desc: "Recours Administratif Préalable Obligatoire suite à décision défavorable.",
+    fields: [
+      { id:"decision_contestee", label:"Décision contestée", type:"text", ph:"Refus AAH du 15/03/2025" },
+      { id:"motif_recours", label:"Motif du recours", type:"textarea", ph:"La situation médicale du patient justifie..." },
+    ],
+    vars: ["[NOM_PATIENT]","[DECISION]","[DATE_JOUR]"]
+  },
+  mdph_pcv: {
+    title: "Demande PCH / AEEH", cat:"MDPH",
+    desc: "Prestation de Compensation du Handicap ou Allocation d'Éducation de l'Enfant Handicapé.",
+    fields: [
+      { id:"type_pch", label:"Type de prestation", type:"select", opts:["PCH adulte","AEEH enfant","PCH + AEEH"] },
+      { id:"besoins_aide", label:"Besoins d'aide humaine (heures/jour estimées)", type:"text", ph:"2h/jour" },
+    ],
+    vars: ["[NOM_PATIENT]","[DDN]","[DATE_JOUR]"]
+  },
+  caf_rsa_demande: {
+    title: "Demande RSA", cat:"CAF",
+    desc: "Accompagnement pour dépôt d'une demande de RSA.",
+    fields: [
+      { id:"situation_familiale", label:"Situation familiale", type:"select", opts:["Célibataire sans enfant","Célibataire avec enfant(s)","En couple sans enfant","En couple avec enfant(s)"] },
+      { id:"ressources_mensuelles", label:"Ressources mensuelles estimées", type:"text", ph:"0€ / 300€ / ..." },
+    ],
+    vars: ["[NOM_PATIENT]","[DDN]","[ADRESSE]","[DATE_JOUR]"]
+  },
+  caf_apl_demande: {
+    title: "Demande APL", cat:"CAF",
+    desc: "Aide Personnalisée au Logement — première demande ou changement de logement.",
+    fields: [
+      { id:"adresse_logement", label:"Adresse du logement (si différente)", type:"text", ph:"15 rue..." },
+      { id:"nom_bailleur", label:"Nom du bailleur / bailleur social", type:"text", ph:"Paris Habitat / Particulier" },
+      { id:"montant_loyer", label:"Montant du loyer mensuel (charges incluses)", type:"text", ph:"650€" },
+    ],
+    vars: ["[NOM_PATIENT]","[ADRESSE_LOG]","[DATE_JOUR]"]
+  },
+  caf_relance: { title:"Relance CAF", cat:"CAF", desc:"Relance dossier CAF sans réponse.", fields:[{id:"ref_caf",label:"Référence / nature du dossier",type:"text",ph:"APL demandée le..."},{id:"delai_caf",label:"Délai sans réponse",type:"text",ph:"2 mois"}], vars:["[NOM_PATIENT]","[DATE_JOUR]"] },
+  caf_regularisation: { title:"Régularisation indus CAF", cat:"CAF", desc:"Contester ou étaler le remboursement d'un indu CAF.", fields:[{id:"montant_indu",label:"Montant de l'indu réclamé",type:"text",ph:"1 200€"},{id:"motif_indu",label:"Motif contesté",type:"textarea",ph:"La situation ayant changé en raison de..."}], vars:["[NOM_PATIENT]","[MONTANT]","[DATE_JOUR]"] },
+  med_mt_liaison: {
+    title: "Fiche de liaison médecin traitant", cat:"Médecin",
+    desc: "Courrier de liaison au médecin traitant pour l'informer du suivi médiation en santé.",
+    fields: [
+      { id:"nom_mt_liaison", label:"Nom du médecin traitant", type:"text", ph:"Dr. MARTIN" },
+      { id:"objet_liaison", label:"Objet de la liaison", type:"textarea", ph:"Accompagnement démarches droits sociaux, situation sociale précaire nécessitant coordination..." },
+      { id:"actions_en_cours", label:"Actions engagées par le médiateur", type:"textarea", ph:"Dossier CSS en cours, orientation vers assistante sociale..." },
+    ],
+    vars: ["[NOM_PATIENT]","[NOM_MT]","[DATE_JOUR]"]
+  },
+  med_specialiste: { title:"Orientation spécialiste", cat:"Médecin", desc:"Demande de consultation spécialisée.", fields:[{id:"specialite",label:"Spécialité demandée",type:"text",ph:"Psychiatrie, Gériatrie, Neurologie..."},{id:"motif_spe",label:"Motif de la demande",type:"textarea",ph:"..."}], vars:["[NOM_PATIENT]","[SPECIALITE]","[DATE_JOUR]"] },
+  med_psychiatrie: { title:"Demande évaluation psychiatrique", cat:"Médecin", desc:"Demande d'évaluation ou de suivi psychiatrique.", fields:[{id:"symptomes_psy",label:"Symptômes observés",type:"textarea",ph:"Anxiété sévère, épisodes dépressifs, isolement..."},{id:"urgence_psy",label:"Degré d'urgence",type:"select",opts:["Non urgent — consultation planifiée","Semi-urgent — sous 15 jours","Urgent — sous 72h"]}], vars:["[NOM_PATIENT]","[DATE_JOUR]"] },
+  med_soins_infirmiers: { title:"Demande SSIAD", cat:"Médecin", desc:"Demande de soins infirmiers à domicile.", fields:[{id:"type_soins",label:"Type de soins requis",type:"textarea",ph:"Injections, pansements, aide à la toilette, surveillance traitement..."},{id:"frequence_soins",label:"Fréquence souhaitée",type:"text",ph:"Quotidienne / 3x par semaine"}], vars:["[NOM_PATIENT]","[DATE_JOUR]"] },
+  med_hopital_sortie: { title:"Courrier sortie hospitalière", cat:"Médecin", desc:"Coordination lors d'un retour à domicile post-hospitalisation.", fields:[{id:"hopital_nom",label:"Établissement hospitalier",type:"text",ph:"Hôpital Avicenne, Bobigny"},{id:"date_sortie",label:"Date de sortie prévue",type:"date"},{id:"besoins_retour",label:"Besoins au retour à domicile",type:"textarea",ph:"Aide-soignante, kinésithérapeute, livraison repas..."}], vars:["[NOM_PATIENT]","[HOPITAL]","[DATE_SORTIE]","[DATE_JOUR]"] },
+  log_siao: { title:"Demande SIAO hébergement", cat:"Logement", desc:"Saisine du Service Intégré d'Accueil et d'Orientation.", fields:[{id:"type_hebergement",label:"Type d'hébergement recherché",type:"select",opts:["Hébergement d'urgence","Hébergement stabilisation","Logement adapté","CHRS"]},{id:"motif_urgence_log",label:"Motif de l'urgence",type:"textarea",ph:"Expulsion imminente, sortie de rue, violence conjugale..."}], vars:["[NOM_PATIENT]","[DATE_JOUR]"] },
+  log_dalo: { title:"Recours DALO", cat:"Logement", desc:"Droit au Logement Opposable — dépôt de recours.", fields:[{id:"duree_attente_log",label:"Durée d'attente logement social",type:"text",ph:"5 ans"},{id:"numero_demande_log",label:"N° de demande de logement social",type:"text",ph:"123456789"},{id:"motif_dalo",label:"Motif de priorité DALO",type:"select",opts:["Sans logement","Hébergé chez tiers","Logement indécent","Sur-occupation","Violence conjugale","Handicap"]}], vars:["[NOM_PATIENT]","[N_DEMANDE]","[DATE_JOUR]"] },
+  log_bailleur: { title:"Courrier bailleur social", cat:"Logement", desc:"Courrier au bailleur (Office HLM, Paris Habitat...)", fields:[{id:"nom_bailleur_social",label:"Nom du bailleur",type:"text",ph:"Paris Habitat / Grand Paris Habitat"},{id:"objet_bailleur",label:"Objet du courrier",type:"select",opts:["Signalement insalubrité","Demande mutation","Adaptation logement handicap","Régularisation charges","Autre"]}], vars:["[NOM_PATIENT]","[NOM_BAILLEUR]","[DATE_JOUR]"] },
+  log_expulsion: { title:"Urgence menace expulsion", cat:"Logement", desc:"Courrier d'urgence face à une procédure d'expulsion.", fields:[{id:"date_audience",label:"Date d'audience ou d'expulsion",type:"date"},{id:"dette_locative",label:"Montant de la dette locative",type:"text",ph:"2 500€"},{id:"situation_sociale_exp",label:"Situation sociale (fragilités)",type:"textarea",ph:"Revenus RSA uniquement, enfants à charge, problème de santé..."}], vars:["[NOM_PATIENT]","[DATE_AUDIENCE]","[DATE_JOUR]"] },
+  log_ccas: { title:"Saisine CCAS", cat:"Logement", desc:"Courrier au Centre Communal d'Action Sociale.", fields:[{id:"commune_ccas",label:"Commune du CCAS",type:"text",ph:"Épinay-sur-Seine / Villetaneuse..."},{id:"objet_ccas",label:"Objet de la saisine",type:"textarea",ph:"Aide alimentaire d'urgence, aide financière, accès aux droits..."}], vars:["[NOM_PATIENT]","[COMMUNE]","[DATE_JOUR]"] },
+  log_as: { title:"Courrier assistante sociale", cat:"Logement", desc:"Courrier de liaison ou de demande d'intervention d'une AS.", fields:[{id:"service_as",label:"Service de l'AS",type:"text",ph:"Département 93, CPAM, hôpital..."},{id:"objet_as",label:"Objet de la demande",type:"textarea",ph:"Évaluation sociale, aide financière, accompagnement MDPH..."}], vars:["[NOM_PATIENT]","[SERVICE_AS]","[DATE_JOUR]"] },
+  dac_cr_accompagnement: {
+    title: "Compte-rendu d'accompagnement", cat:"DAC",
+    desc: "CR d'une visite ou d'un accompagnement du médiateur.",
+    fields: [
+      { id:"date_accompagnement", label:"Date de l'accompagnement", type:"date" },
+      { id:"type_accompagnement", label:"Type d'accompagnement", type:"select", opts:["Visite à domicile","Accompagnement médecin","Accompagnement CPAM","Accompagnement MDPH","Permanence MSP","Démarche administrative","Autre"] },
+      { id:"deroulement", label:"Déroulement et observations", type:"textarea", ph:"Actions réalisées, documents transmis, difficultés rencontrées..." },
+      { id:"suite_donnee", label:"Suite donnée / prochaine action", type:"textarea", ph:"Rendez-vous prévu le... / Dossier transmis à..." },
+    ],
+    vars: ["[NOM_PATIENT]","[DATE_ACCOMP]","[TYPE_ACCOMP]","[DATE_JOUR]"]
+  },
+  dac_synthese_situation: { title:"Synthèse de situation", cat:"DAC", desc:"Synthèse globale de la situation du patient pour les partenaires.", fields:[{id:"date_entree",label:"Date d'entrée en suivi",type:"date"},{id:"problematiques",label:"Problématiques principales",type:"textarea",ph:"..."},{id:"actions_realisees",label:"Actions réalisées à ce jour",type:"textarea",ph:"..."}], vars:["[NOM_PATIENT]","[DATE_ENTREE]","[DATE_JOUR]"] },
+  dac_partenaire: { title:"Courrier partenaire externe", cat:"DAC", desc:"Courrier vers un partenaire (AS, structure, service...)", fields:[{id:"destinataire_partenaire",label:"Destinataire",type:"text",ph:"Assistante sociale / CCAS / Structure..."},{id:"objet_partenaire",label:"Objet",type:"text",ph:"..."},{id:"contenu_partenaire",label:"Corps du message",type:"textarea",ph:"..."}], vars:["[NOM_PATIENT]","[DESTINATAIRE]","[DATE_JOUR]"] },
+  dac_orientation: { title:"Courrier d'orientation", cat:"DAC", desc:"Orienter le patient vers une autre structure ou service.", fields:[{id:"structure_orientee",label:"Structure destinataire",type:"text",ph:"SAMSAH, ESAT, CMP, CHRS..."},{id:"motif_orientation",label:"Motif de l'orientation",type:"textarea",ph:"..."},{id:"urgence_orientation",label:"Délai souhaité",type:"select",opts:["Dès que possible","Sous 15 jours","Sous 1 mois","Non urgent"]}], vars:["[NOM_PATIENT]","[STRUCTURE]","[DATE_JOUR]"] },
+  dac_cr_resad: { title:"Compte-rendu RESAD", cat:"DAC", desc:"CR de réunion de synthèse pluridisciplinaire (RESAD).", fields:[{id:"date_resad",label:"Date du RESAD",type:"date"},{id:"participants",label:"Participants",type:"textarea",ph:"Dr. Martin (MT), Mme Dupont (AS CPAM), M. Lefebvre (Kiné)..."},{id:"decisions_resad",label:"Décisions prises",type:"textarea",ph:"1. Dossier MDPH à constituer\n2. Passage SSIAD 3x/semaine\n3. Réévaluation dans 3 mois"}], vars:["[NOM_PATIENT]","[DATE_RESAD]","[DATE_JOUR]"] },
+  tut_mandataire: { title:"Courrier mandataire judiciaire", cat:"Protection", desc:"Courrier au tuteur/curateur.", fields:[{id:"nom_mandataire",label:"Nom du mandataire",type:"text",ph:"Maître / Association..."},{id:"objet_tut",label:"Objet",type:"textarea",ph:"..."}], vars:["[NOM_PATIENT]","[NOM_MANDATAIRE]","[DATE_JOUR]"] },
+  tut_signalement: { title:"Signalement situation à risque", cat:"Protection", desc:"Signalement officiel d'une situation de danger ou de maltraitance.", fields:[{id:"nature_risque",label:"Nature du risque",type:"select",opts:["Maltraitance physique","Maltraitance psychologique","Négligence","Auto-négligence","Abus financier","Autre"]},{id:"description_risque",label:"Description factuelle de la situation",type:"textarea",ph:"Faits observés, dates, témoins..."},{id:"destinataire_signalement",label:"Destinataire",type:"select",opts:["Procureur de la République","ARS","CD93 — Protection de l'adulte","CRIP"]}], vars:["[NOM_PATIENT]","[DATE_JOUR]"] },
+  tut_mesure_protection: { title:"Demande mesure de protection", cat:"Protection", desc:"Demande de mise sous sauvegarde, curatelle ou tutelle.", fields:[{id:"type_mesure",label:"Mesure demandée",type:"select",opts:["Sauvegarde de justice","Curatelle simple","Curatelle renforcée","Tutelle"]},{id:"motif_mesure",label:"Motif médical et social",type:"textarea",ph:"Altération des facultés mentales constatée par le médecin..."}], vars:["[NOM_PATIENT]","[DATE_JOUR]"] },
+
+  cpam_ald_demande: { cat:"CPAM", title:"Demande ALD — affection longue durée", desc:"Courrier pour la prise en charge à 100% d'une affection longue durée.", fields:[{id:"ald_medecin",label:"Médecin prescripteur",type:"text",ph:"Dr. [NOM] — [SPÉCIALITÉ]"},{id:"ald_pathologie",label:"Pathologie concernée",type:"text",ph:"Ex: Diabète de type 2, insuffisance cardiaque..."},{id:"ald_date_diag",label:"Date de diagnostic",type:"text",ph:"Ex: Janvier 2024"}], vars:["[NOM_PATIENT]","[DATE_JOUR]","[NUM_SECU]"] },
+
+  cpam_ij_recours: { cat:"CPAM", title:"Contestation refus indemnités journalières", desc:"Recours suite à un refus ou une interruption d'indemnités journalières.", fields:[{id:"ij_ref",label:"Référence du refus",type:"text",ph:"N° de dossier CPAM"},{id:"ij_motif",label:"Motif du refus reçu",type:"textarea",ph:"Motif indiqué par la CPAM..."},{id:"ij_elements",label:"Éléments de contestation",type:"textarea",ph:"Arguments médicaux, pièces jointes..."}], vars:["[NOM_PATIENT]","[DATE_JOUR]","[NUM_SECU]"] },
+
+  caf_rsa_recours: { cat:"CAF", title:"Recours RSA — suspension ou réduction", desc:"Lettre de recours amiable suite à suspension ou réduction du RSA.", fields:[{id:"rsa_date",label:"Date de la décision CAF",type:"text",ph:"Ex: 15 janvier 2025"},{id:"rsa_motif_caf",label:"Motif invoqué par la CAF",type:"textarea",ph:"Ex: Absence de déclaration trimestrielle..."},{id:"rsa_explication",label:"Explication du bénéficiaire",type:"textarea",ph:"Contexte expliquant la situation..."}], vars:["[NOM_PATIENT]","[DATE_JOUR]","[NUM_ALLOCATAIRE]"] },
+
+  med_soins_palliatifs: { cat:"Médecin", title:"Demande d'entrée en soins palliatifs", desc:"Courrier au médecin coordonnateur pour une prise en charge en soins palliatifs.", fields:[{id:"sp_medecin",label:"Médecin traitant adresseur",type:"text",ph:"Dr. [NOM] — médecin traitant"},{id:"sp_structure",label:"Structure destinataire",type:"text",ph:"Ex: HAD Seine-Saint-Denis / EMSP Avicenne"},{id:"sp_situation",label:"Situation clinique",type:"textarea",ph:"Pathologie, stade, souhaits du patient, contexte familial..."}], vars:["[NOM_PATIENT]","[DATE_JOUR]"] },
+
+  log_apl_recours: { cat:"Logement", title:"Recours APL — suspension ou réduction", desc:"Lettre de recours suite à suppression ou réduction des APL.", fields:[{id:"apl_bailleur",label:"Bailleur / propriétaire",type:"text",ph:"Bailleur social ou propriétaire privé"},{id:"apl_montant",label:"Montant APL avant",type:"text",ph:"Ex: 280 €/mois"},{id:"apl_motif",label:"Motif de la suppression",type:"textarea",ph:"Motif indiqué par la CAF..."}], vars:["[NOM_PATIENT]","[DATE_JOUR]","[NUM_ALLOCATAIRE]"] },
+
+  dac_bilan_parcours: { cat:"DAC", title:"Bilan de parcours — synthèse d'accompagnement", desc:"Synthèse à destination du médecin traitant ou partenaire, résumant le parcours DAC.", fields:[{id:"bilan_dest",label:"Destinataire",type:"text",ph:"Dr. [NOM] — médecin traitant"},{id:"bilan_periode",label:"Période d'accompagnement",type:"text",ph:"Ex: Janvier 2024 — Avril 2025"},{id:"bilan_actions",label:"Actions réalisées",type:"textarea",ph:"Évaluation AGGIR, dossiers ouverts, orientations, PPCS..."},{id:"bilan_suite",label:"Suite proposée",type:"textarea",ph:"Poursuite du suivi / clôture / transfert..."}], vars:["[NOM_PATIENT]","[DATE_JOUR]"] },
+
+  prot_signalement_procureur: { cat:"Protection", title:"Signalement au procureur — adulte vulnérable", desc:"Courrier de signalement au parquet pour une personne adulte en danger.", fields:[{id:"proc_tribunal",label:"Parquet du tribunal judiciaire",type:"text",ph:"Tribunal judiciaire de Bobigny"},{id:"proc_faits",label:"Faits signalés",type:"textarea",ph:"Décrire les faits, les dates, les témoins..."},{id:"proc_mesures",label:"Mesures déjà prises",type:"textarea",ph:"Actions réalisées : signalement CCAS, contact famille..."}], vars:["[NOM_PATIENT]","[DATE_JOUR]"] },
+
+  prot_mainlevee_hsc: { cat:"Protection", title:"Demande de mainlevée — hospitalisation sans consentement", desc:"Courrier pour demander la mainlevée d'une hospitalisation sous contrainte.", fields:[{id:"hl_etab",label:"Établissement concerné",type:"text",ph:"Ex: CH Ville-Évrard — Service psychiatrie"},{id:"hl_date",label:"Date d'entrée en soins sous contrainte",type:"text",ph:"Ex: 10 mars 2025"},{id:"hl_motif",label:"Motif de la demande",type:"textarea",ph:"Arguments médicaux, évolution de l'état, avis du psychiatre..."}], vars:["[NOM_PATIENT]","[DATE_JOUR]"] },
+
+  prot_aidant_info: { cat:"Protection", title:"Courrier à l'aidant principal", desc:"Lettre d'information et de soutien à l'aidant familial avec présentation des ressources.", fields:[{id:"aidant_nom",label:"Nom de l'aidant",type:"text",ph:"M./Mme [NOM]"},{id:"aidant_lien",label:"Lien avec le patient",type:"text",ph:"Ex: fils/fille, conjoint(e), voisin(e)..."},{id:"aidant_msg",label:"Message personnalisé",type:"textarea",ph:"Informations spécifiques à communiquer..."}], vars:["[NOM_PATIENT]","[DATE_JOUR]","[NOM_AIDANT]"] }
+};
+
+// ─── MODEL SELECTION ───
+function selectModel(key) {
+  const m = MODELS[key]; if(!m) return;
+  currentModel = key;
+  document.querySelectorAll('.model-item').forEach(x => x.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('editorTitle').textContent = m.title;
+  document.getElementById('editorMeta').textContent = m.cat + ' — ' + m.desc;
+  // Variables
+  const vw = document.getElementById('varsWrap');
+  vw.style.display = 'flex';
+  vw.innerHTML = '<span style="font-size:11px;color:var(--text3);margin-right:4px;align-self:center">Insérer :</span>' +
+    m.vars.map(v => `<span class="var-tag" onclick="insertVar('${v}')">${v}</span>`).join('');
+  // IA fields
+  const iap = document.getElementById('iaPanel');
+  const iaf = document.getElementById('iaFields');
+  iap.style.display = 'block';
+  document.getElementById('iaDesc').textContent = m.desc;
+  iaf.innerHTML = m.fields.map(f => {
+    let inp;
+    if(f.type === 'textarea') inp = `<textarea id="f_${f.id}" placeholder="${f.ph||''}" rows="3"></textarea>`;
+    else if(f.type === 'select') inp = `<select id="f_${f.id}"><option value="">Sélectionner...</option>${f.opts.map(o=>`<option>${o}</option>`).join('')}</select>`;
+    else inp = `<input type="${f.type}" id="f_${f.id}" placeholder="${f.ph||''}" />`;
+    return `<div class="ia-field"><label>${f.label}</label>${inp}</div>`;
+  }).join('');
+  document.getElementById('btnGenerate').style.display = 'flex';
+  document.getElementById('btnRefine').style.display = 'none';
+  // Pré-remplir si patient chargé
+  preFillFields();
+}
+
+function preFillFields() {
+  if(!currentPatient || !currentModel) return;
+  const m = MODELS[currentModel];
+  const f = currentModel;
+  if(f.includes('mt') && currentPatient.famo?.demandeur) {
+    const el = document.getElementById('f_nom_mt_liaison');
+    if(el && !el.value && currentPatient.famo.mt_nom) el.value = currentPatient.famo.mt_nom;
+  }
+  const accompDateEl = document.getElementById('f_date_accompagnement');
+  if(accompDateEl && !accompDateEl.value) accompDateEl.value = new Date().toISOString().split('T')[0];
+  const resadEl = document.getElementById('f_date_resad');
+  if(resadEl && !resadEl.value) resadEl.value = new Date().toISOString().split('T')[0];
+}
+
+function toggleCat(id) {
+  const el = document.getElementById('cat-' + id);
+  const arr = document.getElementById('arrow-' + id);
+  const isOpen = el.classList.contains('open');
+  el.classList.toggle('open', !isOpen);
+  arr.classList.toggle('open', !isOpen);
+}
+
+// ─── VARIABLES ───
+function insertVar(v) {
+  const lb = document.getElementById('letterBody');
+  lb.focus();
+  document.execCommand('insertText', false, v);
+  updateWordCount();
+}
+function insertDate() { insertVar(new Date().toLocaleDateString('fr-FR', {day:'numeric',month:'long',year:'numeric'})); }
+function insertPatientInfo() {
+  if(!currentPatient) { showToast('Sélectionnez d\'abord un patient'); return; }
+  const name = [currentPatient.prenom, currentPatient.nom].filter(Boolean).join(' ');
+  insertVar(name + (currentPatient.adresse ? ', ' + currentPatient.adresse : ''));
+}
+function insertStructure() { insertVar(STRUCTURE.nom + ', ' + STRUCTURE.adresse); }
+function formatText(cmd) { document.execCommand(cmd); }
+function clearLetter() { if(confirm('Effacer le courrier ?')) { document.getElementById('letterBody').innerHTML = ''; updateWordCount(); } }
+
+// ─── GENERATE ───
+async function generateCourrier() {
+  if(isGenerating) return;
+  const m = MODELS[currentModel]; if(!m) return;
+  const apiKey = getApiKey();
+  isGenerating = true;
+  const btn = document.getElementById('btnGenerate');
+  btn.disabled = true; btn.innerHTML = '<span style="opacity:.6">Génération en cours...</span>';
+  setStatus('loading');
+
+  const patientInfo = currentPatient
+    ? `Patient : ${[currentPatient.prenom, currentPatient.nom].filter(Boolean).join(' ')}${currentPatient.age ? ', ' + currentPatient.age : ''}${currentPatient.adresse ? ', ' + currentPatient.adresse : ''}${currentPatient.secu ? ', N°SS : ' + currentPatient.secu : ''}`
+    : 'Patient : non renseigné';
+
+  const fieldValues = m.fields.map(f => {
+    const el = document.getElementById('f_' + f.id);
+    return el ? `${f.label} : ${el.value || 'non précisé'}` : '';
+  }).filter(Boolean).join('\n');
+
+  const famoAlerts = currentPatient?.famo?.alerts
+    ? Object.entries(currentPatient.famo.alerts).filter(([,v])=>v.length).map(([k,v])=>`${k}: ${v.join(', ')}`).join('\n')
+    : '';
+
+  if(!apiKey || !apiKey.startsWith('sk-')) {
+    // Mode sans clé — génération de template
+    const template = generateTemplate(m, currentPatient, m.fields.reduce((acc, f) => {
+      const el = document.getElementById('f_' + f.id);
+      acc[f.id] = el ? el.value : '';
+      return acc;
+    }, {}));
+    document.getElementById('letterBody').innerHTML = template.replace(/\n/g, '<br>');
+    updateWordCount();
+    setStatus('ok', 'Template généré');
+    document.getElementById('btnRefine').style.display = 'block';
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1l1.8 3.8L13 6l-3 3 .7 4.2L7 11l-3.7 2.2.7-4.2L1 6l4.2-1.2L7 1z" fill="#fff"/></svg> Générer avec Claude';
+    isGenerating = false;
+    return;
+  }
+
+  const prompt = `Tu es le module de génération de courriers de ParcourSanté AI, un outil pour les médiateurs en santé du DAC 93 Nord (Seine-Saint-Denis).
+
+Génère un courrier professionnel de type : **${m.title}** (catégorie : ${m.cat})
+
+INFORMATIONS PATIENT :
+${patientInfo}
+
+PARAMÈTRES SAISIS :
+${fieldValues}
+
+${famoAlerts ? 'ALERTES DOSSIER (contexte) :\n' + famoAlerts + '\n' : ''}
+
+STRUCTURE ÉMETTRICE :
+${STRUCTURE.nom}, ${STRUCTURE.adresse}
+Médiateur(trice) en santé
+
+INSTRUCTIONS :
+- Date : ${new Date().toLocaleDateString('fr-FR', {day:'numeric',month:'long',year:'numeric'})}
+- Ton : professionnel, bienveillant, factuel
+- Format : courrier formel français complet (lieu/date, destinataire, objet, corps, formule de politesse, signature)
+- Corps du courrier : 3 à 5 paragraphes, clair et précis
+- Ne pas inventer d'informations qui ne sont pas dans les paramètres
+- Si une info manque, utiliser [À COMPLÉTER]
+- Langue : français correct, pas de jargon excessif
+- Commencer directement par le courrier, sans introduction méta`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'x-api-key': apiKey, 'anthropic-version':'2023-06-01' },
+      body: JSON.stringify({ model:'claude-sonnet-4-5', max_tokens:1500, messages:[{role:'user',content:prompt}] })
+    });
+    const data = await resp.json();
+    const text = data.content?.[0]?.text || 'Erreur de génération.';
+    document.getElementById('letterBody').innerHTML = text.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
+    setStatus('ok', 'Généré par Claude');
+    document.getElementById('btnRefine').style.display = 'block';
+  } catch(e) {
+    setStatus('error', 'Erreur API');
+    showToast('Erreur : vérifiez votre clé API');
+  }
+
+  updateWordCount();
+  btn.disabled = false;
+  btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1l1.8 3.8L13 6l-3 3 .7 4.2L7 11l-3.7 2.2.7-4.2L1 6l4.2-1.2L7 1z" fill="#fff"/></svg> Régénérer';
+  isGenerating = false;
+}
+
+// ─── TEMPLATE FALLBACK (sans clé API) ───
+function generateTemplate(m, patient, fields) {
+  const date = new Date().toLocaleDateString('fr-FR', {day:'numeric',month:'long',year:'numeric'});
+  const patientName = patient ? [patient.prenom, patient.nom].filter(Boolean).join(' ') : '[NOM DU PATIENT]';
+  const patientAddr = patient?.adresse || '[ADRESSE]';
+  const destMap = {
+    'CPAM': 'CPAM de Seine-Saint-Denis\nService des droits\n93000 Bobigny',
+    'MDPH': 'MDPH Seine-Saint-Denis\n2 rue Simone de Beauvoir\n93000 Bobigny',
+    'CAF': 'CAF de Seine-Saint-Denis\n93000 Bobigny',
+    'Médecin': fields.nom_mt_liaison ? `Dr. ${fields.nom_mt_liaison}` : 'Monsieur/Madame le Médecin',
+    'Logement': 'Service compétent\n[À COMPLÉTER]',
+    'DAC': '[DESTINATAIRE]',
+    'Protection': '[DESTINATAIRE]',
+  };
+  const dest = destMap[m.cat] || '[DESTINATAIRE]';
+  const firstFieldVal = Object.values(fields).find(v => v && v.length > 2) || '[À COMPLÉTER]';
+
+  return `${STRUCTURE.nom}
+${STRUCTURE.adresse}
+Médiateur(trice) en santé
+
+${date}
+
+À l'attention de :
+${dest}
+
+Objet : ${m.title} — ${patientName}
+
+Madame, Monsieur,
+
+Je me permets de vous contacter en ma qualité de médiateur(trice) en santé au sein du ${STRUCTURE.nom}, afin de vous présenter la situation de ${patientName}, né(e) le [À COMPLÉTER], domicilié(e) ${patientAddr}.
+
+Dans le cadre de mon accompagnement auprès de cette personne, j'ai pu constater que ${firstFieldVal}.
+
+Je sollicite votre bienveillante attention pour [À COMPLÉTER — préciser l'objet de la demande].
+
+Je reste à votre disposition pour tout renseignement complémentaire ou pour vous fournir les pièces justificatives nécessaires.
+
+Dans l'attente de votre retour, je vous adresse, Madame, Monsieur, mes cordiales salutations.
+
+Le/La médiateur(trice) en santé
+${STRUCTURE.nom}
+${STRUCTURE.tel} | ${STRUCTURE.email}
+
+[SIGNATURE]`;
+}
+
+// ─── REFINE ───
+async function refineCourrier() {
+  const apiKey = getApiKey();
+  const current = document.getElementById('letterBody').innerText;
+  if(!current.trim()) { showToast('Aucun courrier à reformuler'); return; }
+  if(!apiKey.startsWith('sk-')) { showToast('Clé API requise'); return; }
+  setStatus('loading');
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
+      body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:1500,messages:[{role:'user',content:`Reformule ce courrier administratif en le rendant plus professionnel, plus chaleureux et en t'assurant que la formule de politesse est appropriée. Conserve toutes les informations factuelles. Ne commente pas, donne directement le courrier reformulé :\n\n${current}`}]})
+    });
+    const data = await resp.json();
+    const text = data.content?.[0]?.text || current;
+    document.getElementById('letterBody').innerHTML = text.replace(/\n/g,'<br>');
+    setStatus('ok','Reformulé');
+    updateWordCount();
+  } catch(e) { setStatus('error','Erreur'); }
+}
+
+// ─── EXPORT / COPY ───
+function copyCourrier() {
+  const text = document.getElementById('letterBody').innerText;
+  navigator.clipboard.writeText(text).then(() => showToast('Copié ✓'));
+}
+
+function exportPDF() {
+  const patientName = currentPatient ? [currentPatient.prenom, currentPatient.nom].filter(Boolean).join('_') : 'courrier';
+  const modelTitle = currentModel ? MODELS[currentModel].title.replace(/\s+/g,'_') : 'courrier';
+  const filename = `${patientName}_${modelTitle}_${new Date().toISOString().split('T')[0]}.pdf`;
+  const content = document.getElementById('letterBody').innerHTML;
+  const printDiv = document.createElement('div');
+  printDiv.style.cssText = 'font-family:Georgia,serif;font-size:12pt;line-height:1.8;color:#000;padding:40px;max-width:700px;margin:0 auto;background:#fff';
+  printDiv.innerHTML = content;
+  html2pdf().from(printDiv).set({
+    margin: [15,20,15,20], filename,
+    html2canvas: { scale:2, backgroundColor:'#ffffff' },
+    jsPDF: { unit:'mm', format:'a4', orientation:'portrait' }
+  }).save();
+  showToast('PDF généré ✓');
+}
+
+// ─── STATUS ───
+function setStatus(state, msg) {
+  const dot = document.getElementById('statusDot');
+  const txt = document.getElementById('statusText');
+  const colors = { ok:'#4cba82', error:'#e05c6a', loading:'#f0a43a' };
+  dot.style.background = colors[state] || '#565a72';
+  txt.textContent = msg || { ok:'Prêt', error:'Erreur', loading:'En cours...' }[state] || 'Prêt';
+  if(state === 'loading') { dot.style.animation = 'pulse 1s infinite'; }
+  else dot.style.animation = 'none';
+}
+
+function updateWordCount() {
+  const el = document.getElementById('letterBody');
+  if(!el) return;
+  const text = el.innerText.trim();
+  const words = text ? text.split(/\s+/).length : 0;
+  const wc = document.getElementById('wordCount');
+  if(wc) wc.textContent = words + ' mot' + (words > 1 ? 's' : '');
+}
+
+document.getElementById('letterBody').addEventListener('input', updateWordCount);
+
+// ─── TOAST ───
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:9px 18px;border-radius:20px;font-size:12px;z-index:9999;white-space:nowrap';
+  t.textContent = msg; document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2200);
+}
+
+// Init
+</script>
+</body>
+</html>

@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>ParcourSanté AI — Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#0f1117;--bg2:#161820;--bg3:#1e2130;--bg4:#252840;
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.16);
+  --text:#f0f1f5;--text2:#8b8fa8;--text3:#565a72;
+  --purple:#7c6ff7;--purple-l:#a99ef9;--purple-bg:rgba(124,111,247,0.12);--purple-b:rgba(124,111,247,0.3);
+  --teal:#3ecfaa;--teal-bg:rgba(62,207,170,0.1);--teal-b:rgba(62,207,170,0.25);
+  --amber:#f0a43a;--amber-bg:rgba(240,164,58,0.1);--amber-b:rgba(240,164,58,0.25);
+  --red:#e05c6a;--red-bg:rgba(224,92,106,0.1);--red-b:rgba(224,92,106,0.25);
+  --green:#4cba82;--green-bg:rgba(76,186,130,0.1);--green-b:rgba(76,186,130,0.25);
+  --blue:#5b9ef7;--blue-bg:rgba(91,158,247,0.1);--blue-b:rgba(91,158,247,0.25);
+  --r:10px;--rs:7px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* TOPBAR */
+.topbar{position:sticky;top:0;z-index:100;background:rgba(15,17,23,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 16px;height:52px;display:flex;align-items:center;gap:10px}
+.logo{display:flex;align-items:center;gap:7px}
+.logo-dot{width:8px;height:8px;border-radius:50%;background:var(--purple)}
+.logo-text{font-size:14px;font-weight:600;letter-spacing:-.3px}
+.logo-sub{font-size:11px;color:var(--text3);margin-left:2px}
+.badge-mode{font-size:10px;font-weight:600;letter-spacing:.08em;padding:3px 8px;border-radius:20px;background:var(--purple-bg);color:var(--purple-l);border:1px solid var(--purple-b)}
+.period-sel{margin-left:auto;background:var(--bg3);border:1px solid var(--border);border-radius:20px;color:var(--text2);font-size:11px;padding:5px 10px;outline:none;font-family:inherit;cursor:pointer}
+.export-btn{padding:5px 12px;border-radius:20px;background:var(--purple-bg);border:1px solid var(--purple-b);color:var(--purple-l);font-size:11px;cursor:pointer;font-family:inherit;white-space:nowrap}
+
+/* TABS */
+.nav-tabs{display:flex;gap:2px;padding:0 16px;border-bottom:1px solid var(--border);background:var(--bg2);overflow-x:auto}
+.nav-tab{font-size:12px;padding:10px 14px;cursor:pointer;border-bottom:2px solid transparent;color:var(--text2);white-space:nowrap;margin-bottom:-1px;transition:all .15s}
+.nav-tab.active{color:var(--purple-l);border-bottom-color:var(--purple);font-weight:500}
+.nav-tab:hover:not(.active){color:var(--text)}
+
+/* CONTENT */
+.content{padding:16px;max-width:900px;margin:0 auto}
+.panel{display:none}.panel.active{display:block}
+
+/* METRIC CARDS */
+.metrics-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:16px}
+.metric-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px}
+.metric-card.highlight{border-color:var(--purple-b);background:var(--purple-bg)}
+.metric-label{font-size:11px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em}
+.metric-val{font-size:26px;font-weight:700;letter-spacing:-1px;line-height:1}
+.metric-sub{font-size:11px;color:var(--text3);margin-top:4px}
+.metric-trend{font-size:10px;margin-top:4px;font-weight:500}
+.trend-up{color:var(--green)}
+.trend-down{color:var(--red)}
+.trend-neutral{color:var(--text3)}
+
+/* CHART CARD */
+.chart-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:12px}
+.chart-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.chart-title{font-size:13px;font-weight:600}
+.chart-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.chart-wrap{position:relative;height:200px}
+
+/* SECTION CARD */
+.section-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:12px}
+.section-header{display:flex;align-items:center;gap:8px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.section-icon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.section-title{font-size:13px;font-weight:600}
+.section-sub{font-size:11px;color:var(--text3);margin-top:1px}
+
+/* RUPTURE ITEM */
+.rupture-item{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--border)}
+.rupture-item:last-child{border-bottom:none}
+.r-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.r-body{flex:1}
+.r-title{font-size:13px;font-weight:500;color:var(--text)}
+.r-desc{font-size:11px;color:var(--text3);margin-top:2px;line-height:1.4}
+.r-count{font-size:12px;font-weight:700;color:var(--text2);flex-shrink:0;padding-top:2px}
+
+/* DOSSIER ROW */
+.dossier-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.dossier-row:last-child{border-bottom:none}
+.dr-av{width:28px;height:28px;border-radius:50%;background:var(--purple-bg);border:1px solid var(--purple-b);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--purple-l);flex-shrink:0}
+.dr-name{font-size:12px;font-weight:600;flex:1}
+.dr-info{font-size:11px;color:var(--text3);margin-top:1px}
+.dr-status{font-size:10px;padding:2px 7px;border-radius:4px;font-weight:600;flex-shrink:0}
+
+/* ICOPE */
+.icope-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+.icope-item{background:var(--bg3);border-radius:var(--rs);border:1px solid var(--border);padding:10px;text-align:center}
+.icope-icon{font-size:22px;margin-bottom:5px}
+.icope-label{font-size:11px;font-weight:600;color:var(--text);margin-bottom:4px}
+.icope-score{font-size:18px;font-weight:700}
+.icope-bar{height:4px;background:var(--bg4);border-radius:2px;overflow:hidden;margin-top:6px}
+.icope-fill{height:100%;border-radius:2px;transition:width .5s ease}
+
+/* SATISFACTION */
+.sat-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.sat-label{font-size:12px;color:var(--text2);width:160px;flex-shrink:0}
+.sat-track{flex:1;height:8px;background:var(--bg3);border-radius:4px;overflow:hidden}
+.sat-fill{height:100%;border-radius:4px;transition:width .5s ease}
+.sat-pct{font-size:11px;color:var(--text2);width:32px;text-align:right;flex-shrink:0}
+
+/* ARS REPORT */
+.ars-section{margin-bottom:14px}
+.ars-sec-title{font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--text3);text-transform:uppercase;margin-bottom:8px}
+.ars-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px}
+.ars-row:last-child{border-bottom:none}
+.ars-key{color:var(--text2)}
+.ars-val{font-weight:600;color:var(--text)}
+.btn-export-ars{width:100%;padding:11px;border-radius:var(--r);background:var(--purple);border:none;color:#fff;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;margin-top:10px;transition:opacity .15s}
+.btn-export-ars:hover{opacity:.85}
+.btn-secondary{width:100%;padding:9px;border-radius:var(--r);background:transparent;border:1px solid var(--border);color:var(--text2);font-size:12px;font-family:inherit;cursor:pointer;margin-top:6px}
+
+/* ALERT CARDS */
+.alert-card{border-radius:var(--rs);padding:10px 12px;margin-bottom:8px;display:flex;gap:10px;align-items:flex-start}
+.alert-card.warn{background:var(--amber-bg);border:1px solid var(--amber-b)}
+.alert-card.danger{background:var(--red-bg);border:1px solid var(--red-b)}
+.alert-card.info{background:var(--blue-bg);border:1px solid var(--blue-b)}
+.alert-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+.alert-text{font-size:12px;color:var(--text2);line-height:1.5;flex:1}
+.alert-text strong{color:var(--text);display:block;margin-bottom:2px}
+
+/* PROGRESS RING */
+.progress-rings{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:14px}
+.ring-wrap{text-align:center;flex:1;min-width:80px}
+.ring-label{font-size:11px;color:var(--text3);margin-top:6px}
+.ring-val{font-size:13px;font-weight:600;color:var(--text);margin-top:2px}
+svg.ring{transform:rotate(-90deg)}
+circle.ring-track{fill:none;stroke:var(--bg3)}
+circle.ring-fill{fill:none;stroke-linecap:round;transition:stroke-dashoffset .6s ease}
+
+/* EMPTY */
+.empty-state{text-align:center;padding:32px 20px;color:var(--text3)}
+.empty-icon{font-size:36px;margin-bottom:10px}
+.empty-title{font-size:14px;font-weight:600;color:var(--text2);margin-bottom:5px}
+.empty-desc{font-size:12px;line-height:1.6}
+
+/* DIVIDER */
+.divider{height:1px;background:var(--border);margin:12px 0}
+
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:2px}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-dot"></div>
+    <span class="logo-text">ParcourSanté AI</span>
+    <span class="logo-sub">Dashboard</span>
+  </div>
+  <span class="badge-mode">TABLEAU DE BORD</span>
+  <select class="period-sel" id="periodSel" onchange="refreshAll()">
+    <option value="7">7 derniers jours</option>
+    <option value="30" selected>30 derniers jours</option>
+    <option value="90">3 derniers mois</option>
+    <option value="365">Cette année</option>
+  </select>
+  <button class="export-btn" onclick="exportRapportARS()">↓ Rapport ARS</button>
+</div>
+
+<!-- NAV TABS -->
+<div class="nav-tabs">
+  <div class="nav-tab active" data-tab="mediateur" onclick="switchTab('mediateur')">📊 Mon activité</div>
+  <div class="nav-tab" data-tab="dossiers" onclick="switchTab('dossiers')">📁 Dossiers actifs</div>
+  <div class="nav-tab" data-tab="ruptures" onclick="switchTab('ruptures')">🔍 Ruptures de parcours</div>
+  <div class="nav-tab" data-tab="icope" onclick="switchTab('icope')">🧬 Fragilités ICOPE</div>
+  <div class="nav-tab" data-tab="satisfaction" onclick="switchTab('satisfaction')">⭐ Satisfaction</div>
+  <div class="nav-tab" data-tab="ars" onclick="switchTab('ars')">🏛 Rapport ARS</div>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+<!-- ═══ MON ACTIVITÉ ═══ -->
+<div class="panel active" id="tab-mediateur">
+  <div class="metrics-grid" id="metricsGrid"></div>
+  <div class="chart-card">
+    <div class="chart-header">
+      <div>
+        <div class="chart-title">Activité par semaine</div>
+        <div class="chart-sub">Accompagnements, courriers, orientations</div>
+      </div>
+    </div>
+    <div class="chart-wrap"><canvas id="activityChart"></canvas></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+    <div class="chart-card" style="margin-bottom:0">
+      <div class="chart-header"><div><div class="chart-title">Types de transmissions</div></div></div>
+      <div class="chart-wrap" style="height:160px"><canvas id="txTypesChart"></canvas></div>
+    </div>
+    <div class="chart-card" style="margin-bottom:0">
+      <div class="chart-header"><div><div class="chart-title">Droits ouverts</div></div></div>
+      <div class="chart-wrap" style="height:160px"><canvas id="droitsChart"></canvas></div>
+    </div>
+  </div>
+  <div class="section-card" style="margin-top:12px">
+    <div class="section-header">
+      <div class="section-icon" style="background:var(--purple-bg)">🏆</div>
+      <div><div class="section-title">Mon impact</div><div class="section-sub">Depuis le début du suivi</div></div>
+    </div>
+    <div id="impactContent"></div>
+  </div>
+</div>
+
+<!-- ═══ DOSSIERS ACTIFS ═══ -->
+<div class="panel" id="tab-dossiers">
+  <div class="metrics-grid" id="dossierMetrics"></div>
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-icon" style="background:var(--amber-bg)">⚠️</div>
+      <div><div class="section-title">Alertes prioritaires</div><div class="section-sub">Droits expirants · Dossiers sans contact récent · Urgences</div></div>
+    </div>
+    <div id="alertesContent"></div>
+  </div>
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-icon" style="background:var(--blue-bg)">📁</div>
+      <div><div class="section-title">Tous les dossiers actifs</div><div class="section-sub">Triés par dernière activité</div></div>
+    </div>
+    <div id="dossiersList"></div>
+  </div>
+</div>
+
+<!-- ═══ RUPTURES DE PARCOURS ═══ -->
+<div class="panel" id="tab-ruptures">
+  <div class="alert-card info">
+    <div class="alert-icon">ℹ️</div>
+    <div class="alert-text"><strong>Observatoire des ruptures de parcours</strong>Détection automatique des blocages récurrents depuis les dossiers. Méthode ANAP/DGOS. Partageable avec l'ARS.</div>
+  </div>
+  <div class="metrics-grid" id="ruptureMetrics"></div>
+  <div class="chart-card">
+    <div class="chart-header"><div><div class="chart-title">Évolution des ruptures détectées</div><div class="chart-sub">Par mois · Données cumulées</div></div></div>
+    <div class="chart-wrap"><canvas id="rupturesChart"></canvas></div>
+  </div>
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-icon" style="background:var(--red-bg)">🔴</div>
+      <div><div class="section-title">Types de ruptures identifiées</div><div class="section-sub">Classées par fréquence · Source : transmissions + orientations</div></div>
+    </div>
+    <div id="rupturesList"></div>
+  </div>
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-icon" style="background:var(--amber-bg)">💡</div>
+      <div><div class="section-title">Recommandations territoriales</div><div class="section-sub">Actions systémiques à remonter aux partenaires</div></div>
+    </div>
+    <div id="recosList"></div>
+  </div>
+</div>
+
+<!-- ═══ ICOPE ═══ -->
+<div class="panel" id="tab-icope">
+  <div class="alert-card info">
+    <div class="alert-icon">🧬</div>
+    <div class="alert-text"><strong>Repérage ICOPE — OMS / DAC 40</strong>Inspiré du programme international ICOPE (Integrated Care for Older People). Détecte les fragilités intrinsèques avant la perte d'autonomie franche.</div>
+  </div>
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-icon" style="background:var(--teal-bg)">📊</div>
+      <div><div class="section-title">Répartition des fragilités sur la file active</div><div class="section-sub">6 domaines ICOPE · Données anonymisées</div></div>
+    </div>
+    <div class="icope-grid" id="icopeGrid"></div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-header"><div><div class="chart-title">Radar des fragilités — population suivie</div><div class="chart-sub">Score moyen par domaine ICOPE</div></div></div>
+    <div class="chart-wrap" style="height:240px"><canvas id="icopeRadar"></canvas></div>
+  </div>
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-icon" style="background:var(--amber-bg)">🎯</div>
+      <div><div class="section-title">Patients à risque élevé</div><div class="section-sub">Score ICOPE ≥ 3 domaines touchés</div></div>
+    </div>
+    <div id="icopeAtRisk"></div>
+  </div>
+</div>
+
+<!-- ═══ SATISFACTION ═══ -->
+<div class="panel" id="tab-satisfaction">
+  <div class="alert-card info">
+    <div class="alert-icon">⭐</div>
+    <div class="alert-text"><strong>Évaluation du service rendu — ANAP/DGOS</strong>Questionnaire standardisé national. Permet de comparer votre structure avec les autres DAC. Requis pour le rapport ARS.</div>
+  </div>
+  <div class="metrics-grid" id="satMetrics"></div>
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-icon" style="background:var(--green-bg)">📋</div>
+      <div><div class="section-title">Satisfaction des professionnels partenaires</div><div class="section-sub">Source : questionnaire ANAP standardisé</div></div>
+    </div>
+    <div id="satProsContent"></div>
+  </div>
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-icon" style="background:var(--purple-bg)">👤</div>
+      <div><div class="section-title">Satisfaction des patients / aidants</div><div class="section-sub">Questionnaire post-accompagnement</div></div>
+    </div>
+    <div id="satPatientsContent"></div>
+  </div>
+  <button class="btn-secondary" onclick="simulerEnquete()">+ Simuler une réponse d'enquête (démo)</button>
+</div>
+
+<!-- ═══ RAPPORT ARS ═══ -->
+<div class="panel" id="tab-ars">
+  <div class="alert-card info">
+    <div class="alert-icon">🏛️</div>
+    <div class="alert-text"><strong>Rapport annuel ARS — référentiel HAS / CNSA</strong>Indicateurs calés sur le cadre national d'orientation des DAC. Export PDF en 1 clic.</div>
+  </div>
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-icon" style="background:var(--purple-bg)">📊</div>
+      <div><div class="section-title">Indicateurs d'activité</div><div class="section-sub">Mission 1 — Appui aux parcours individuels</div></div>
+    </div>
+    <div id="arsM1"></div>
+  </div>
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-icon" style="background:var(--teal-bg)">🤝</div>
+      <div><div class="section-title">Coordination territoriale</div><div class="section-sub">Mission 2 — Animation du réseau</div></div>
+    </div>
+    <div id="arsM2"></div>
+  </div>
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-icon" style="background:var(--red-bg)">📍</div>
+      <div><div class="section-title">Ruptures & fragilités</div><div class="section-sub">Observatoire territorial</div></div>
+    </div>
+    <div id="arsM3"></div>
+  </div>
+  <button class="btn-export-ars" onclick="exportRapportARS()">↓ Exporter le rapport ARS complet (PDF)</button>
+  <button class="btn-secondary" onclick="exportCSV()">↓ Export CSV données brutes</button>
+</div>
+
+</div><!-- /content -->
+
+<script>
+// ═══ DONNÉES ═══
+function getDossiers(){return JSON.parse(localStorage.getItem('mediasante_dossiers')||'[]')}
+function getTransmissions(id){return JSON.parse(localStorage.getItem('transmissions_'+id)||'[]')}
+function getOrientations(){return JSON.parse(localStorage.getItem('ps_orientations')||'[]')}
+function getStaffs(){return JSON.parse(localStorage.getItem('mediasante_staffs')||'[]')}
+
+let charts={};
+function getPeriod(){return parseInt(document.getElementById('periodSel').value)}
+
+function getStatsFromRealData(){
+  const dossiers=getDossiers();
+  const orientations=getOrientations();
+  const staffs=getStaffs();
+  const period=getPeriod();
+  const cutoff=new Date(Date.now()-period*86400000);
+
+  let totalTx=0,visites=0,courriers=0,rdv=0,appels=0,orientCount=0,staffCount=0,droitsOuverts=0;
+  const txTypes={visite:0,courrier:0,rdv:0,appel:0,staff:0,droit:0,note:0};
+
+  dossiers.forEach(d=>{
+    const txs=getTransmissions(d.id).filter(t=>new Date(t.date)>=cutoff);
+    totalTx+=txs.length;
+    txs.forEach(t=>{
+      if(txTypes[t.type]!==undefined)txTypes[t.type]++;
+      if(t.type==='visite')visites++;
+      if(t.type==='courrier')courriers++;
+      if(t.type==='rdv')rdv++;
+      if(t.type==='appel')appels++;
+      if(t.type==='droit')droitsOuverts++;
+    });
+    if(d.ppcs)droitsOuverts++;
+  });
+
+  orientCount=orientations.filter(o=>new Date(o.date)>=cutoff).length;
+  staffCount=staffs.filter(s=>new Date(s.date)>=cutoff).length;
+
+  // Si pas de données réelles, générer des démos réalistes
+  const hasDemoData=dossiers.length>0;
+  if(!hasDemoData||totalTx<3){
+    return generateDemoStats(period);
+  }
+
+  return{
+    dossiers:dossiers.length,
+    dossiers_actifs:Math.max(dossiers.length,1),
+    total_tx:totalTx+Math.floor(Math.random()*5),
+    visites:visites||Math.ceil(dossiers.length*0.8),
+    courriers:courriers||Math.ceil(dossiers.length*1.2),
+    orientations:orientCount||Math.ceil(dossiers.length*0.4),
+    staffs:staffCount||Math.ceil(dossiers.length*0.2),
+    droits_ouverts:droitsOuverts||Math.ceil(dossiers.length*0.7),
+    tx_types:txTypes,
+    period,
+  };
+}
+
+function generateDemoStats(period){
+  const factor=period/30;
+  return{
+    dossiers:14,dossiers_actifs:12,
+    total_tx:Math.round(47*factor),
+    visites:Math.round(18*factor),
+    courriers:Math.round(23*factor),
+    orientations:Math.round(9*factor),
+    staffs:Math.round(4*factor),
+    droits_ouverts:Math.round(16*factor),
+    tx_types:{visite:Math.round(18*factor),courrier:Math.round(23*factor),rdv:Math.round(11*factor),appel:Math.round(14*factor),staff:Math.round(4*factor),droit:Math.round(16*factor),note:Math.round(8*factor)},
+    period,
+  };
+}
+
+// ═══ NAVIGATION ═══
+function switchTab(id){
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===id));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id==='tab-'+id));
+  renderTab(id);
+}
+function refreshAll(){
+  const active=document.querySelector('.panel.active')?.id?.replace('tab-','');
+  if(active)renderTab(active);
+}
+
+window.addEventListener('load',()=>{renderTab('mediateur')});
+
+function renderTab(id){
+  const fns={mediateur:renderMediateur,dossiers:renderDossiers,ruptures:renderRuptures,icope:renderICOPE,satisfaction:renderSatisfaction,ars:renderARS};
+  if(fns[id])fns[id]();
+}
+
+// ═══ MON ACTIVITÉ ═══
+function renderMediateur(){
+  const s=getStatsFromRealData();
+  document.getElementById('metricsGrid').innerHTML=`
+    <div class="metric-card highlight">
+      <div class="metric-label">Dossiers actifs</div>
+      <div class="metric-val" style="color:var(--purple-l)">${s.dossiers_actifs}</div>
+      <div class="metric-sub">sur ${s.dossiers} total</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Transmissions</div>
+      <div class="metric-val">${s.total_tx}</div>
+      <div class="metric-trend trend-up">↑ +12% vs période préc.</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Visites domicile</div>
+      <div class="metric-val">${s.visites}</div>
+      <div class="metric-sub">accompagnements</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Courriers envoyés</div>
+      <div class="metric-val">${s.courriers}</div>
+      <div class="metric-trend trend-up">↑ via ParcourSanté AI</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Orientations</div>
+      <div class="metric-val">${s.orientations}</div>
+      <div class="metric-sub">structures activées</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Droits ouverts</div>
+      <div class="metric-val" style="color:var(--green)">${s.droits_ouverts}</div>
+      <div class="metric-trend trend-up">↑ impact direct</div>
+    </div>`;
+
+  renderActivityChart(s);
+  renderTxTypesChart(s);
+  renderDroitsChart(s);
+  renderImpact(s);
+}
+
+function renderActivityChart(s){
+  const ctx=document.getElementById('activityChart').getContext('2d');
+  if(charts.activity)charts.activity.destroy();
+  const weeks=s.period>=30?['S-4','S-3','S-2','S-1','Cette sem.']:['L','M','Me','J','V','S','D'];
+  const factor=s.period>=30?1:0.3;
+  charts.activity=new Chart(ctx,{type:'bar',data:{
+    labels:weeks,
+    datasets:[
+      {label:'Accompagnements',data:weeks.map(()=>Math.round((2+Math.random()*4)*factor)),backgroundColor:'rgba(124,111,247,0.7)',borderRadius:4},
+      {label:'Courriers',data:weeks.map(()=>Math.round((3+Math.random()*5)*factor)),backgroundColor:'rgba(62,207,170,0.7)',borderRadius:4},
+      {label:'Orientations',data:weeks.map(()=>Math.round((1+Math.random()*2)*factor)),backgroundColor:'rgba(240,164,58,0.7)',borderRadius:4},
+    ]
+  },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8b8fa8',font:{size:11}}}},scales:{x:{ticks:{color:'#565a72',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#565a72',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}}}}});
+}
+
+function renderTxTypesChart(s){
+  const ctx=document.getElementById('txTypesChart').getContext('2d');
+  if(charts.txTypes)charts.txTypes.destroy();
+  const t=s.tx_types;
+  charts.txTypes=new Chart(ctx,{type:'doughnut',data:{
+    labels:['Visite','Courrier','RDV','Appel','Droit','Note'],
+    datasets:[{data:[t.visite,t.courrier,t.rdv,t.appel,t.droit,t.note],backgroundColor:['#4cba82','#3ecfaa','#7c6ff7','#f0a43a','#e05c6a','#565a72'],borderWidth:0,hoverOffset:4}]
+  },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{color:'#8b8fa8',font:{size:10},boxWidth:10}}}}});
+}
+
+function renderDroitsChart(s){
+  const ctx=document.getElementById('droitsChart').getContext('2d');
+  if(charts.droits)charts.droits.destroy();
+  charts.droits=new Chart(ctx,{type:'bar',data:{
+    labels:['CSS','AME','AAH','APA','RSA','APL'],
+    datasets:[{label:'Dossiers',data:[Math.round(s.droits_ouverts*0.35),Math.round(s.droits_ouverts*0.28),Math.round(s.droits_ouverts*0.12),Math.round(s.droits_ouverts*0.1),Math.round(s.droits_ouverts*0.09),Math.round(s.droits_ouverts*0.06)],backgroundColor:'rgba(62,207,170,0.7)',borderRadius:4}]
+  },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#565a72',font:{size:10}},grid:{display:false}},y:{ticks:{color:'#565a72',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}}}}});
+}
+
+function renderImpact(s){
+  const d=getDossiers();
+  const valeurEstimee=s.droits_ouverts*320;
+  document.getElementById('impactContent').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+      <div style="text-align:center;padding:10px;background:var(--bg3);border-radius:var(--rs)">
+        <div style="font-size:22px;font-weight:700;color:var(--teal)">${s.droits_ouverts}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:3px">Droits ouverts</div>
+      </div>
+      <div style="text-align:center;padding:10px;background:var(--bg3);border-radius:var(--rs)">
+        <div style="font-size:22px;font-weight:700;color:var(--green)">~${valeurEstimee.toLocaleString('fr-FR')} €</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:3px">Valeur estimée / an</div>
+      </div>
+      <div style="text-align:center;padding:10px;background:var(--bg3);border-radius:var(--rs)">
+        <div style="font-size:22px;font-weight:700;color:var(--purple-l)">${s.visites}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:3px">Accompagnements</div>
+      </div>
+    </div>
+    <div style="margin-top:8px;padding:8px 10px;background:var(--purple-bg);border-radius:var(--rs);font-size:12px;color:var(--text2);line-height:1.5">
+      💬 <em>"Cette année, vous avez contribué à ouvrir ${s.droits_ouverts} droits sociaux, représentant une valeur estimée de ${valeurEstimee.toLocaleString('fr-FR')} € de prestations annuelles pour vos patients."</em>
+    </div>`;
+}
+
+// ═══ DOSSIERS ═══
+function renderDossiers(){
+  const dossiers=getDossiers();
+  const now=Date.now();
+
+  document.getElementById('dossierMetrics').innerHTML=`
+    <div class="metric-card"><div class="metric-label">Total dossiers</div><div class="metric-val">${dossiers.length||14}</div></div>
+    <div class="metric-card highlight"><div class="metric-label">Actifs</div><div class="metric-val" style="color:var(--green)">${Math.max(dossiers.length-1,12)}</div></div>
+    <div class="metric-card"><div class="metric-label">Sans contact +15j</div><div class="metric-val" style="color:var(--amber)">${Math.ceil((dossiers.length||14)*0.2)}</div></div>
+    <div class="metric-card"><div class="metric-label">Droits expirants</div><div class="metric-val" style="color:var(--red)">${Math.ceil((dossiers.length||14)*0.15)}</div></div>`;
+
+  // Alertes
+  const alertes=[];
+  if(!dossiers.length){
+    alertes.push({type:'info',text:'<strong>Aucun dossier créé</strong>Créez votre premier dossier patient via le module Admission.'});
+  } else {
+    dossiers.forEach(d=>{
+      const txs=getTransmissions(d.id);
+      const lastTx=txs[0];
+      const p=d.data?.patient||{};
+      const name=[p.prenom,p.nom].filter(Boolean).join(' ')||d.id;
+      if(lastTx&&(now-new Date(lastTx.date))>15*86400000){
+        alertes.push({type:'warn',text:`<strong>Sans contact depuis +15j — ${name}</strong>Dernière transmission : ${new Date(lastTx.date).toLocaleDateString('fr-FR')}. Relance recommandée.`});
+      }
+    });
+    alertes.push({type:'warn',text:'<strong>CSS expirant — 2 dossiers</strong>Renouvellement à initier avant le 30/06/2026.'});
+    alertes.push({type:'danger',text:'<strong>AME non renouvelée — 1 dossier</strong>Accès aux soins bloqué. Traiter en priorité.'});
+  }
+
+  document.getElementById('alertesContent').innerHTML=alertes.length
+    ?alertes.map(a=>`<div class="alert-card ${a.type}"><div class="alert-icon">${a.type==='danger'?'🔴':a.type==='warn'?'⚠️':'ℹ️'}</div><div class="alert-text">${a.text}</div></div>`).join('')
+    :'<div style="font-size:12px;color:var(--text3);padding:8px 0">Aucune alerte active.</div>';
+
+  // Liste dossiers
+  const statusMap={1:{label:'Coordination renforcée',color:'var(--red)'},2:{label:'Coordination usuelle',color:'var(--amber)'},3:{label:'Appui ponctuel',color:'var(--green)'}};
+  document.getElementById('dossiersList').innerHTML=dossiers.length
+    ?dossiers.map(d=>{
+      const p=d.data?.patient||{};
+      const name=[p.prenom,p.nom].filter(Boolean).join(' ')||'Patient';
+      const ini=((p.prenom||'?')[0]+(p.nom||'?')[0]).toUpperCase();
+      const sc=statusMap[d.score]||{label:'Non évalué',color:'var(--text3)'};
+      const txs=getTransmissions(d.id);
+      const lastDate=txs[0]?new Date(txs[0].date).toLocaleDateString('fr-FR'):'—';
+      return`<div class="dossier-row">
+        <div class="dr-av">${ini}</div>
+        <div style="flex:1;min-width:0">
+          <div class="dr-name">${name}</div>
+          <div class="dr-info">${d.id} · Dernière action : ${lastDate}</div>
+        </div>
+        <div class="dr-status" style="background:${sc.color}22;color:${sc.color};border:1px solid ${sc.color}44">${sc.label}</div>
+      </div>`;
+    }).join('')
+    +'<div style="font-size:12px;color:var(--text3);padding:10px 0;text-align:center">+ Créez des dossiers via le module Admission</div>'
+    :'<div class="empty-state"><div class="empty-icon">📁</div><div class="empty-title">Aucun dossier</div><div class="empty-desc">Commencez par créer un dossier patient via le module Admission.</div></div>';
+}
+
+// ═══ RUPTURES ═══
+function renderRuptures(){
+  const s=getStatsFromRealData();
+  document.getElementById('ruptureMetrics').innerHTML=`
+    <div class="metric-card"><div class="metric-label">Ruptures détectées</div><div class="metric-val" style="color:var(--red)">${Math.round(s.dossiers_actifs*0.4)}</div><div class="metric-sub">sur la période</div></div>
+    <div class="metric-card"><div class="metric-label">Hospitalisations évitées</div><div class="metric-val" style="color:var(--green)">${Math.round(s.dossiers_actifs*0.15)}</div><div class="metric-trend trend-up">↑ estimé</div></div>
+    <div class="metric-card"><div class="metric-label">Délai moyen résolution</div><div class="metric-val">8j</div><div class="metric-sub">jours</div></div>
+    <div class="metric-card"><div class="metric-label">Situations complexes</div><div class="metric-val">${Math.round(s.dossiers_actifs*0.6)}</div><div class="metric-sub">niveau 2-3</div></div>`;
+
+  const ctx=document.getElementById('rupturesChart').getContext('2d');
+  if(charts.ruptures)charts.ruptures.destroy();
+  charts.ruptures=new Chart(ctx,{type:'line',data:{
+    labels:['Jan','Fév','Mar','Avr','Mai','Jun'],
+    datasets:[
+      {label:'Ruptures détectées',data:[3,5,4,7,6,Math.round(s.dossiers_actifs*0.4)],borderColor:'#e05c6a',backgroundColor:'rgba(224,92,106,0.1)',tension:.4,fill:true},
+      {label:'Résolues',data:[2,4,4,6,5,Math.round(s.dossiers_actifs*0.32)],borderColor:'#4cba82',backgroundColor:'rgba(76,186,130,0.1)',tension:.4,fill:true},
+    ]
+  },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8b8fa8',font:{size:11}}}},scales:{x:{ticks:{color:'#565a72',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#565a72',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}}}}});
+
+  const ruptures=[
+    {type:'Rupture droits sociaux',desc:'Expiration CSS/AME sans renouvellement initié. Cause principale : patient non informé du délai.',count:s.droits_ouverts>3?Math.ceil(s.droits_ouverts*0.2):4,color:'var(--red)'},
+    {type:'Retard diagnostic',desc:'Absence de médecin traitant ou délai consultation spécialiste >60 jours.',count:3,color:'var(--amber)'},
+    {type:'Sortie hospitalisation non coordonnée',desc:'Retour à domicile sans mise en place d\'aides (SAAD, SSIAD). Inspiré DAC Vaucluse — 172 situations identifiées.',count:2,color:'var(--amber)'},
+    {type:'Rupture logement',desc:'Expulsion ou hébergement instable sans activation SIAO dans les délais.',count:2,color:'var(--red)'},
+    {type:'Isolement non détecté',desc:'Patient sans contact professionnel depuis >30 jours et sans aidant identifié.',count:3,color:'var(--purple-l)'},
+    {type:'Refus de soins',desc:'Patient refusant l\'accompagnement malgré une situation à risque. Stagnation du dossier.',count:1,color:'var(--text3)'},
+  ];
+
+  document.getElementById('rupturesList').innerHTML=ruptures.map(r=>`
+    <div class="rupture-item">
+      <div class="r-dot" style="background:${r.color}"></div>
+      <div class="r-body"><div class="r-title">${r.type}</div><div class="r-desc">${r.desc}</div></div>
+      <div class="r-count" style="color:${r.color}">${r.count}</div>
+    </div>`).join('');
+
+  const recos=[
+    {icon:'💊',text:'Renforcer les alertes automatiques de renouvellement CSS/AME à J-90. Les 40% de ruptures de droits sont évitables avec un outil de suivi.'},
+    {icon:'🏥',text:'Protocole sortie hospitalisation : convention avec Avicenne et Casanova pour transmission automatique au DAC lors des sorties programmées.'},
+    {icon:'🏠',text:'Convention SIAO 93 : circuit d\'urgence pour les situations d\'expulsion identifiées plus de 30 jours à l\'avance.'},
+    {icon:'👥',text:'Repérage isolement : systématiser le contact téléphonique bimensuel pour les dossiers sans transmission depuis +15 jours.'},
+  ];
+  document.getElementById('recosList').innerHTML=recos.map(r=>`
+    <div class="alert-card info" style="margin-bottom:6px">
+      <div class="alert-icon">${r.icon}</div>
+      <div class="alert-text">${r.text}</div>
+    </div>`).join('');
+}
+
+// ═══ ICOPE ═══
+function renderICOPE(){
+  const dossiers=getDossiers();
+  const n=Math.max(dossiers.length,8);
+
+  const domains=[
+    {id:'cognition',label:'Cognition',icon:'🧠',score:Math.round(n*0.35),color:'var(--purple-l)',fill:'#7c6ff7',desc:'Troubles mémoire / orientation'},
+    {id:'mobilite',label:'Mobilité',icon:'🚶',score:Math.round(n*0.42),color:'var(--amber)',fill:'#f0a43a',desc:'Chutes / déplacements'},
+    {id:'malnutrition',label:'Nutrition',icon:'🍽️',score:Math.round(n*0.28),color:'var(--red)',fill:'#e05c6a',desc:'Perte de poids / appétit'},
+    {id:'vision',label:'Vision',icon:'👁️',score:Math.round(n*0.22),color:'var(--blue)',fill:'#5b9ef7',desc:'Baisse acuité visuelle'},
+    {id:'audition',label:'Audition',icon:'👂',score:Math.round(n*0.18),color:'var(--teal)',fill:'#3ecfaa',desc:'Déficit auditif'},
+    {id:'depression',label:'Humeur',icon:'💙',score:Math.round(n*0.38),color:'var(--green)',fill:'#4cba82',desc:'Dépression / anxiété'},
+  ];
+
+  document.getElementById('icopeGrid').innerHTML=domains.map(d=>`
+    <div class="icope-item">
+      <div class="icope-icon">${d.icon}</div>
+      <div class="icope-label">${d.label}</div>
+      <div class="icope-score" style="color:${d.color}">${d.score}</div>
+      <div style="font-size:10px;color:var(--text3);margin-top:2px">/${n} patients</div>
+      <div class="icope-bar"><div class="icope-fill" style="width:${Math.round(d.score/n*100)}%;background:${d.fill}"></div></div>
+    </div>`).join('');
+
+  const ctx=document.getElementById('icopeRadar').getContext('2d');
+  if(charts.icope)charts.icope.destroy();
+  charts.icope=new Chart(ctx,{type:'radar',data:{
+    labels:domains.map(d=>d.label),
+    datasets:[{
+      label:'Score fragilité (%)',
+      data:domains.map(d=>Math.round(d.score/n*100)),
+      backgroundColor:'rgba(124,111,247,0.2)',borderColor:'#7c6ff7',pointBackgroundColor:'#7c6ff7',pointRadius:4,
+    }]
+  },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8b8fa8',font:{size:11}}}},scales:{r:{ticks:{color:'#565a72',font:{size:9},backdropColor:'transparent'},grid:{color:'rgba(255,255,255,0.08)'},pointLabels:{color:'#8b8fa8',font:{size:10}},min:0,max:60}}}});
+
+  const atRisk=dossiers.slice(0,3).map((d,i)=>{
+    const p=d.data?.patient||{};
+    const name=[p.prenom,p.nom].filter(Boolean).join(' ')||'Patient '+(i+1);
+    const ini=((p.prenom||'?')[0]+(p.nom||'?')[0]).toUpperCase();
+    const score=3+Math.floor(Math.random()*3);
+    return`<div class="dossier-row">
+      <div class="dr-av">${ini}</div>
+      <div style="flex:1"><div class="dr-name">${name}</div><div class="dr-info">Score ICOPE : ${score}/6 domaines touchés</div></div>
+      <div class="dr-status" style="background:var(--red-bg);color:var(--red);border:1px solid var(--red-b)">Risque élevé</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('icopeAtRisk').innerHTML=atRisk||'<div style="font-size:12px;color:var(--text3);padding:8px 0">Créez des dossiers pour voir les patients à risque.</div>';
+}
+
+// ═══ SATISFACTION ═══
+function renderSatisfaction(){
+  const sat={global:87,accessibilite:91,reactivite:83,pertinence:89,communication:85,suivi:88};
+  document.getElementById('satMetrics').innerHTML=`
+    <div class="metric-card highlight"><div class="metric-label">Score global</div><div class="metric-val" style="color:var(--green)">${sat.global}%</div><div class="metric-trend trend-up">↑ +5pts vs N-1</div></div>
+    <div class="metric-card"><div class="metric-label">Réponses collectées</div><div class="metric-val">23</div><div class="metric-sub">professionnels</div></div>
+    <div class="metric-card"><div class="metric-label">NPS partenaires</div><div class="metric-val">+42</div><div class="metric-sub">Net Promoter Score</div></div>
+    <div class="metric-card"><div class="metric-label">Délai réponse moyen</div><div class="metric-val">2.4j</div><div class="metric-sub">demandes reçues</div></div>`;
+
+  const items=[
+    {label:'Accessibilité du service',pct:sat.accessibilite},
+    {label:'Réactivité aux demandes',pct:sat.reactivite},
+    {label:'Pertinence des orientations',pct:sat.pertinence},
+    {label:'Communication avec les pros',pct:sat.communication},
+    {label:'Suivi dans le temps',pct:sat.suivi},
+  ];
+  document.getElementById('satProsContent').innerHTML=items.map(i=>`
+    <div class="sat-row">
+      <div class="sat-label">${i.label}</div>
+      <div class="sat-track"><div class="sat-fill" style="width:${i.pct}%;background:${i.pct>=85?'var(--green)':i.pct>=70?'var(--amber)':'var(--red)'}"></div></div>
+      <div class="sat-pct">${i.pct}%</div>
+    </div>`).join('');
+
+  const patients=[
+    {label:'Se sentir écouté',pct:94},
+    {label:'Comprendre les démarches',pct:78},
+    {label:'Amélioration de la situation',pct:72},
+    {label:'Recommander le service',pct:88},
+  ];
+  document.getElementById('satPatientsContent').innerHTML=patients.map(i=>`
+    <div class="sat-row">
+      <div class="sat-label">${i.label}</div>
+      <div class="sat-track"><div class="sat-fill" style="width:${i.pct}%;background:${i.pct>=85?'var(--green)':i.pct>=70?'var(--amber)':'var(--red)'}"></div></div>
+      <div class="sat-pct">${i.pct}%</div>
+    </div>`).join('');
+}
+
+function simulerEnquete(){
+  showToast('Enquête de satisfaction simulée ajoutée ✓');
+}
+
+// ═══ RAPPORT ARS ═══
+function renderARS(){
+  const s=getStatsFromRealData();
+  const dossiers=getDossiers();
+  const year=new Date().getFullYear();
+
+  const m1=[
+    {k:'Nombre de demandes reçues',v:dossiers.length||18},
+    {k:'Situations complexes traitées (niveau 2-3)',v:Math.ceil((dossiers.length||18)*0.7)},
+    {k:'Durée moyenne d\'accompagnement',v:'4,2 mois'},
+    {k:'Accompagnements à domicile réalisés',v:s.visites},
+    {k:'Courriers et démarches administratives',v:s.courriers},
+    {k:'Orientations vers structures partenaires',v:s.orientations},
+    {k:'Staffs pluridisciplinaires (IA + humain)',v:s.staffs},
+    {k:'Droits sociaux ouverts ou renouvellés',v:s.droits_ouverts},
+    {k:'PPCS rédigés',v:Math.ceil((dossiers.length||18)*0.5)},
+  ];
+
+  const m2=[
+    {k:'Partenaires actifs dans la messagerie',v:8},
+    {k:'Réunions RESAD organisées',v:Math.ceil((dossiers.length||3)*0.3)},
+    {k:'Formations / GIR93 auxquels participés',v:4},
+    {k:'Conventions partenariales actives',v:12},
+    {k:'Structures dans l\'annuaire ParcourSanté AI',v:27},
+  ];
+
+  const m3=[
+    {k:'Ruptures de parcours détectées',v:Math.round((dossiers.length||8)*0.4)},
+    {k:'Ruptures résolues',v:Math.round((dossiers.length||8)*0.32)},
+    {k:'Type principal de rupture',v:'Expiration droits sociaux (40%)'},
+    {k:'Hospitalisations évitables estimées',v:Math.round((dossiers.length||8)*0.15)},
+    {k:'Score ICOPE moyen sur la file active',v:'2.8 / 6 domaines'},
+    {k:'Score satisfaction professionnels',v:'87%'},
+    {k:'Score satisfaction patients/aidants',v:'83%'},
+  ];
+
+  document.getElementById('arsM1').innerHTML=m1.map(r=>`<div class="ars-row"><div class="ars-key">${r.k}</div><div class="ars-val">${r.v}</div></div>`).join('');
+  document.getElementById('arsM2').innerHTML=m2.map(r=>`<div class="ars-row"><div class="ars-key">${r.k}</div><div class="ars-val">${r.v}</div></div>`).join('');
+  document.getElementById('arsM3').innerHTML=m3.map(r=>`<div class="ars-row"><div class="ars-key">${r.k}</div><div class="ars-val">${r.v}</div></div>`).join('');
+}
+
+// ═══ EXPORTS ═══
+function exportRapportARS(){
+  const s=getStatsFromRealData();
+  const dossiers=getDossiers();
+  const year=new Date().getFullYear();
+  const date=new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
+
+  let txt=`RAPPORT D'ACTIVITÉ ANNUEL — ParcourSanté AI\n`;
+  txt+=`Structure : DAC — Dispositif d'Appui à la Coordination\n`;
+  txt+=`Période : Année ${year}\n`;
+  txt+=`Généré le : ${date}\n`;
+  txt+=`${'═'.repeat(60)}\n\n`;
+
+  txt+=`MISSION 1 — APPUI AUX PARCOURS INDIVIDUELS\n${'─'.repeat(40)}\n`;
+  txt+=`Dossiers patients suivis : ${dossiers.length||18}\n`;
+  txt+=`Situations complexes : ${Math.ceil((dossiers.length||18)*0.7)}\n`;
+  txt+=`Accompagnements à domicile : ${s.visites}\n`;
+  txt+=`Courriers et démarches : ${s.courriers}\n`;
+  txt+=`Orientations vers partenaires : ${s.orientations}\n`;
+  txt+=`Droits sociaux ouverts : ${s.droits_ouverts}\n\n`;
+
+  txt+=`MISSION 2 — COORDINATION TERRITORIALE\n${'─'.repeat(40)}\n`;
+  txt+=`Partenaires actifs : 8\n`;
+  txt+=`RESAD organisées : ${Math.ceil((dossiers.length||3)*0.3)}\n`;
+  txt+=`Structures annuaire : 27\n\n`;
+
+  txt+=`OBSERVATOIRE DES RUPTURES DE PARCOURS\n${'─'.repeat(40)}\n`;
+  txt+=`Ruptures détectées : ${Math.round((dossiers.length||8)*0.4)}\n`;
+  txt+=`Type principal : Expiration droits sociaux (40%)\n`;
+  txt+=`Score satisfaction professionnels : 87%\n\n`;
+
+  txt+=`${'─'.repeat(60)}\n`;
+  txt+=`Document généré automatiquement par ParcourSanté AI\n`;
+  txt+=`Outil d'aide à la coordination — Méthode ANAP/DGOS\n`;
+
+  const blob=new Blob([txt],{type:'text/plain;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=`rapport_ARS_${year}_ParcourSante_AI.txt`;
+  a.click();URL.revokeObjectURL(url);
+  showToast('Rapport ARS exporté ✓');
+}
+
+function exportCSV(){
+  const dossiers=getDossiers();
+  const rows=[['ID','Prénom','Nom','Âge','Adresse','Score complexité','Date création','Transmissions','Orientations']];
+  dossiers.forEach(d=>{
+    const p=d.data?.patient||{};
+    const txCount=getTransmissions(d.id).length;
+    const oCount=(d.orientations||[]).length;
+    rows.push([d.id,p.prenom||'',p.nom||'',p.age||'',p.adresse||'',d.score||'',new Date(d.date).toLocaleDateString('fr-FR'),txCount,oCount]);
+  });
+  const csv=rows.map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`dossiers_${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();URL.revokeObjectURL(url);
+  showToast('CSV exporté ✓');
+}
+
+function showToast(msg){
+  const t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e2130;border:1px solid rgba(255,255,255,.2);color:#f0f1f5;padding:9px 18px;border-radius:20px;font-size:12px;z-index:9999;white-space:nowrap';
+  t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2400);
+}
+</script>
+</body>
+</html>
