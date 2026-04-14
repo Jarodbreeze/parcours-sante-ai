@@ -171,6 +171,7 @@ input.modal-input:focus{border-color:var(--purple)}
 
 <!-- TOPBAR -->
 <div class="topbar">
+  <button onclick="window.location.href='index.html'" style="padding:5px 10px;border-radius:6px;border:1px solid rgba(255,255,255,0.15);background:transparent;color:#8b8fa8;font-size:11px;cursor:pointer;font-family:inherit;white-space:nowrap">‹ Accueil</button>
   <div class="logo"><div class="logo-dot"></div><span class="logo-text">ParcourSanté AI</span></div>
   <span class="badge-mode">MESSAGERIE</span>
   <div class="user-pill" onclick="openProfileModal()">
@@ -192,6 +193,11 @@ input.modal-input:focus{border-color:var(--purple)}
     <button class="new-chat-btn" onclick="openNewChatModal()" title="Nouvelle conversation">+</button>
   </div>
   <div style="flex:1;overflow-y:auto" id="convList"></div>
+</div>
+<div class="api-bar" style="background:#161820;border-bottom:1px solid rgba(255,255,255,0.08);padding:8px 16px;display:flex;align-items:center;gap:8px">
+  <span style="font-size:11px;color:#565a72;flex-shrink:0">Clé Claude API :</span>
+  <input type="password" id="apiKeyInput" placeholder="sk-ant-..." style="flex:1;background:#0f1117;border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:#f0f1f5;font-size:11px;padding:5px 8px;font-family:monospace;outline:none" />
+  <button onclick="saveApiKey()" style="font-size:11px;padding:5px 10px;border-radius:5px;background:rgba(124,111,247,0.12);color:#a99ef9;border:1px solid rgba(124,111,247,0.3);cursor:pointer">OK</button>
 </div>
 
 <!-- ═══ CHAT AREA ═══ -->
@@ -742,6 +748,10 @@ function clearConv(){
   const c=conversations.find(x=>x.id===currentConvId);
   if(c){c.messages=[{id:'sys_clear',from:'system',text:'Conversation effacée',date:new Date().toISOString(),type:'system',read:true}];saveAll();renderMessages();renderConvList()}
 }
+
+
+function saveApiKey(){const k=document.getElementById('apiKeyInput')?.value?.trim();if(k){localStorage.setItem('mediasante_api_key',k);showToast('Clé enregistrée ✓');}}
+function getApiKey(){return localStorage.getItem('mediasante_api_key')||'';}
 
 function showToast(msg){
   const t=document.createElement('div');

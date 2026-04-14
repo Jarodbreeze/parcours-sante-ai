@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>ParcourSanté AI</title>
+<style>
+:root{
+  --bg:#0f1117;--bg2:#161820;--bg3:#1e2130;
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.16);
+  --text:#f0f1f5;--text2:#8b8fa8;--text3:#565a72;
+  --purple:#7c6ff7;--purple-l:#a99ef9;--purple-bg:rgba(124,111,247,0.12);--purple-b:rgba(124,111,247,0.3);
+  --teal:#3ecfaa;--teal-bg:rgba(62,207,170,0.1);--teal-b:rgba(62,207,170,0.25);
+  --amber:#f0a43a;--amber-bg:rgba(240,164,58,0.1);--amber-b:rgba(240,164,58,0.25);
+  --red:#e05c6a;--red-bg:rgba(224,92,106,0.1);--red-b:rgba(224,92,106,0.25);
+  --green:#4cba82;--green-bg:rgba(76,186,130,0.1);--green-b:rgba(76,186,130,0.25);
+  --blue:#5b9ef7;--blue-bg:rgba(91,158,247,0.1);--blue-b:rgba(91,158,247,0.25);
+  --r:12px;--rs:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+
+/* SCREEN MANAGER */
+.screen{display:none;min-height:100vh;flex-direction:column}
+.screen.active{display:flex}
+
+/* ─── ONBOARDING ─── */
+#screen-onboarding{background:var(--bg);align-items:center;justify-content:center;padding:24px}
+.ob-wrap{width:100%;max-width:400px}
+.ob-logo{display:flex;align-items:center;gap:10px;margin-bottom:32px}
+.ob-dot{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--purple),var(--teal));display:flex;align-items:center;justify-content:center;font-size:18px}
+.ob-name{font-size:22px;font-weight:700;letter-spacing:-.5px}
+.ob-version{font-size:11px;color:var(--text3);margin-top:2px}
+.ob-title{font-size:24px;font-weight:700;letter-spacing:-.5px;margin-bottom:6px;line-height:1.2}
+.ob-sub{font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:28px}
+.ob-field{margin-bottom:12px}
+.ob-label{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:5px;display:block}
+.ob-input{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:14px;padding:11px 13px;outline:none;font-family:inherit;-webkit-appearance:none}
+.ob-input:focus{border-color:var(--purple-b)}
+.ob-input::placeholder{color:var(--text3)}
+.ob-select{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:14px;padding:11px 13px;outline:none;font-family:inherit;-webkit-appearance:none;cursor:pointer}
+.ob-select:focus{border-color:var(--purple-b)}
+.ob-select option{background:var(--bg2)}
+.ob-btn{width:100%;padding:14px;border-radius:var(--r);background:var(--purple);border:none;color:#fff;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;margin-top:8px;transition:opacity .2s,transform .1s}
+.ob-btn:active{transform:scale(.98)}
+.ob-api-row{display:flex;gap:6px;margin-top:12px;padding:10px 12px;background:var(--bg2);border-radius:var(--rs);border:1px solid var(--border);align-items:center}
+.ob-api-label{font-size:11px;color:var(--text3);flex-shrink:0}
+.ob-api-input{flex:1;background:transparent;border:none;color:var(--text);font-size:11px;outline:none;font-family:monospace}
+.ob-api-save{font-size:11px;padding:4px 10px;border-radius:5px;background:var(--purple-bg);color:var(--purple-l);border:1px solid var(--purple-b);cursor:pointer;flex-shrink:0}
+.ob-skip{text-align:center;font-size:12px;color:var(--text3);margin-top:12px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+
+/* ─── HOME ─── */
+#screen-home{background:var(--bg)}
+
+/* TOPBAR */
+.topbar{height:56px;padding:0 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);background:rgba(15,17,23,0.95);backdrop-filter:blur(12px);position:sticky;top:0;z-index:50;flex-shrink:0}
+.tb-logo{display:flex;align-items:center;gap:8px}
+.tb-dot{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,var(--purple),var(--teal));display:flex;align-items:center;justify-content:center;font-size:13px}
+.tb-name{font-size:15px;font-weight:700;letter-spacing:-.4px}
+.tb-user{margin-left:auto;display:flex;align-items:center;gap:8px}
+.tb-avatar{width:30px;height:30px;border-radius:50%;background:var(--purple-bg);border:1px solid var(--purple-b);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--purple-l);cursor:pointer;flex-shrink:0}
+.tb-alerts{position:relative;cursor:pointer}
+.tb-alert-dot{position:absolute;top:-2px;right:-2px;width:8px;height:8px;border-radius:50%;background:var(--red);border:2px solid var(--bg)}
+
+.home-content{overflow-y:auto;flex:1}
+
+/* GREETING */
+.greeting{padding:20px 16px 14px}
+.greet-time{font-size:11px;color:var(--text3);margin-bottom:4px}
+.greet-name{font-size:22px;font-weight:700;letter-spacing:-.5px;margin-bottom:3px}
+.greet-sub{font-size:13px;color:var(--text2)}
+
+/* QUICK STATS */
+.quick-stats{display:flex;gap:8px;padding:0 16px 16px;overflow-x:auto}
+.qs-card{flex-shrink:0;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:10px 14px;min-width:110px}
+.qs-val{font-size:20px;font-weight:700;letter-spacing:-.5px}
+.qs-label{font-size:10px;color:var(--text3);margin-top:2px;text-transform:uppercase;letter-spacing:.04em}
+
+/* URGENT ALERT BANNER */
+.urgent-banner{margin:0 16px 14px;padding:11px 14px;background:var(--red-bg);border:1px solid var(--red-b);border-radius:var(--r);display:flex;align-items:center;gap:10px;cursor:pointer}
+.ub-icon{font-size:18px;flex-shrink:0}
+.ub-text{flex:1}
+.ub-title{font-size:13px;font-weight:600;color:var(--red)}
+.ub-desc{font-size:11px;color:var(--text2);margin-top:1px}
+.ub-arrow{color:var(--red);font-size:12px}
+
+/* SECTION HEADER */
+.sec-header{padding:0 16px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+.sec-title{font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--text3);text-transform:uppercase}
+.sec-link{font-size:11px;color:var(--purple-l);cursor:pointer}
+
+/* MODULES GRID */
+.modules-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:0 16px 16px}
+.mod-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;-webkit-tap-highlight-color:transparent}
+.mod-card:active{transform:scale(.97)}
+.mod-card.featured{border-width:1.5px}
+.mod-card-glow{position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;opacity:.06;pointer-events:none}
+.mod-icon-wrap{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:10px}
+.mod-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px;line-height:1.2}
+.mod-desc{font-size:11px;color:var(--text3);line-height:1.4}
+.mod-badge{position:absolute;top:10px;right:10px;font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px}
+.mod-badge.new{background:var(--purple-bg);color:var(--purple-l);border:1px solid var(--purple-b)}
+.mod-badge.alert{background:var(--red-bg);color:var(--red);border:1px solid var(--red-b)}
+.mod-badge.ia{background:var(--teal-bg);color:var(--teal);border:1px solid var(--teal-b)}
+
+/* RECENT ACTIVITY */
+.recent-list{padding:0 16px 16px}
+.ra-item{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--border)}
+.ra-item:last-child{border-bottom:none}
+.ra-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.ra-body{flex:1;min-width:0}
+.ra-title{font-size:12px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ra-sub{font-size:11px;color:var(--text3);margin-top:1px}
+.ra-time{font-size:10px;color:var(--text3);flex-shrink:0}
+
+/* BOTTOM NAV */
+.bottom-nav{height:64px;background:rgba(15,17,23,0.97);backdrop-filter:blur(12px);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-around;padding:0 8px;flex-shrink:0;position:sticky;bottom:0}
+.bn-item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 12px;cursor:pointer;border-radius:var(--rs);transition:all .15s;-webkit-tap-highlight-color:transparent;min-width:52px}
+.bn-item.active{background:var(--purple-bg)}
+.bn-icon{font-size:18px}
+.bn-label{font-size:9px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.04em}
+.bn-item.active .bn-label{color:var(--purple-l)}
+
+/* ─── MODULE FRAME ─── */
+
+/* ─── QUICK ACTION ─── */
+.fab{position:fixed;bottom:80px;right:16px;width:50px;height:50px;border-radius:50%;background:var(--purple);border:none;color:#fff;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(124,111,247,0.4);z-index:40;transition:transform .2s}
+.fab:active{transform:scale(.92)}
+.fab-menu{position:fixed;bottom:140px;right:16px;display:flex;flex-direction:column;gap:8px;z-index:40}
+.fab-item{display:flex;align-items:center;gap:8px;background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:8px 14px;cursor:pointer;transition:all .15s;white-space:nowrap;font-size:12px;font-family:inherit;color:var(--text)}
+.fab-item:hover{border-color:var(--border2)}
+.fab-item-icon{font-size:14px}
+
+/* ─── SEARCH OVERLAY ─── */
+#screen-search{background:var(--bg);padding:0}
+.search-header{padding:12px 16px;display:flex;gap:10px;align-items:center;border-bottom:1px solid var(--border)}
+.search-input-wrap{flex:1;display:flex;align-items:center;gap:8px;background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:8px 14px}
+.search-input-wrap input{flex:1;background:transparent;border:none;color:var(--text);font-size:14px;outline:none;font-family:inherit}
+.search-input-wrap input::placeholder{color:var(--text3)}
+.search-cancel{font-size:13px;color:var(--purple-l);cursor:pointer;flex-shrink:0}
+.search-results{padding:14px 16px;overflow-y:auto;flex:1}
+.sr-section-title{font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--text3);text-transform:uppercase;margin-bottom:8px;margin-top:14px}
+.sr-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);cursor:pointer}
+.sr-item:last-child{border-bottom:none}
+.sr-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.sr-name{font-size:13px;font-weight:500;color:var(--text)}
+.sr-sub{font-size:11px;color:var(--text3);margin-top:1px}
+
+/* ─── MISC ─── */
+.divider{height:1px;background:var(--border);margin:4px 0}
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:2px}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.animate-in{animation:fadeIn .25s ease forwards}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════
+     ÉCRAN ONBOARDING
+══════════════════════════════════ -->
+<div class="screen active" id="screen-onboarding">
+  <div class="ob-wrap animate-in">
+    <div class="ob-logo">
+      <div class="ob-dot">🏥</div>
+      <div>
+        <div class="ob-name">ParcourSanté AI</div>
+        <div class="ob-version">v1.0 · Suite complète DAC</div>
+      </div>
+    </div>
+    <div class="ob-title">Bienvenue sur ParcourSanté AI</div>
+    <div class="ob-sub">La plateforme de coordination de parcours de santé complexes, conçue pour les médiateurs en santé et les dispositifs d'appui à la coordination.</div>
+
+    <div class="ob-field">
+      <label class="ob-label">Votre prénom et nom</label>
+      <input type="text" class="ob-input" id="ob_nom" placeholder="Ex : Marie Dupont" />
+    </div>
+    <div class="ob-field">
+      <label class="ob-label">Votre fonction</label>
+      <select class="ob-select" id="ob_role">
+        <option value="">Sélectionner...</option>
+        <option value="mediateur">Médiateur(trice) en santé</option>
+        <option value="ide">Infirmier(e) coordinateur(trice)</option>
+        <option value="as">Assistante sociale</option>
+        <option value="sr">Secrétariat Renforcé</option>
+        <option value="cp">Chef(fe) de projet</option>
+        <option value="ergo">Ergothérapeute</option>
+        <option value="psy">Psychologue clinicien(ne)</option>
+        <option value="autre">Autre professionnel DAC</option>
+      </select>
+    </div>
+    <div class="ob-field">
+      <label class="ob-label">Structure</label>
+      <input type="text" class="ob-input" id="ob_structure" placeholder="Ex : DAC 93 Nord — Épinay-sur-Seine" />
+    </div>
+
+    <div class="ob-api-row">
+      <span class="ob-api-label">Clé Claude API</span>
+      <input type="password" class="ob-api-input" id="ob_api" placeholder="sk-ant-... (optionnel)" />
+      <button class="ob-api-save" onclick="saveObApi()">OK</button>
+    </div>
+    <div style="font-size:11px;color:var(--text3);margin-top:6px;line-height:1.5">Sans clé API, les modules fonctionnent avec des templates pré-remplis. La clé active la génération IA complète.</div>
+
+    <button class="ob-btn" onclick="finishOnboarding()">Accéder à ParcourSanté AI →</button>
+    <div class="ob-skip" onclick="finishOnboarding()">Passer et configurer plus tard</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     ÉCRAN HOME
+══════════════════════════════════ -->
+<div class="screen" id="screen-home">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="tb-logo">
+      <div class="tb-dot">🏥</div>
+      <div class="tb-name">ParcourSanté AI</div>
+    </div>
+    <div class="tb-user">
+      <div class="tb-alerts" onclick="openModule('dashboard')">
+        <span style="font-size:18px;cursor:pointer">🔔</span>
+        <div class="tb-alert-dot" id="alertDot" style="display:none"></div>
+      </div>
+      <div class="tb-avatar" id="userAvatar" onclick="showProfile()">?</div>
+    </div>
+  </div>
+
+  <div class="home-content">
+
+    <!-- GREETING -->
+    <div class="greeting">
+      <div class="greet-time" id="greetTime"></div>
+      <div class="greet-name" id="greetName">Bienvenue</div>
+      <div class="greet-sub" id="greetSub">Chargement de vos données...</div>
+    </div>
+
+    <!-- QUICK STATS -->
+    <div class="quick-stats" id="quickStats">
+      <div class="qs-card"><div class="qs-val" id="qs-dossiers" style="color:var(--purple-l)">—</div><div class="qs-label">Dossiers</div></div>
+      <div class="qs-card"><div class="qs-val" id="qs-alertes" style="color:var(--red)">—</div><div class="qs-label">Alertes</div></div>
+      <div class="qs-card"><div class="qs-val" id="qs-orient" style="color:var(--amber)">—</div><div class="qs-label">Orientations</div></div>
+      <div class="qs-card"><div class="qs-val" id="qs-droits" style="color:var(--green)">—</div><div class="qs-label">Droits ouverts</div></div>
+    </div>
+
+    <!-- URGENT BANNER -->
+    <div class="urgent-banner" id="urgentBanner" style="display:none" onclick="openModule('dossiers')">
+      <div class="ub-icon">🚨</div>
+      <div class="ub-text">
+        <div class="ub-title" id="urgentTitle"></div>
+        <div class="ub-desc" id="urgentDesc"></div>
+      </div>
+      <div class="ub-arrow">→</div>
+    </div>
+
+    <!-- MODULES PRINCIPAUX -->
+    <div class="sec-header"><div class="sec-title">Modules</div></div>
+    <div class="modules-grid" id="modulesGrid"></div>
+
+    <!-- ACTIVITÉ RÉCENTE -->
+    <div class="sec-header" style="margin-top:4px">
+      <div class="sec-title">Activité récente</div>
+      <div class="sec-link" onclick="openModule('transmissions')">Tout voir</div>
+    </div>
+    <div class="recent-list" id="recentList"></div>
+
+    <div style="height:80px"></div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <div class="bn-item active" id="bn-home" onclick="switchBottomNav('home')">
+      <span class="bn-icon">🏠</span>
+      <span class="bn-label">Accueil</span>
+    </div>
+    <div class="bn-item" id="bn-dossiers" onclick="openModule('famo')">
+      <span class="bn-icon">📋</span>
+      <span class="bn-label">Admission</span>
+    </div>
+    <div class="bn-item" id="bn-search" onclick="showSearch()">
+      <span class="bn-icon">🔍</span>
+      <span class="bn-label">Recherche</span>
+    </div>
+    <div class="bn-item" id="bn-messages" onclick="openModule('messagerie')">
+      <span class="bn-icon">💬</span>
+      <span class="bn-label">Messages</span>
+    </div>
+    <div class="bn-item" id="bn-dashboard" onclick="openModule('dashboard')">
+      <span class="bn-icon">📊</span>
+      <span class="bn-label">Dashboard</span>
+    </div>
+  </div>
+
+  <!-- FAB -->
+  <button class="fab" id="fabBtn" onclick="toggleFab()">+</button>
+  <div class="fab-menu" id="fabMenu" style="display:none">
+    <button class="fab-item" onclick="closeFab();openModule('famo')"><span class="fab-item-icon">📋</span>Nouvelle admission (FAMO)</button>
+    <button class="fab-item" onclick="closeFab();openModule('courriers')"><span class="fab-item-icon">✉️</span>Rédiger un courrier</button>
+    <button class="fab-item" onclick="closeFab();openModule('staff')"><span class="fab-item-icon">🧠</span>Lancer un staff IA</button>
+    <button class="fab-item" onclick="closeFab();openModule('transmissions')"><span class="fab-item-icon">📝</span>Ajouter une transmission</button>
+    <button class="fab-item" onclick="closeFab();openModule('agenda')"><span class="fab-item-icon">📅</span>Nouveau rendez-vous</button>
+  </div>
+</div>
+
+<!-- Navigation directe window.location — pas d'iframe -->
+
+<!-- ══════════════════════════════════
+     ÉCRAN RECHERCHE
+══════════════════════════════════ -->
+<div class="screen" id="screen-search" style="flex-direction:column">
+  <div class="search-header">
+    <div class="search-input-wrap">
+      <span style="font-size:14px;color:var(--text3)">🔍</span>
+      <input type="text" id="searchInput" placeholder="Rechercher patient, droit, structure..." oninput="doSearch(this.value)" autofocus />
+    </div>
+    <div class="search-cancel" onclick="goHome()">Annuler</div>
+  </div>
+  <div class="search-results" id="searchResults">
+    <div style="text-align:center;padding:32px 20px;color:var(--text3);font-size:13px">Tapez pour rechercher dans vos dossiers, l'annuaire des structures et les modules.</div>
+  </div>
+</div>
+
+<script>
+// ═══ CONFIG MODULES ═══
+const MODULES = [
+  {id:'famo',     name:'Admission (FAMO)',   desc:'Créer un nouveau dossier patient',   icon:'📋', color:'var(--purple-l)', bg:'var(--purple-bg)', file:'mediasante_famo.html',          badge:null,    featured:true},
+  {id:'courriers',name:'Courriers IA',        desc:'40+ modèles générés en 1 clic',     icon:'✉️', color:'var(--teal)',     bg:'var(--teal-bg)',   file:'mediasante_courriers.html',       badge:'IA',    featured:false},
+  {id:'staff',    name:'Staff IA',            desc:'Conseil des 8 experts pluridisciplinaires', icon:'🧠', color:'var(--amber)', bg:'var(--amber-bg)', file:'mediasante_staff_ia.html', badge:'IA',    featured:true},
+  {id:'visite',   name:'Première visite',     desc:'AGGIR · IADL · Up & Go · PPCS',    icon:'🏠', color:'var(--green)',   bg:'var(--green-bg)', file:'mediasante_premiere_visite.html', badge:null,    featured:false},
+  {id:'transmissions',name:'Transmissions',   desc:'Journal de bord du dossier',        icon:'📝', color:'var(--blue)',    bg:'var(--blue-bg)',  file:'mediasante_transmissions.html',   badge:null,    featured:false},
+  {id:'messagerie',name:'Messagerie',         desc:'Chat sécurisé inter-professionnels',icon:'💬', color:'var(--purple-l)',bg:'var(--purple-bg)',file:'mediasante_messagerie.html',      badge:null,    featured:false},
+  {id:'orientation',name:'Orientation',       desc:'Annuaire 93 · IA d\'orientation',   icon:'🗺️', color:'var(--amber)',  bg:'var(--amber-bg)', file:'mediasante_orientation.html',     badge:null,    featured:false},
+  {id:'dashboard',name:'Dashboard',           desc:'Activité · Ruptures · Rapport ARS', icon:'📊', color:'var(--teal)',   bg:'var(--teal-bg)',  file:'mediasante_dashboard.html',       badge:null,    featured:false},
+  {id:'agenda',   name:'Agenda & Coordination',desc:'RDV · Relances · Volet médical · Multi-structures', icon:'📅', color:'var(--blue)', bg:'var(--blue-bg)', file:'mediasante_agenda.html', badge:'NEW', featured:true},
+];
+
+// ═══ STATE ═══
+let currentModule = null;
+let fabOpen = false;
+let userProfile = {};
+
+// ═══ INIT ═══
+window.addEventListener('load', () => {
+  const profile = JSON.parse(localStorage.getItem('ps_user_profile') || 'null');
+  if (profile && profile.nom) {
+    userProfile = profile;
+    showHome();
+  } else {
+    showScreen('onboarding');
+  }
+});
+
+// ═══ ONBOARDING ═══
+function saveObApi() {
+  const k = document.getElementById('ob_api').value.trim();
+  if (k) localStorage.setItem('mediasante_api_key', k);
+}
+
+function finishOnboarding() {
+  const nom = document.getElementById('ob_nom').value.trim() || 'Professionnel';
+  const role = document.getElementById('ob_role').value || 'mediateur';
+  const structure = document.getElementById('ob_structure').value.trim() || 'DAC';
+  saveObApi();
+  userProfile = { nom, role, structure, avatar: initials(nom) };
+  localStorage.setItem('ps_user_profile', JSON.stringify(userProfile));
+  localStorage.setItem('mediasante_user', nom);
+  showHome();
+}
+
+// ═══ NAVIGATION ═══
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+}
+
+function showHome() {
+  showScreen('home');
+  closeFab();
+  renderHome();
+}
+
+function goHome() {
+  showHome();
+  currentModule = null;
+}
+
+function openModule(id) {
+  const mod = MODULES.find(m => m.id === id);
+  if (!mod) return;
+  window.location.href = mod.file;
+}
+
+function showSearch() {
+  showScreen('search');
+  setTimeout(() => document.getElementById('searchInput')?.focus(), 100);
+}
+
+function switchBottomNav(id) {
+  document.querySelectorAll('.bn-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('bn-' + id)?.classList.add('active');
+}
+
+// ═══ RENDER HOME ═══
+function renderHome() {
+  renderGreeting();
+  renderQuickStats();
+  renderModulesGrid();
+  renderRecentActivity();
+  checkAlerts();
+}
+
+function renderGreeting() {
+  const h = new Date().getHours();
+  const greet = h < 12 ? 'Bonjour' : h < 18 ? 'Bon après-midi' : 'Bonsoir';
+  const days = ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
+  const months = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+  const now = new Date();
+  const dateStr = `${days[now.getDay()]} ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+
+  document.getElementById('greetTime').textContent = dateStr;
+  document.getElementById('greetName').textContent = greet + (userProfile.nom ? ', ' + userProfile.nom.split(' ')[0] : '') + ' 👋';
+
+  const role = { mediateur:'Médiateur en santé', ide:'IDE Coordinateur', as:'Assistante sociale', sr:'Secrétariat Renforcé', cp:'Chef de projet', ergo:'Ergothérapeute', psy:'Psychologue', autre:'Professionnel DAC' };
+  document.getElementById('greetSub').textContent = (role[userProfile.role] || 'Professionnel DAC') + (userProfile.structure ? ' · ' + userProfile.structure : '');
+  document.getElementById('userAvatar').textContent = initials(userProfile.nom || 'U');
+}
+
+function renderQuickStats() {
+  const dossiers = getDossiers();
+  const orientations = JSON.parse(localStorage.getItem('ps_orientations') || '[]');
+  let droits = 0;
+  dossiers.forEach(d => { const txs = getTransmissions(d.id); droits += txs.filter(t => t.type === 'droit').length; });
+  const alertes = computeAlerts(dossiers).length;
+
+  document.getElementById('qs-dossiers').textContent = dossiers.length || '0';
+  document.getElementById('qs-alertes').textContent = alertes;
+  document.getElementById('qs-orient').textContent = orientations.length || '0';
+  document.getElementById('qs-droits').textContent = droits || '0';
+
+  if (alertes > 0) document.getElementById('alertDot').style.display = 'block';
+}
+
+function computeAlerts(dossiers) {
+  const alerts = [];
+  const now = Date.now();
+  dossiers.forEach(d => {
+    const txs = getTransmissions(d.id);
+    const last = txs[0];
+    if (last && (now - new Date(last.date)) > 15 * 86400000) {
+      alerts.push({ type: 'warn', dossier: d });
+    }
+  });
+  return alerts;
+}
+
+function checkAlerts() {
+  const dossiers = getDossiers();
+  const alerts = computeAlerts(dossiers);
+  const banner = document.getElementById('urgentBanner');
+  if (alerts.length > 0) {
+    banner.style.display = 'flex';
+    document.getElementById('urgentTitle').textContent = alerts.length + ' dossier(s) sans contact depuis +15 jours';
+    document.getElementById('urgentDesc').textContent = 'Relance recommandée · Voir les transmissions';
+  } else if (dossiers.length === 0) {
+    banner.style.display = 'flex';
+    banner.style.background = 'var(--purple-bg)';
+    banner.style.borderColor = 'var(--purple-b)';
+    document.getElementById('urgentTitle').style.color = 'var(--purple-l)';
+    document.getElementById('urgentTitle').textContent = 'Commencez par créer votre premier dossier patient';
+    document.getElementById('urgentDesc').textContent = 'Module Admission → remplir une FAMO → créer le dossier';
+    banner.onclick = () => openModule('famo');
+  }
+}
+
+function renderModulesGrid() {
+  document.getElementById('modulesGrid').innerHTML = MODULES.map(m => `
+    <div class="mod-card${m.featured ? ' featured' : ''}" style="${m.featured ? 'border-color:' + m.color + '44' : ''}" onclick="openModule('${m.id}')">
+      <div class="mod-card-glow" style="background:${m.color}"></div>
+      ${m.badge ? `<div class="mod-badge ${m.badge === 'IA' ? 'ia' : 'new'}">${m.badge}</div>` : ''}
+      <div class="mod-icon-wrap" style="background:${m.bg}">${m.icon}</div>
+      <div class="mod-name">${m.name}</div>
+      <div class="mod-desc">${m.desc}</div>
+    </div>`).join('');
+}
+
+function renderRecentActivity() {
+  const dossiers = getDossiers();
+  const allTx = [];
+  dossiers.forEach(d => {
+    const p = d.data?.patient || {};
+    const name = [p.prenom, p.nom].filter(Boolean).join(' ') || d.id;
+    getTransmissions(d.id).slice(0, 3).forEach(t => allTx.push({ ...t, patientName: name }));
+  });
+  allTx.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  const typeColors = { visite:'#4cba82', courrier:'#3ecfaa', rdv:'#7c6ff7', appel:'#f0a43a', staff:'#5b9ef7', droit:'#e05c6a', note:'#8b8fa8' };
+  const typeLabels = { visite:'Visite', courrier:'Courrier', rdv:'RDV', appel:'Appel', staff:'Staff', droit:'Droit', note:'Note' };
+
+  const el = document.getElementById('recentList');
+  if (!allTx.length) {
+    el.innerHTML = '<div style="font-size:12px;color:var(--text3);padding:12px 0;text-align:center">Aucune activité récente. Créez votre premier dossier via le module Admission.</div>';
+    return;
+  }
+  el.innerHTML = allTx.slice(0, 6).map(t => `
+    <div class="ra-item" onclick="openModule('transmissions')">
+      <div class="ra-dot" style="background:${typeColors[t.type] || '#565a72'}"></div>
+      <div class="ra-body">
+        <div class="ra-title">${t.title || '(sans titre)'}</div>
+        <div class="ra-sub">${typeLabels[t.type] || 'Note'} · ${t.patientName}</div>
+      </div>
+      <div class="ra-time">${formatRelTime(t.date)}</div>
+    </div>`).join('');
+}
+
+// ═══ FAB ═══
+function toggleFab() {
+  fabOpen = !fabOpen;
+  const menu = document.getElementById('fabMenu');
+  const btn = document.getElementById('fabBtn');
+  menu.style.display = fabOpen ? 'flex' : 'none';
+  btn.style.transform = fabOpen ? 'rotate(45deg)' : 'rotate(0)';
+  btn.style.background = fabOpen ? '#e05c6a' : 'var(--purple)';
+}
+function closeFab() {
+  fabOpen = false;
+  document.getElementById('fabMenu').style.display = 'none';
+  document.getElementById('fabBtn').style.transform = 'rotate(0)';
+  document.getElementById('fabBtn').style.background = 'var(--purple)';
+}
+
+// ═══ SEARCH ═══
+function doSearch(q) {
+  const el = document.getElementById('searchResults');
+  if (!q.trim()) { el.innerHTML = '<div style="text-align:center;padding:32px 20px;color:var(--text3);font-size:13px">Tapez pour rechercher dans vos dossiers, l\'annuaire des structures et les modules.</div>'; return; }
+  const results = [];
+
+  // Modules
+  MODULES.filter(m => m.name.toLowerCase().includes(q.toLowerCase()) || m.desc.toLowerCase().includes(q.toLowerCase())).forEach(m => results.push({ section:'Modules', icon:m.icon, bg:m.bg, name:m.name, sub:m.desc, action:()=>openModule(m.id) }));
+
+  // Dossiers
+  getDossiers().filter(d => {
+    const p = d.data?.patient || {};
+    const name = [p.prenom, p.nom].filter(Boolean).join(' ').toLowerCase();
+    return name.includes(q.toLowerCase()) || d.id.toLowerCase().includes(q.toLowerCase());
+  }).forEach(d => {
+    const p = d.data?.patient || {};
+    const name = [p.prenom, p.nom].filter(Boolean).join(' ') || d.id;
+    results.push({ section:'Dossiers', icon:'👤', bg:'var(--purple-bg)', name, sub:d.id + ' · Dossier patient', action:()=>openModule('transmissions') });
+  });
+
+  if (!results.length) { el.innerHTML = '<div style="text-align:center;padding:32px 20px;color:var(--text3);font-size:13px">Aucun résultat pour "' + q + '"</div>'; return; }
+
+  const sections = [...new Set(results.map(r => r.section))];
+  el.innerHTML = sections.map(sec => `
+    <div class="sr-section-title">${sec}</div>
+    ${results.filter(r => r.section === sec).map(r => `
+      <div class="sr-item" onclick="showHome();${r.action.toString().replace('()=>','')}">
+        <div class="sr-icon" style="background:${r.bg}">${r.icon}</div>
+        <div><div class="sr-name">${r.name}</div><div class="sr-sub">${r.sub}</div></div>
+      </div>`).join('')}`).join('');
+}
+
+// ═══ PROFILE ═══
+function showProfile() {
+  const name = prompt('Modifier votre nom :', userProfile.nom || '');
+  if (name !== null && name.trim()) {
+    userProfile.nom = name.trim();
+    userProfile.avatar = initials(name.trim());
+    localStorage.setItem('ps_user_profile', JSON.stringify(userProfile));
+    localStorage.setItem('mediasante_user', name.trim());
+    renderHome();
+  }
+}
+
+// ═══ UTILS ═══
+function getDossiers() { return JSON.parse(localStorage.getItem('mediasante_dossiers') || '[]'); }
+function getTransmissions(id) { return JSON.parse(localStorage.getItem('transmissions_' + id) || '[]'); }
+
+function initials(name = '') {
+  const p = name.trim().split(' ').filter(Boolean);
+  if (p.length >= 2) return (p[0][0] + p[p.length - 1][0]).toUpperCase();
+  return (name.slice(0, 2) || '??').toUpperCase();
+}
+
+function formatRelTime(dateStr) {
+  const diff = Date.now() - new Date(dateStr);
+  if (diff < 3600000) return Math.floor(diff / 60000) + 'min';
+  if (diff < 86400000) return Math.floor(diff / 3600000) + 'h';
+  if (diff < 604800000) return Math.floor(diff / 86400000) + 'j';
+  return new Date(dateStr).toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit' });
+}
+
+// Fermer FAB si tap en dehors
+document.addEventListener('click', e => {
+  if (fabOpen && !e.target.closest('.fab') && !e.target.closest('.fab-menu')) closeFab();
+});
+</script>
+</body>
+</html>
