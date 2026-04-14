@@ -587,12 +587,12 @@ En tant que ${expert.nom}, donne ton avis professionnel sur cette situation. Str
 **Urgence**
 [HAUTE / MOYENNE / FAIBLE — et pourquoi en 1 phrase]
 
-Sois direct, pratique. Pas de théorie. Parle à un médiateur en santé qui n'est pas forcément du même domaine que toi.`;
+Sois direct, pratique. Pas de théorie. Parle à l'équipe DAC (coordinateurs, médiateurs, IDE, AS) qui prend en charge ce patient.`;
 
     try {
       const resp = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
-        headers: { 'Content-Type':'application/json', 'x-api-key': apiKey, 'anthropic-version':'2023-06-01' },
+        headers: { 'Content-Type':'application/json', 'x-api-key': apiKey, 'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true' },
         body: JSON.stringify({ model:'claude-sonnet-4-5', max_tokens:700, messages:[{role:'user', content: prompt}] })
       });
       const data = await resp.json();
@@ -652,28 +652,35 @@ async function genererConsensus(situation, avisMap, apiKey) {
     return `=== ${expert?.nom} ===\n${txt}`;
   }).join('\n\n');
 
-  const prompt = `Tu es le coordinateur du staff pluridisciplinaire du DAC 93 Nord. Tu viens de recevoir les avis de 5 experts sur une situation complexe.
+  const prompt = `Tu es le coordinateur d'un staff pluridisciplinaire DAC. Tu as reçu les avis de plusieurs experts sur une situation patient complexe. Tu dois maintenant produire la synthèse finale du staff, comme si vous veniez de délibérer ensemble en réunion.
 
-SITUATION :
+SITUATION PATIENT :
 ${situation}
 
-AVIS DES EXPERTS :
+AVIS DES EXPERTS (IDE, Médecin, AS, Juriste, CPAM, MDPH, Ergo, Psy, Éduc spé) :
 ${avisTexts}
+
+CONSIGNES :
+- La synthèse doit sonner comme une vraie conclusion de staff clinique, pas comme un rapport IA
+- Identifie les convergences entre experts et les points de tension
+- Le plan d'action doit être priorisé : ce qui est urgent d'abord
+- Chaque action doit être attribuée à un professionnel précis (clinicien, médiateur, AS, CPAM...)
+- Langue : professionnelle, directe, sans jargon excessif
+- Le clinicien coordinateur valide ce plan avant mise en oeuvre
 
 Génère UNIQUEMENT un JSON valide sans markdown ni backticks :
 {
-  "consensus": "Synthèse en 3-4 phrases de ce que le staff recommande collectivement. Langue simple, actionnable.",
+  "consensus": "Synthèse de 3-4 phrases de la délibération collective. Ce que le staff recommande unanimement ou majoritairement. Inclure les divergences si importantes.",
   "urgence": "HAUTE" | "MOYENNE" | "FAIBLE",
   "actions": [
-    { "action": "Action précise et concrète", "qui": "Médiateur / CPAM / Médecin / AS...", "delai": "Aujourd'hui / Cette semaine / Ce mois" },
-    ...max 5 actions
+    { "action": "Action précise et concrète", "qui": "Clinicien / Médiateur / AS / CPAM / Médecin traitant...", "delai": "Aujourd'hui / Cette semaine / Ce mois" }
   ]
 }`;
 
   try {
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type':'application/json', 'x-api-key': apiKey, 'anthropic-version':'2023-06-01' },
+      headers: { 'Content-Type':'application/json', 'x-api-key': apiKey, 'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true' },
       body: JSON.stringify({ model:'claude-sonnet-4-5', max_tokens:800, messages:[{role:'user', content: prompt}] })
     });
     const data = await resp.json();
@@ -733,13 +740,13 @@ async function runDemoStaff(situation, blocages) {
   }
 
   renderConsensus({
-    consensus: "Le staff identifie deux priorités absolues : débloquer l'accès aux droits santé (CSS ou AME) en contactant directement le Service Social CPAM 93, et identifier un médecin traitant acceptant en secteur 1 via la CPTS. En parallèle, un accompagnement physique aux démarches est recommandé compte tenu des difficultés de mobilisation. Le médiateur est l'interlocuteur central — il coordonne et accompagne.",
+    consensus: "Le staff identifie deux priorités absolues : débloquer l'accès aux droits santé (CSS ou AME) en contactant directement le Service Social CPAM 93, et identifier un médecin traitant acceptant en secteur 1 via la CPTS. En parallèle, un accompagnement physique aux démarches est recommandé compte tenu des difficultés de mobilisation. Le clinicien coordinateur pilote le parcours — toute l'équipe DAC est mobilisée.",
     urgence: "HAUTE",
     actions: [
-      { action: "Appeler le Service Social CPAM 93 pour déblocage prioritaire du dossier", qui: "Médiateur", delai: "Aujourd'hui" },
-      { action: "Demander par écrit la liste exacte des pièces manquantes", qui: "Médiateur", delai: "Aujourd'hui" },
-      { action: "Identifier médecin traitant secteur 1 via CPTS 93", qui: "Médiateur + Dr. Méd", delai: "Cette semaine" },
-      { action: "Évaluer situation sociale et réseau d'aide", qui: "AS + Médiateur", delai: "Cette semaine" },
+      { action: "Appeler le Service Social CPAM 93 pour déblocage prioritaire du dossier", qui: "Coordinateur DAC", delai: "Aujourd'hui" },
+      { action: "Demander par écrit la liste exacte des pièces manquantes", qui: "Coordinateur DAC", delai: "Aujourd'hui" },
+      { action: "Identifier médecin traitant secteur 1 via CPTS 93", qui: "Coordinateur + Médecin", delai: "Cette semaine" },
+      { action: "Évaluer situation sociale et réseau d'aide", qui: "AS + Coordinateur", delai: "Cette semaine" },
       { action: "Initier grille AGGIR si perte d'autonomie suspectée", qui: "Médiateur", delai: "Ce mois" }
     ]
   });

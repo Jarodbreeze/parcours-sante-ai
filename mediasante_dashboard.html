@@ -373,8 +373,8 @@ function getStatsFromRealData(){
   staffCount=staffs.filter(s=>new Date(s.date)>=cutoff).length;
 
   // Si pas de données réelles, générer des démos réalistes
-  const hasDemoData=dossiers.length>0;
-  if(!hasDemoData||totalTx<3){
+  // Utiliser les vraies données si dossiers existent, démo seulement si aucun dossier
+  if(!dossiers.length){
     return generateDemoStats(period);
   }
 

@@ -454,7 +454,7 @@ select.med-select option{background:var(--bg3)}
     </div>
     <div class="form-field">
       <label class="form-label">Intervenants</label>
-      <input type="text" class="form-input" id="rdv_intervenants" placeholder="Ex: Médiateur + IDE + AS CPAM" />
+      <input type="text" class="form-input" id="rdv_intervenants" placeholder="Ex: Coordinateur + IDE + AS CPAM" />
     </div>
     <div class="form-field">
       <label class="form-label">Notes</label>
@@ -618,9 +618,9 @@ function seedDemoRDVs(){
   const pname=dossiers[0]?([dossiers[0].data?.patient?.prenom,dossiers[0].data?.patient?.nom].filter(Boolean).join(' ')||'Patient'):'Patient démo';
   const demos=[
     {id:'demo1',type:'visite',titre:'Visite à domicile '+pname,date:new Date(now.getFullYear(),now.getMonth(),now.getDate()+1).toISOString().split('T')[0],heure:'10:00',duree:60,lieu:'Domicile',intervenants:'Médiateur en santé',notes:'Première évaluation AGGIR + IADL',patientId:pid,statut:'planifie'},
-    {id:'demo2',type:'rdv_admin',titre:'RDV CPAM 93 — dossier CSS',date:new Date(now.getFullYear(),now.getMonth(),now.getDate()+3).toISOString().split('T')[0],heure:'14:30',duree:60,lieu:'CPAM Bobigny',intervenants:'Médiateur + patient',notes:'Apporter pièces justificatives',patientId:pid,statut:'planifie'},
-    {id:'demo3',type:'staff',titre:'Staff pluridisciplinaire — situations complexes',date:new Date(now.getFullYear(),now.getMonth(),now.getDate()+5).toISOString().split('T')[0],heure:'09:00',duree:90,lieu:'DAC 93 Nord',intervenants:'Médiateur + IDE + AS',notes:'3 situations à présenter',patientId:'',statut:'planifie'},
-    {id:'demo4',type:'consultation',titre:'Consultation Dr Benali — Cardio',date:new Date(now.getFullYear(),now.getMonth(),now.getDate()-2).toISOString().split('T')[0],heure:'11:00',duree:30,lieu:'Hôpital Avicenne',intervenants:'Patient + Médiateur',notes:'Courrier d\'adressage envoyé',patientId:pid,statut:'realise'},
+    {id:'demo2',type:'rdv_admin',titre:'RDV CPAM 93 — dossier CSS',date:new Date(now.getFullYear(),now.getMonth(),now.getDate()+3).toISOString().split('T')[0],heure:'14:30',duree:60,lieu:'CPAM Bobigny',intervenants:'Coordinateur + patient',notes:'Apporter pièces justificatives',patientId:pid,statut:'planifie'},
+    {id:'demo3',type:'staff',titre:'Staff pluridisciplinaire — situations complexes',date:new Date(now.getFullYear(),now.getMonth(),now.getDate()+5).toISOString().split('T')[0],heure:'09:00',duree:90,lieu:'DAC 93 Nord',intervenants:'Coordinateur + IDE + AS',notes:'3 situations à présenter',patientId:'',statut:'planifie'},
+    {id:'demo4',type:'consultation',titre:'Consultation Dr Benali — Cardio',date:new Date(now.getFullYear(),now.getMonth(),now.getDate()-2).toISOString().split('T')[0],heure:'11:00',duree:30,lieu:'Hôpital Avicenne',intervenants:'Patient + Coordinateur',notes:'Courrier d\'adressage envoyé',patientId:pid,statut:'realise'},
   ];
   saveRDVs(demos);
 }
@@ -987,7 +987,7 @@ async function genererAdressageIA(){
 
   try{
     const resp=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
+      method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
       body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:800,messages:[{role:'user',content:`Rédige un courrier médical d'adressage professionnel en français.\n\nDE : ${adresseur}\nÀ : ${destinataire} (${specialite})\nCONCERNANT : ${patientName}, ${patientAge}\nDATE : ${date}\nMOTIF : ${motif}\nURGENCE : ${urgence}\n\nStyle : professionnel, concis, structuré. Inclure les parties classiques d'un courrier médical d'adressage (formule d'appel, présentation du patient, motif, contexte clinique, demande, remerciements). Ne pas inventer d'informations cliniques non fournies. Commencer directement par le courrier sans introduction.`}]})
     });
     const data=await resp.json();
@@ -1180,4 +1180,3 @@ function showToast(msg){
 </script>
 </body>
 </html>
-

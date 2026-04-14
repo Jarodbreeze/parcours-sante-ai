@@ -479,7 +479,14 @@ input::placeholder,textarea::placeholder{color:var(--text3)}
   <div class="panel-title">PPCS</div>
   <div class="panel-desc">Généré automatiquement depuis l'évaluation. Vérifiez, complétez si nécessaire, puis exportez en PDF.</div>
 
-  <div class="warn-box">⚠ Document d'aide à la décision — doit être relu et validé par un professionnel de santé avant utilisation officielle.</div>
+  <div class="warn-box" style="border-radius:var(--rs);padding:12px 14px;margin-bottom:12px;background:var(--amber-bg);border:1px solid var(--amber-b)">
+  <div style="font-size:13px;font-weight:700;color:var(--amber);margin-bottom:4px">⚠️ Document généré par IA — validation clinique requise</div>
+  <div style="font-size:12px;color:var(--text2);line-height:1.5">Ce PPCS est une aide à la décision. Il doit être relu et validé par le <strong>clinicien coordinateur</strong> avant toute utilisation officielle ou transmission à un partenaire.</div>
+</div>
+<div id="validationClinique" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);padding:10px 12px;margin-bottom:12px;display:flex;align-items:center;gap:10px">
+  <div style="flex:1;font-size:12px;color:var(--text2)">Statut : <span id="validationStatus" style="color:var(--amber);font-weight:600">En attente de validation clinique</span></div>
+  <button onclick="soumettrePourValidation()" style="padding:7px 14px;border-radius:var(--rs);background:var(--green);border:none;color:var(--bg);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">✓ Valider le PPCS</button>
+</div>
 
   <div class="synth-scores" id="synthScores"></div>
 
@@ -903,7 +910,7 @@ Ton : professionnel, factuel, bienveillant. Langage accessible (pas de jargon ex
   try{
     const resp=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
       body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:2000,messages:[{role:'user',content:prompt}]})
     });
     const data=await resp.json();
@@ -998,6 +1005,26 @@ function savePPCS(){
   evals.unshift({date:new Date().toISOString(),patient:currentPatient?.id||'manuel',content,gir:computeGIR()});
   localStorage.setItem('mediasante_evals',JSON.stringify(evals.slice(0,20)));
   showToast('PPCS sauvegardé ✓');
+}
+
+function soumettrePourValidation(){
+  const content = document.getElementById('ppcsBody')?.innerText?.trim();
+  if(!content){showToast('Générez d\'abord le PPCS');return;}
+  const statusEl = document.getElementById('validationStatus');
+  if(statusEl){
+    statusEl.textContent = '✓ Validé par le clinicien — ' + new Date().toLocaleDateString('fr-FR');
+    statusEl.style.color = 'var(--green)';
+  }
+  // Sauvegarder le statut de validation
+  if(currentPatient){
+    const dossiers=JSON.parse(localStorage.getItem('mediasante_dossiers')||'[]');
+    const idx=dossiers.findIndex(d=>d.id===currentPatient.id);
+    if(idx>=0){
+      dossiers[idx].ppcs_valide={date:new Date().toISOString(),valideur:localStorage.getItem('mediasante_user')||'Clinicien'};
+      localStorage.setItem('mediasante_dossiers',JSON.stringify(dossiers));
+    }
+  }
+  showToast('PPCS validé ✓ — sauvegardé dans le dossier');
 }
 
 function resetAll(){

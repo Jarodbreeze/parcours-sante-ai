@@ -267,7 +267,7 @@ function openModal(){
   const dossiers=getDossiers();
   const list=document.getElementById('dossierList');
   if(!dossiers.length){
-    list.innerHTML='<div style="text-align:center;padding:20px;font-size:13px;color:var(--text3)">Aucun dossier patient trouvé.<br>Créez d\'abord un dossier via le module d'admission.</div>';
+    list.innerHTML=`<div style="text-align:center;padding:20px;font-size:13px;color:var(--text3)">Aucun dossier patient trouvé.<br>Créez d'abord un dossier via le module d'admission.</div>`;
   } else {
     list.innerHTML=dossiers.map(d=>{
       const p=d.data?.patient||{};
@@ -595,7 +595,7 @@ async function enhanceWithIA(){
     const resp=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
       headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
-      body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:600,messages:[{role:'user',content:`Tu es un médiateur en santé au DAC 93 Nord. Structure et améliore cette note de transmission de manière professionnelle et concise. Conserve tous les faits, améliore la clarté. Format : paragraphes courts, langage professionnel mais accessible. Ne commence pas par "Voici" ou autre intro. Donne directement la note structurée :\n\n${content}`}]})
+      body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:600,messages:[{role:'user',content:`Tu es un professionnel DAC (coordinateur de parcours). Structure et améliore cette note de transmission de manière professionnelle et concise. Conserve tous les faits, améliore la clarté. Format : paragraphes courts, langage professionnel mais accessible. Ne commence pas par "Voici" ou autre intro. Donne directement la note structurée :\n\n${content}`}]})
     });
     const data=await resp.json();
     const text=data.content?.[0]?.text||content;

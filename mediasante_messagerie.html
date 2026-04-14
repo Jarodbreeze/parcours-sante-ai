@@ -242,7 +242,7 @@ input.modal-input:focus{border-color:var(--purple)}
     <div class="section-label">Nom affiché</div>
     <input type="text" class="modal-input" id="profileName" placeholder="Votre nom" />
     <div class="section-label">Fonction</div>
-    <input type="text" class="modal-input" id="profileRole" placeholder="Médiateur en santé / IDE / AS..." />
+    <input type="text" class="modal-input" id="profileRole" placeholder="Coordinateur DAC / IDE / AS / Médiateur..." />
     <div class="section-label">Structure</div>
     <input type="text" class="modal-input" id="profileOrg" placeholder="ParcourSanté AI — DAC 93 Nord" />
     <button class="btn-modal primary" onclick="saveProfile()">Enregistrer</button>
@@ -481,12 +481,8 @@ function sendMsg(){
   input.innerText='';
   renderMessages();
   renderConvList();
-  // Simule réponse — guard : vérifier que la conv est toujours active
-  const convId=currentConvId;
-  setTimeout(()=>{
-    if(currentConvId===convId)simulateReply(c);
-    else{c.messages.push({id:Date.now().toString(),from:'other',text:replies[Math.floor(Math.random()*7)],date:new Date().toISOString(),read:false,type:'text'});saveAll();renderConvList();}
-  },1500+Math.random()*1500);
+  // Pas de réponse automatique — messagerie réelle
+  // Les réponses viennent des vrais professionnels
 }
 
 function simulateReply(c){
@@ -722,8 +718,8 @@ async function aiSuggest(){
   const lastMsgs=c?.messages.slice(-5).map(m=>`${m.from==='me'?'Moi':c.contact.name}: ${m.text}`).join('\n')||'';
   try{
     const resp=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
-      body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:200,messages:[{role:'user',content:`Tu es un médiateur en santé au DAC 93 Nord. Suggère une réponse professionnelle et concise pour cette conversation avec ${c?.contact.name||'un professionnel'} (${c?.contact.role||'partenaire'}).\n\nHistorique récent :\n${lastMsgs}\n\nBrouillon actuel : ${current||'(vide)'}\n\nPropose une seule phrase ou deux de réponse, directe et professionnelle. Pas d'introduction, juste le message.`}]})
+      method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:200,messages:[{role:'user',content:`Tu es un professionnel DAC (coordinateur de parcours). Suggère une réponse professionnelle et concise pour cette conversation avec ${c?.contact.name||'un professionnel'} (${c?.contact.role||'partenaire'}).\n\nHistorique récent :\n${lastMsgs}\n\nBrouillon actuel : ${current||'(vide)'}\n\nPropose une seule phrase ou deux de réponse, directe et professionnelle. Pas d'introduction, juste le message.`}]})
     });
     const data=await resp.json();
     const text=data.content?.[0]?.text||'';

@@ -452,6 +452,9 @@ window.addEventListener('load', () => {
   const k = getApiKey(); if(k) document.getElementById('apiKeyInput').value = k.slice(0,12)+'...';
   updateWordCount();
   toggleCat('cpam');
+  // Sélectionner le premier modèle par défaut pour afficher les champs
+  const firstModel = Object.keys(MODELS)[0];
+  if(firstModel) selectModel(firstModel);
 });
 
 // ─── NOTICE D'ÉLIGIBILITÉ ───
@@ -538,7 +541,7 @@ Pour "courrier", utilise une de ces clés si applicable: cpam_css_renouvellement
   try {
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type':'application/json', 'x-api-key': apiKey, 'anthropic-version':'2023-06-01' },
+      headers: { 'Content-Type':'application/json', 'x-api-key': apiKey, 'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true' },
       body: JSON.stringify({ model:'claude-sonnet-4-5', max_tokens:1500, messages:[{role:'user', content: prompt}] })
     });
     const data = await resp.json();
@@ -720,7 +723,7 @@ function openModal() {
   const dossiers = getDossiers();
   const list = document.getElementById('dossierList');
   if(!dossiers.length) {
-    list.innerHTML = '<div class="empty-state">Aucun dossier patient trouvé.<br>Créez d\'abord un dossier via le module d'admission.</div>';
+    list.innerHTML = `<div class="empty-state">Aucun dossier patient trouvé.<br>Créez d'abord un dossier via le module d'admission.</div>`;
   } else {
     list.innerHTML = dossiers.map(d => {
       const p = d.data?.patient || {};
@@ -905,7 +908,7 @@ const MODELS = {
     fields: [
       { id:"nom_mt_liaison", label:"Nom du médecin traitant", type:"text", ph:"Dr. MARTIN" },
       { id:"objet_liaison", label:"Objet de la liaison", type:"textarea", ph:"Accompagnement démarches droits sociaux, situation sociale précaire nécessitant coordination..." },
-      { id:"actions_en_cours", label:"Actions engagées par le médiateur", type:"textarea", ph:"Dossier CSS en cours, orientation vers assistante sociale..." },
+      { id:"actions_en_cours", label:"Actions engagées par l'équipe DAC", type:"textarea", ph:"Dossier CSS en cours, orientation vers assistante sociale..." },
     ],
     vars: ["[NOM_PATIENT]","[NOM_MT]","[DATE_JOUR]"]
   },
@@ -921,7 +924,7 @@ const MODELS = {
   log_as: { title:"Courrier assistante sociale", cat:"Logement", desc:"Courrier de liaison ou de demande d'intervention d'une AS.", fields:[{id:"service_as",label:"Service de l'AS",type:"text",ph:"Département 93, CPAM, hôpital..."},{id:"objet_as",label:"Objet de la demande",type:"textarea",ph:"Évaluation sociale, aide financière, accompagnement MDPH..."}], vars:["[NOM_PATIENT]","[SERVICE_AS]","[DATE_JOUR]"] },
   dac_cr_accompagnement: {
     title: "Compte-rendu d'accompagnement", cat:"DAC",
-    desc: "CR d'une visite ou d'un accompagnement du médiateur.",
+    desc: "CR d'une visite ou d'un accompagnement de l'équipe DAC.",
     fields: [
       { id:"date_accompagnement", label:"Date de l'accompagnement", type:"date" },
       { id:"type_accompagnement", label:"Type d'accompagnement", type:"select", opts:["Visite à domicile","Accompagnement médecin","Accompagnement CPAM","Accompagnement MDPH","Permanence MSP","Démarche administrative","Autre"] },
@@ -1081,7 +1084,7 @@ ${famoAlerts ? 'ALERTES DOSSIER (contexte) :\n' + famoAlerts + '\n' : ''}
 
 STRUCTURE ÉMETTRICE :
 ${STRUCTURE.nom}, ${STRUCTURE.adresse}
-Médiateur(trice) en santé
+Professionnel(le) DAC — Coordinateur de parcours
 
 INSTRUCTIONS :
 - Date : ${new Date().toLocaleDateString('fr-FR', {day:'numeric',month:'long',year:'numeric'})}
@@ -1096,7 +1099,7 @@ INSTRUCTIONS :
   try {
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type':'application/json', 'x-api-key': apiKey, 'anthropic-version':'2023-06-01' },
+      headers: { 'Content-Type':'application/json', 'x-api-key': apiKey, 'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true' },
       body: JSON.stringify({ model:'claude-sonnet-4-5', max_tokens:1500, messages:[{role:'user',content:prompt}] })
     });
     const data = await resp.json();
@@ -1134,7 +1137,7 @@ function generateTemplate(m, patient, fields) {
 
   return `${STRUCTURE.nom}
 ${STRUCTURE.adresse}
-Médiateur(trice) en santé
+Professionnel(le) DAC — Coordinateur de parcours
 
 ${date}
 
@@ -1145,7 +1148,7 @@ Objet : ${m.title} — ${patientName}
 
 Madame, Monsieur,
 
-Je me permets de vous contacter en ma qualité de médiateur(trice) en santé au sein du ${STRUCTURE.nom}, afin de vous présenter la situation de ${patientName}, né(e) le [À COMPLÉTER], domicilié(e) ${patientAddr}.
+Je me permets de vous contacter en ma qualité de professionnel(le) du dispositif d'appui à la coordination au sein du ${STRUCTURE.nom}, afin de vous présenter la situation de ${patientName}, né(e) le [À COMPLÉTER], domicilié(e) ${patientAddr}.
 
 Dans le cadre de mon accompagnement auprès de cette personne, j'ai pu constater que ${firstFieldVal}.
 
@@ -1155,7 +1158,7 @@ Je reste à votre disposition pour tout renseignement complémentaire ou pour vo
 
 Dans l'attente de votre retour, je vous adresse, Madame, Monsieur, mes cordiales salutations.
 
-Le/La médiateur(trice) en santé
+L'équipe DAC — Coordinateur(trice) de parcours
 ${STRUCTURE.nom}
 ${STRUCTURE.tel} | ${STRUCTURE.email}
 
@@ -1172,7 +1175,7 @@ async function refineCourrier() {
   try {
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
       method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
       body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:1500,messages:[{role:'user',content:`Reformule ce courrier administratif en le rendant plus professionnel, plus chaleureux et en t'assurant que la formule de politesse est appropriée. Conserve toutes les informations factuelles. Ne commente pas, donne directement le courrier reformulé :\n\n${current}`}]})
     });
     const data = await resp.json();
