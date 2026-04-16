@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>ParcourSanté AI — Fiche Patient</title>
+<style>
+:root{
+  --bg:#0a0c12;--bg2:#111318;--bg3:#181b24;--bg4:#1e2230;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.14);
+  --text:#eef0f7;--text2:#7c82a0;--text3:#3d4260;
+  --blue:#4d9ef6;--blue-bg:rgba(77,158,246,0.1);--blue-b:rgba(77,158,246,0.25);
+  --purple:#8b7cf8;--purple-l:#b3a9fc;--purple-bg:rgba(139,124,248,0.1);--purple-b:rgba(139,124,248,0.25);
+  --teal:#2ec4a0;--teal-bg:rgba(46,196,160,0.1);--teal-b:rgba(46,196,160,0.22);
+  --amber:#f5a623;--amber-bg:rgba(245,166,35,0.1);--amber-b:rgba(245,166,35,0.22);
+  --red:#e8556a;--red-bg:rgba(232,85,106,0.1);--red-b:rgba(232,85,106,0.22);
+  --green:#3db87a;--green-bg:rgba(61,184,122,0.1);--green-b:rgba(61,184,122,0.22);
+  --r:12px;--rs:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+.topbar{position:sticky;top:0;z-index:100;background:rgba(10,12,18,0.96);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);height:52px;display:flex;align-items:center;padding:0 14px;gap:10px}
+.back-btn{padding:5px 11px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:11px;cursor:pointer;font-family:inherit}
+.tb-title{font-size:14px;font-weight:600;flex:1;text-align:center;letter-spacing:-.3px}
+.tb-edit{padding:5px 12px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:11px;cursor:pointer;font-family:inherit}
+.alerts-bar{background:linear-gradient(135deg,#2a0e12,#1a1020);border-bottom:1px solid var(--red-b);padding:8px 14px;display:flex;gap:8px;flex-wrap:wrap}
+.alert-chip{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--red);background:var(--red-bg);border:1px solid var(--red-b);padding:4px 9px;border-radius:20px;white-space:nowrap}
+.alerts-bar.empty{display:none}
+.hero{padding:16px 14px 0;background:linear-gradient(180deg,var(--bg2) 0%,var(--bg) 100%)}
+.hero-top{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px}
+.patient-av{width:52px;height:52px;border-radius:14px;background:var(--purple-bg);border:1px solid var(--purple-b);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:var(--purple-l);flex-shrink:0}
+.patient-info{flex:1;min-width:0}
+.patient-name{font-size:20px;font-weight:700;letter-spacing:-.5px;line-height:1.1}
+.patient-meta{font-size:12px;color:var(--text2);margin-top:3px}
+.dossier-badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;padding:3px 9px;border-radius:10px;margin-top:5px}
+.quick-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.qa-btn{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:var(--rs);border:1px solid var(--border);background:var(--bg3);cursor:pointer;transition:all .15s;font-family:inherit}
+.qa-btn:hover{border-color:var(--border2);background:var(--bg4)}
+.qa-icon{font-size:18px}
+.qa-label{font-size:10px;font-weight:600;color:var(--text2)}
+.scores-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px}
+.score-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);padding:8px;text-align:center}
+.score-val{font-size:18px;font-weight:700;line-height:1}
+.score-lbl{font-size:9px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
+.droits-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.droit-pill{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid;cursor:pointer;transition:all .15s}
+.tabs{display:flex;overflow-x:auto;border-bottom:1px solid var(--border);background:var(--bg2);padding:0 14px;gap:2px;flex-shrink:0;position:sticky;top:52px;z-index:50}
+.tab{font-size:11px;font-weight:600;padding:10px 12px;cursor:pointer;border-bottom:2px solid transparent;color:var(--text3);white-space:nowrap;margin-bottom:-1px;transition:all .15s}
+.tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+.tab-content{padding:14px 14px 80px}
+.section{margin-bottom:16px}
+.section-title{font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--text3);text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.section-title button{font-size:10px;padding:2px 8px;border-radius:4px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-family:inherit;margin-left:auto}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:8px}
+.info-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)}
+.info-row:last-child{border-bottom:none}
+.info-key{font-size:11px;color:var(--text3);width:90px;flex-shrink:0}
+.info-val{font-size:13px;color:var(--text);flex:1}
+.cercle-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);margin-bottom:6px;cursor:pointer;transition:border-color .15s}
+.cercle-item:hover{border-color:var(--border2)}
+.cercle-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.cercle-body{flex:1;min-width:0}
+.cercle-name{font-size:13px;font-weight:600}
+.cercle-role{font-size:11px;color:var(--text3);margin-top:1px}
+.cercle-actions{display:flex;gap:5px}
+.c-btn{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:transparent;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center}
+.tl-item{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.tl-item:last-child{border-bottom:none}
+.tl-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:4px;border:2px solid}
+.tl-body{flex:1}
+.tl-title{font-size:12px;font-weight:600}
+.tl-date{font-size:10px;color:var(--text3);margin-top:1px}
+.tx-item{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);padding:10px 12px;margin-bottom:6px}
+.tx-head{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.tx-type{font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;letter-spacing:.04em}
+.tx-date{font-size:10px;color:var(--text3);margin-left:auto}
+.tx-title{font-size:12px;font-weight:600;margin-bottom:3px}
+.tx-body{font-size:12px;color:var(--text2);line-height:1.6}
+.doc-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);margin-bottom:6px}
+.doc-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.doc-body{flex:1;min-width:0}
+.doc-name{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.doc-meta{font-size:10px;color:var(--text3);margin-top:1px}
+.doc-del{width:24px;height:24px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--red);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center}
+.upload-zone{border:2px dashed var(--border2);border-radius:var(--r);padding:24px;text-align:center;cursor:pointer;transition:all .15s}
+.upload-zone:hover{border-color:var(--blue-b);background:var(--blue-bg)}
+.rdv-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);margin-bottom:6px}
+.rdv-stripe{width:3px;height:36px;border-radius:2px;flex-shrink:0}
+.rdv-time{width:44px;flex-shrink:0}
+.rdv-h{font-size:12px;font-weight:600;color:var(--text2)}
+.rdv-d{font-size:10px;color:var(--text3)}
+.rdv-body{flex:1;min-width:0}
+.rdv-title{font-size:13px;font-weight:600}
+.rdv-lieu{font-size:11px;color:var(--text3);margin-top:1px}
+.ppcs-status{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:var(--rs);margin-bottom:10px}
+.ppcs-body{font-size:13px;color:var(--text2);line-height:1.8;white-space:pre-wrap;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px}
+.chat-contact{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);margin-bottom:6px;cursor:pointer;transition:all .15s}
+.chat-contact:hover{border-color:var(--border2)}
+.chat-av{width:36px;height:36px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+.chat-body{flex:1;min-width:0}
+.chat-name{font-size:13px;font-weight:600}
+.chat-role{font-size:11px;color:var(--text3)}
+.chat-draft{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px;margin-top:10px}
+.chat-draft textarea{width:100%;background:transparent;border:none;color:var(--text);font-size:13px;outline:none;resize:none;min-height:80px;line-height:1.6;font-family:inherit}
+.no-content{text-align:center;padding:40px;color:var(--text3);font-size:13px;line-height:1.8}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;display:flex;align-items:flex-end;justify-content:center}
+.overlay.hidden{display:none}
+.modal{background:var(--bg2);border-top:1px solid var(--border);border-radius:16px 16px 0 0;padding:18px 16px 36px;width:100%;max-width:540px;max-height:88vh;overflow-y:auto}
+.modal-title{font-size:16px;font-weight:700;margin-bottom:14px}
+.modal-close{float:right;background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;margin-top:-4px}
+.f{margin-bottom:10px}
+.lbl{font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px;display:block}
+.inp,.sel,.txa{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:13px;padding:9px 11px;outline:none;font-family:inherit;-webkit-appearance:none}
+.inp:focus,.sel:focus,.txa:focus{border-color:var(--blue-b)}
+.txa{resize:vertical;min-height:70px;line-height:1.5}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btn-save{width:100%;padding:12px;border-radius:var(--r);background:var(--blue);border:none;color:#fff;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;margin-top:6px}
+.btn-del-m{width:100%;padding:10px;border-radius:var(--r);background:var(--red-bg);border:1px solid var(--red-b);color:var(--red);font-size:13px;font-family:inherit;cursor:pointer;margin-top:6px}
+.btn-cancel{width:100%;padding:10px;border-radius:var(--r);background:transparent;border:1px solid var(--border);color:var(--text2);font-size:13px;font-family:inherit;cursor:pointer;margin-top:6px}
+.hidden{display:none!important}
+.fab{position:fixed;bottom:20px;right:16px;width:48px;height:48px;border-radius:50%;background:var(--blue);border:none;color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(77,158,246,.4);z-index:40}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:2px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="back-btn" onclick="window.location.href='index.html'">&#8249; Accueil</button>
+  <div class="tb-title" id="tbTitle">Fiche patient</div>
+  <button class="tb-edit" onclick="openEditPatient()">Modifier</button>
+</div>
+
+<div class="alerts-bar empty" id="alertsBar"></div>
+<div class="hero" id="heroSection"></div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('resume')">Resume</div>
+  <div class="tab" onclick="switchTab('cercle')">Cercle de soin</div>
+  <div class="tab" onclick="switchTab('transmissions')">Transmissions</div>
+  <div class="tab" onclick="switchTab('agenda')">Agenda</div>
+  <div class="tab" onclick="switchTab('documents')">Documents</div>
+  <div class="tab" onclick="switchTab('chat')">Chat</div>
+  <div class="tab" onclick="switchTab('ppcs')">PPCS</div>
+  <div class="tab" onclick="switchTab('prevision')">Prevision IA</div>
+  <div class="tab" onclick="ouvrirCarte()">&#127756; Carte</div>
+</div>
+
+<div class="tab-content" id="tabContent"></div>
+<button class="fab" id="fabBtn">+</button>
+
+<!-- MODAL EDIT PATIENT -->
+<div class="overlay hidden" id="ovEditPatient">
+<div class="modal">
+  <button class="modal-close" onclick="closeModal('ovEditPatient')">x</button>
+  <div class="modal-title">Modifier les informations</div>
+  <div class="g2">
+    <div class="f" style="margin:0"><label class="lbl">Prenom</label><input type="text" class="inp" id="ep_prenom"/></div>
+    <div class="f" style="margin:0"><label class="lbl">Nom</label><input type="text" class="inp" id="ep_nom"/></div>
+  </div>
+  <div class="g2" style="margin-top:10px">
+    <div class="f" style="margin:0"><label class="lbl">Sexe</label>
+      <select class="sel" id="ep_sexe"><option value="M">Masculin</option><option value="F">Feminin</option><option value="N">Non precise</option></select>
+    </div>
+    <div class="f" style="margin:0"><label class="lbl">Date de naissance</label><input type="date" class="inp" id="ep_naissance"/></div>
+  </div>
+  <div class="f"><label class="lbl">Adresse</label><input type="text" class="inp" id="ep_adresse"/></div>
+  <div class="g2">
+    <div class="f" style="margin:0"><label class="lbl">Telephone</label><input type="tel" class="inp" id="ep_tel"/></div>
+    <div class="f" style="margin:0"><label class="lbl">Email</label><input type="email" class="inp" id="ep_email"/></div>
+  </div>
+  <div class="f"><label class="lbl">Couverture sante</label>
+    <select class="sel" id="ep_couverture">
+      <option value="">Selectionner...</option>
+      <option>Assurance maladie seule</option><option>CSS (Complementaire Sante Solidaire)</option>
+      <option>AME (Aide Medicale Etat)</option><option>Mutuelle privee</option><option>ALD reconnue</option>
+    </select>
+  </div>
+  <div class="f"><label class="lbl">Langue principale</label><input type="text" class="inp" id="ep_langue" placeholder="Francais, Arabe, Bambara..."/></div>
+  <div class="f"><label class="lbl">Notes administratives</label><textarea class="txa" id="ep_notes"></textarea></div>
+  <button class="btn-save" onclick="savePatientEdit()">Enregistrer</button>
+  <button class="btn-cancel" onclick="closeModal('ovEditPatient')">Annuler</button>
+</div>
+</div>
+
+<!-- MODAL CERCLE -->
+<div class="overlay hidden" id="ovCercle">
+<div class="modal">
+  <button class="modal-close" onclick="closeModal('ovCercle')">x</button>
+  <div class="modal-title" id="cercleTitle">Ajouter un intervenant</div>
+  <div class="f"><label class="lbl">Role</label>
+    <select class="sel" id="c_role">
+      <option value="mt">Medecin traitant</option><option value="spec">Medecin specialiste</option>
+      <option value="ide">IDE / Infirmier(e)</option><option value="kine">Kinesitherapeute</option>
+      <option value="ergo">Ergotherapeute</option><option value="as">Assistante sociale</option>
+      <option value="ssiad">SSIAD</option><option value="saad">Aide a domicile (SAAD)</option>
+      <option value="famille">Aidant familial</option><option value="psy">Psychologue</option>
+      <option value="pharma">Pharmacien</option><option value="autre">Autre</option>
+    </select>
+  </div>
+  <div class="f"><label class="lbl">Nom complet</label><input type="text" class="inp" id="c_nom" placeholder="Dr. Martin Sophie"/></div>
+  <div class="f"><label class="lbl">Structure / Cabinet</label><input type="text" class="inp" id="c_structure"/></div>
+  <div class="g2">
+    <div class="f" style="margin:0"><label class="lbl">Telephone</label><input type="tel" class="inp" id="c_tel"/></div>
+    <div class="f" style="margin:0"><label class="lbl">Email</label><input type="email" class="inp" id="c_email"/></div>
+  </div>
+  <div class="f"><label class="lbl">Notes</label><textarea class="txa" id="c_notes" placeholder="Jours de consultation..."></textarea></div>
+  <button class="btn-save" onclick="saveCercle()">Enregistrer</button>
+  <button class="btn-del-m hidden" id="btnDelCercle" onclick="deleteCercle()">Supprimer</button>
+  <button class="btn-cancel" onclick="closeModal('ovCercle')">Annuler</button>
+</div>
+</div>
+
+<!-- MODAL DROIT -->
+<div class="overlay hidden" id="ovDroit">
+<div class="modal">
+  <button class="modal-close" onclick="closeModal('ovDroit')">x</button>
+  <div class="modal-title" id="droitTitle">Ajouter un droit</div>
+  <div class="f"><label class="lbl">Droit / Prestation</label>
+    <select class="sel" id="d_type">
+      <option>CSS / C2S</option><option>AME</option><option>ALD</option><option>APA</option>
+      <option>PCH</option><option>AAH</option><option>RSA</option><option>RQTH</option>
+      <option>SSIAD</option><option>HAD</option><option>Autre</option>
+    </select>
+  </div>
+  <div class="f"><label class="lbl">Statut</label>
+    <select class="sel" id="d_statut">
+      <option value="ouvert">Ouvert</option><option value="en_cours">En cours d'ouverture</option>
+      <option value="a_ouvrir">A ouvrir</option><option value="expire">Expire / A renouveler</option>
+      <option value="refuse">Refuse</option>
+    </select>
+  </div>
+  <div class="g2">
+    <div class="f" style="margin:0"><label class="lbl">Date debut</label><input type="date" class="inp" id="d_debut"/></div>
+    <div class="f" style="margin:0"><label class="lbl">Date expiration</label><input type="date" class="inp" id="d_fin"/></div>
+  </div>
+  <div class="f"><label class="lbl">Notes</label><textarea class="txa" id="d_notes" placeholder="Montant, organisme, numero de dossier..."></textarea></div>
+  <button class="btn-save" onclick="saveDroit()">Enregistrer</button>
+  <button class="btn-del-m hidden" id="btnDelDroit" onclick="deleteDroit()">Supprimer</button>
+  <button class="btn-cancel" onclick="closeModal('ovDroit')">Annuler</button>
+</div>
+</div>
+
+<script>
+const getDossiers=()=>JSON.parse(localStorage.getItem("mediasante_dossiers")||"[]");
+const saveDossiers=l=>localStorage.setItem("mediasante_dossiers",JSON.stringify(l));
+const getApiKey=()=>localStorage.getItem("mediasante_api_key")||"";
+const getRDVs=()=>JSON.parse(localStorage.getItem("ps_rdvs")||"[]");
+
+function getPatientId(){
+  const p=new URLSearchParams(window.location.search);
+  return p.get("id")||localStorage.getItem("fiche_patient_id");
+}
+function getDossier(){return getDossiers().find(d=>d.id===getPatientId());}
+function updateDossier(updates){
+  const list=getDossiers();
+  const idx=list.findIndex(d=>d.id===getPatientId());
+  if(idx>=0){Object.assign(list[idx],updates);saveDossiers(list);}
+}
+
+let currentTab="resume";
+let editCercleId=null;
+let editDroitId=null;
+let activeChatContact=null;
+
+window.addEventListener("load",()=>{
+  const d=getDossier();
+  if(!d){
+    document.getElementById("heroSection").innerHTML='<div style="text-align:center;padding:40px;color:var(--text3)">Aucun dossier. <a href="index.html" style="color:var(--blue)">Accueil</a></div>';
+    return;
+  }
+  if(!d.cercle_soin){
+    const updates={cercle_soin:[
+      {id:"cs1",role:"mt",nom:"Dr. Camara Ibrahima",structure:"Cabinet medical Saint-Denis",tel:"01 48 09 XX XX",email:"",notes:"MT depuis 2018"},
+      {id:"cs2",role:"as",nom:"Mme Dubois Claire",structure:"CPAM 93",tel:"3646",email:"",notes:"Referente droits AME/CSS"},
+      {id:"cs3",role:"famille",nom:"M. Mbeki Junior",structure:"Fils - aidant principal",tel:"06 XX XX XX XX",email:"",notes:"Resident region parisienne"},
+    ]};
+    const alerts=Object.values(d.data&&d.data.alerts||{}).flat();
+    const droits=[];
+    if(alerts.some(a=>/AME/i.test(a)))droits.push({id:"dr1",type:"AME",statut:"expire",debut:"",fin:"2025-04-01",notes:"A renouveler urgemment"});
+    if(alerts.some(a=>/APA/i.test(a)))droits.push({id:"dr2",type:"APA",statut:"a_ouvrir",debut:"",fin:"",notes:"GIR 3 confirme"});
+    droits.push({id:"dr3",type:"SSIAD",statut:"a_ouvrir",debut:"",fin:"",notes:"A initier"});
+    updates.droits=droits;
+    updateDossier(updates);
+  }
+  renderAll();
+});
+
+function renderAll(){
+  const d=getDossier();if(!d)return;
+  document.title="ParcourSante AI - "+getPatientName(d);
+  document.getElementById("tbTitle").textContent=getPatientName(d);
+  renderAlerts(d);
+  renderHero(d);
+  renderTab(currentTab);
+}
+
+function getPatientName(d){
+  const p=d.data&&d.data.patient||{};
+  return[p.prenom,p.nom].filter(Boolean).join(" ")||"Patient";
+}
+
+function renderAlerts(d){
+  const bar=document.getElementById("alertsBar");
+  const items=[];
+  (d.droits||[]).forEach(dr=>{
+    if(dr.statut==="expire")items.push(dr.type+" expire - a renouveler");
+    if(dr.statut==="a_ouvrir")items.push(dr.type+" non ouvert");
+  });
+  if(!d.ppcs)items.push("PPCS non redige");
+  if(d.ppcs&&!d.ppcs_valide)items.push("PPCS en attente de validation");
+  if(!items.length){bar.className="alerts-bar empty";return;}
+  bar.className="alerts-bar";
+  bar.innerHTML=items.map(a=>'<div class="alert-chip">&#9888; '+a+"</div>").join("");
+}
+
+function renderHero(d){
+  const p=d.data&&d.data.patient||{};
+  const name=getPatientName(d);
+  const ini=((p.prenom||"?")[0]+(p.nom||"?")[0]).toUpperCase();
+  const age=p.age||"age non renseigne";
+  const adresse=p.adresse||"Adresse non renseignee";
+  const gir=d.evaluation&&d.evaluation.gir;
+  const iadl=d.evaluation&&d.evaluation.iadl;
+  const upgo=d.evaluation&&d.evaluation.upgo;
+  const score=d.score||"--";
+  const statut=d.ppcs_valide?{l:"PPCS valide",bg:"var(--green-bg)",c:"var(--green)",b:"var(--green-b)"}:
+    d.ppcs?{l:"PPCS a valider",bg:"var(--amber-bg)",c:"var(--amber)",b:"var(--amber-b)"}:
+    d.evaluation?{l:"Evaluation faite",bg:"var(--blue-bg)",c:"var(--blue)",b:"var(--blue-b)"}:
+    {l:"Dossier ouvert",bg:"var(--purple-bg)",c:"var(--purple-l)",b:"var(--purple-b)"};
+
+  const girColor=gir?(gir<=2?"var(--red)":gir<=4?"var(--amber)":"var(--green)"):"var(--text3)";
+  const iadlColor=iadl!==undefined?(iadl<=3?"var(--red)":iadl<=6?"var(--amber)":"var(--green)"):"var(--text3)";
+  const upgoColor=upgo?(upgo>=20?"var(--red)":upgo>=12?"var(--amber)":"var(--green)"):"var(--text3)";
+
+  document.getElementById("heroSection").innerHTML=
+    '<div class="hero-top">'+
+      '<div class="patient-av">'+ini+"</div>"+
+      '<div class="patient-info">'+
+        '<div class="patient-name">'+name+"</div>"+
+        '<div class="patient-meta">'+age+(p.sexe?" - "+(p.sexe==="M"?"Homme":"Femme"):"")+(p.couverture?" - "+p.couverture:"")+"</div>"+
+        '<div class="patient-meta" style="color:var(--text3)">'+adresse+"</div>"+
+        '<div class="dossier-badge" style="background:'+statut.bg+';color:'+statut.c+';border:1px solid '+statut.b+'">'+statut.l+" - "+d.id+"</div>"+
+      "</div>"+
+    "</div>"+
+    '<div class="quick-actions">'+
+      '<button class="qa-btn" onclick="doMaps()"><span class="qa-icon">&#128205;</span><span class="qa-label">Maps</span></button>'+
+      '<button class="qa-btn" onclick="doCall()"><span class="qa-icon">&#128222;</span><span class="qa-label">Appel direct</span></button>'+
+      '<button class="qa-btn" onclick="doRDV()"><span class="qa-icon">&#128197;</span><span class="qa-label">Prendre RDV</span></button>'+
+    "</div>"+
+    '<div class="scores-row">'+
+      '<div class="score-card"><div class="score-val" style="color:'+girColor+'">'+(gir?"GIR "+gir:"--")+'</div><div class="score-lbl">Autonomie</div></div>'+
+      '<div class="score-card"><div class="score-val" style="color:'+iadlColor+'">'+(iadl!==undefined?iadl+"/8":"--")+'</div><div class="score-lbl">IADL</div></div>'+
+      '<div class="score-card"><div class="score-val" style="color:'+upgoColor+'">'+(upgo?upgo+"s":"--")+'</div><div class="score-lbl">Up&amp;Go</div></div>'+
+      '<div class="score-card"><div class="score-val" style="color:var(--purple-l)">'+score+'</div><div class="score-lbl">Complexite</div></div>'+
+    "</div>";
+}
+
+function switchTab(t){
+  currentTab=t;
+  document.querySelectorAll(".tab").forEach((el,i)=>{
+    el.classList.toggle("active",["resume","cercle","transmissions","agenda","documents","chat","ppcs","prevision"][i]===t);
+  });
+  renderTab(t);
+}
+
+function renderTab(t){
+  const d=getDossier();if(!d)return;
+  const el=document.getElementById("tabContent");
+  const fab=document.getElementById("fabBtn");
+  fab.style.display="flex";
+  const actions={
+    resume:()=>{fab.textContent="+";fab.onclick=openDroitModal;},
+    cercle:()=>{fab.textContent="+";fab.onclick=openCercleModal;},
+    transmissions:()=>{fab.style.display="none";},
+    agenda:()=>{fab.textContent="&#128197;";fab.onclick=doRDV;},
+    documents:()=>{fab.textContent="&#128206;";fab.onclick=()=>document.getElementById("uploadInput").click();},
+    chat:()=>{fab.style.display="none";},
+    ppcs:()=>{fab.style.display="none";},
+    prevision:()=>{fab.textContent="&#10024;";fab.onclick=genererPrevision;},
+  };
+  (actions[t]||actions.resume)();
+
+  if(t==="resume")renderResume(d,el);
+  else if(t==="cercle")renderCercle(d,el);
+  else if(t==="transmissions")renderTransmissions(d,el);
+  else if(t==="agenda")renderAgenda(d,el);
+  else if(t==="documents")renderDocuments(d,el);
+  else if(t==="chat")renderChat(d,el);
+  else if(t==="ppcs")renderPPCS(d,el);
+  else if(t==="prevision")renderPrevision(d,el);
+}
+
+function renderResume(d,el){
+  const droits=d.droits||[];
+  const alerts=Object.values(d.data&&d.data.alerts||{}).flat();
+  const p=d.data&&d.data.patient||{};
+  const dc={ouvert:"var(--green)",en_cours:"var(--amber)",a_ouvrir:"var(--red)",expire:"var(--red)",refuse:"var(--text3)"};
+  const de={ouvert:"&#9989;",en_cours:"&#9203;",a_ouvrir:"&#10060;",expire:"&#128308;",refuse:"&#9940;"};
+
+  const events=[{date:d.date,label:"Dossier cree - Admission FAMO",color:"var(--purple)",border:"var(--purple-b)"}];
+  if(d.evaluation&&d.evaluation.date)events.push({date:d.evaluation.date,label:"Evaluation AGGIR/IADL - GIR "+d.evaluation.gir,color:"var(--blue)",border:"var(--blue-b)"});
+  if(d.ppcs&&d.ppcs.date)events.push({date:d.ppcs.date,label:"PPCS genere",color:"var(--teal)",border:"var(--teal-b)"});
+  if(d.ppcs_valide&&d.ppcs_valide.date)events.push({date:d.ppcs_valide.date,label:"PPCS valide par "+(d.ppcs_valide.valideur||"clinicien"),color:"var(--green)",border:"var(--green-b)"});
+  events.sort((a,b)=>new Date(b.date)-new Date(a.date));
+
+  el.innerHTML=
+    '<div class="section"><div class="section-title">Droits &amp; Prestations <button onclick="openDroitModal()">+ Ajouter</button></div>'+
+    '<div class="droits-row">'+
+    (droits.length?droits.map(dr=>'<div class="droit-pill" style="color:'+dc[dr.statut]+';border-color:'+dc[dr.statut]+'44;background:'+dc[dr.statut]+'11" onclick="editDroit(this.dataset.id)" data-id="'+dr.id+'" >'+(de[dr.statut]||"")+" "+dr.type+"</div>").join(""):
+    '<div style="font-size:12px;color:var(--text3)">Aucun droit - cliquez + pour ajouter</div>')+
+    "</div></div>"+
+    '<div class="section"><div class="section-title">Alertes</div>'+
+    '<div class="card">'+
+    (alerts.length?'<div style="display:flex;flex-direction:column;gap:6px">'+alerts.map(a=>'<div style="font-size:12px;color:var(--text2);display:flex;align-items:center;gap:6px"><span style="color:var(--amber)">&#9888;</span>'+a+"</div>").join("")+"</div>":
+    '<div style="font-size:12px;color:var(--text3)">Aucune alerte active</div>')+
+    "</div></div>"+
+    '<div class="section"><div class="section-title">Demande initiale</div><div class="card"><div style="font-size:13px;color:var(--text2);line-height:1.6">'+(d.data&&d.data.demande||"Non renseignee")+"</div></div></div>"+
+    '<div class="section"><div class="section-title">Timeline</div><div class="card">'+
+    events.map(e=>'<div class="tl-item"><div class="tl-dot" style="background:'+e.color+';border-color:'+e.border+'"></div><div class="tl-body"><div class="tl-title">'+e.label+'</div><div class="tl-date">'+new Date(e.date).toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"})+"</div></div></div>").join("")+
+    "</div></div>"+
+    '<div class="section"><div class="section-title">Informations patient</div><div class="card">'+
+    ir("Prenom",p.prenom)+ir("Nom",p.nom)+ir("Age",p.age)+ir("Tel",p.tel||"--")+ir("Email",p.email||"--")+ir("Adresse",p.adresse)+ir("Couverture",p.couverture||"--")+ir("Langue",p.langue||"--")+
+    "</div></div>";
+}
+
+function ir(k,v){return'<div class="info-row"><div class="info-key">'+k+'</div><div class="info-val">'+(v||"--")+"</div></div>";}
+
+function renderCercle(d,el){
+  const cercle=d.cercle_soin||[];
+  const icons={mt:"&#128104;&#8205;&#9877;",spec:"&#129706;",ide:"&#128137;",kine:"&#9977;",ergo:"&#128295;",as:"&#129309;",ssiad:"&#127968;",saad:"&#129529;",famille:"&#128106;",psy:"&#129504;",pharma:"&#128138;",autre:"&#128203;"};
+  const bgs={mt:"var(--green-bg)",spec:"var(--teal-bg)",ide:"var(--blue-bg)",kine:"var(--purple-bg)",ergo:"var(--blue-bg)",as:"var(--amber-bg)",ssiad:"var(--teal-bg)",saad:"var(--green-bg)",famille:"var(--red-bg)",psy:"var(--purple-bg)",pharma:"var(--green-bg)",autre:"var(--bg3)"};
+  const groups=[["Equipe medicale",["mt","spec","ide","kine","ergo","psy","pharma"]],["Equipe sociale",["as","ssiad","saad"]],["Entourage",["famille","autre"]]];
+  el.innerHTML="";
+  groups.forEach(function(grp){
+    var div=document.createElement("div");div.className="section";
+    var sec=document.createElement("div");sec.className="section-title";sec.innerHTML=grp[0];
+    var addBtn=document.createElement("button");addBtn.textContent="+ Ajouter";addBtn.onclick=openCercleModal;
+    sec.appendChild(addBtn);div.appendChild(sec);
+    var items=cercle.filter(function(c){return grp[1].includes(c.role);});
+    if(items.length){
+      items.forEach(function(c){
+        var item=document.createElement("div");item.className="cercle-item";
+        item.innerHTML='<div class="cercle-av" style="background:'+(bgs[c.role]||"var(--bg3)")+'">'+(icons[c.role]||"")+'</div><div class="cercle-body"><div class="cercle-name">'+c.nom+'</div><div class="cercle-role">'+(c.structure||"")+'</div></div><div class="cercle-actions"></div>';
+        item.onclick=function(){editCercleItem(c.id);};
+        var acts=item.querySelector(".cercle-actions");
+        if(c.tel){var callB=document.createElement("button");callB.className="c-btn";callB.innerHTML="&#128222;";callB.onclick=function(e){e.stopPropagation();callNumber(c.tel);};acts.appendChild(callB);}
+        var editB=document.createElement("button");editB.className="c-btn";editB.innerHTML="&#9998;";editB.onclick=function(e){e.stopPropagation();editCercleItem(c.id);};acts.appendChild(editB);
+        div.appendChild(item);
+      });
+    }else{
+      var empty=document.createElement("div");empty.style.cssText="font-size:12px;color:var(--text3);padding:6px 0";empty.textContent="Aucun intervenant - cliquez +";div.appendChild(empty);
+    }
+    el.appendChild(div);
+  });
+}
+
+function renderTransmissions(d,el){
+  const txs=JSON.parse(localStorage.getItem("transmissions_"+d.id)||"[]");
+  const tc={visite:{bg:"var(--blue-bg)",c:"var(--blue)"},courrier:{bg:"var(--purple-bg)",c:"var(--purple-l)"},rdv:{bg:"var(--teal-bg)",c:"var(--teal)"},appel:{bg:"var(--amber-bg)",c:"var(--amber)"},note:{bg:"var(--bg3)",c:"var(--text2)"},droit:{bg:"var(--green-bg)",c:"var(--green)"}};
+  if(!txs.length){el.innerHTML='<div class="no-content">Aucune transmission.<br><a href="mediasante_transmissions.html" style="color:var(--blue)">Ouvrir les transmissions</a></div>';return;}
+  el.innerHTML='<div style="margin-bottom:10px;text-align:right"><a href="mediasante_transmissions.html" style="font-size:12px;color:var(--blue)">Voir toutes</a></div>'+
+    txs.slice(0,10).map(tx=>{const t=tc[tx.type]||tc.note;return'<div class="tx-item"><div class="tx-head"><div class="tx-type" style="background:'+t.bg+';color:'+t.c+'">'+(tx.type||"note").toUpperCase()+'</div><div style="font-size:11px;color:var(--text2)">'+(tx.interv||"")+'</div><div class="tx-date">'+new Date(tx.date).toLocaleDateString("fr-FR",{day:"numeric",month:"short"})+'</div></div><div class="tx-title">'+(tx.title||"")+'</div><div class="tx-body">'+(tx.content||"").slice(0,120)+((tx.content||"").length>120?"...":"")+"</div></div>";}).join("");
+}
+
+function renderAgenda(d,el){
+  const rdvs=getRDVs().filter(r=>r.patientId===d.id).sort((a,b)=>a.date.localeCompare(b.date)||a.heure.localeCompare(b.heure));
+  const tc={visite:"#5b9ef7",consultation:"#4cba82",rdv_admin:"#a99ef9",staff:"#f0a43a",accompagnement:"#3ecfaa",relance:"#d4882a"};
+  const today=new Date().toISOString().split("T")[0];
+  const up=rdvs.filter(r=>r.date>=today);
+  const past=rdvs.filter(r=>r.date<today);
+  const card=r=>{
+    const color=tc[r.type]||"#5b9ef7";
+    const dt=new Date(r.date+"T12:00:00");
+    return'<div class="rdv-item"><div class="rdv-stripe" style="background:'+color+'"></div><div class="rdv-time"><div class="rdv-h">'+r.heure+'</div><div class="rdv-d">'+dt.toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"short"})+'</div></div><div class="rdv-body"><div class="rdv-title">'+r.titre+'</div><div class="rdv-lieu">'+(r.lieu||"")+"</div></div></div>";
+  };
+  el.innerHTML='<div class="section"><div class="section-title">Prochains RDV <button onclick="doRDV()">+ Creer</button></div>'+(up.length?up.map(card).join(""):'<div style="font-size:12px;color:var(--text3)">Aucun RDV a venir</div>')+"</div>"+
+    (past.length?'<div class="section"><div class="section-title">RDV passes</div>'+past.slice(-3).reverse().map(card).join("")+"</div>":"");
+}
+
+function renderDocuments(d,el){
+  const docs=d.documents||[];
+  el.innerHTML="";
+
+  // Zone upload
+  var sec=document.createElement("div");sec.className="section";
+  var title=document.createElement("div");title.className="section-title";title.textContent="Pieces jointes";
+  sec.appendChild(title);
+  var zone=document.createElement("div");zone.className="upload-zone";
+  zone.innerHTML='<div style="font-size:24px;margin-bottom:8px">&#128206;</div><div style="font-size:13px;font-weight:600;color:var(--text2)">Ajouter un document</div><div style="font-size:11px;color:var(--text3);margin-top:4px">Photo, convocation, ordonnance, courrier...</div>';
+  var inp=document.createElement("input");inp.type="file";inp.id="uploadInput";inp.accept="image/*,.pdf,.doc,.docx";inp.multiple=true;inp.style.display="none";inp.onchange=handleUpload;
+  zone.appendChild(inp);
+  zone.onclick=function(){inp.click();};
+  sec.appendChild(zone);
+  el.appendChild(sec);
+
+  if(!docs.length) return;
+
+  // Liste documents
+  var sec2=document.createElement("div");sec2.className="section";
+  var t2=document.createElement("div");t2.className="section-title";t2.textContent=docs.length+" document(s)";
+  sec2.appendChild(t2);
+  docs.forEach(function(doc){
+    var item=document.createElement("div");item.className="doc-item";
+    var isImg=doc.type&&doc.type.includes("image");
+    item.innerHTML='<div class="doc-icon" style="background:'+(isImg?"var(--teal-bg)":"var(--purple-bg)")+'">'+(isImg?"&#128444;":"&#128196;")+'</div><div class="doc-body"><div class="doc-name">'+doc.name+'</div><div class="doc-meta">'+doc.size+" - "+new Date(doc.date).toLocaleDateString("fr-FR")+"</div></div>";
+    if(isImg){
+      var viewB=document.createElement("button");viewB.className="c-btn";viewB.innerHTML="&#128065;";
+      viewB.onclick=(function(id){return function(){viewDoc(id);};})(doc.id);
+      item.appendChild(viewB);
+    }
+    var delB=document.createElement("button");delB.className="doc-del";delB.textContent="x";
+    delB.onclick=(function(id){return function(){deleteDoc(id);};})(doc.id);
+    item.appendChild(delB);
+    sec2.appendChild(item);
+  });
+  el.appendChild(sec2);
+}
+
+function renderChat(d,el){
+  const contacts=d.cercle_soin||[];
+  el.innerHTML="";
+
+  var sec=document.createElement("div");sec.className="section";
+  var title=document.createElement("div");title.className="section-title";title.textContent="Consultation expert IA";
+  sec.appendChild(title);
+  var desc=document.createElement("div");desc.style.cssText="font-size:12px;color:var(--text3);margin-bottom:10px;line-height:1.5";
+  desc.textContent="Posez une question precise a un expert. Utile avant d avoir le contact humain - l IA repond comme un vrai specialiste.";
+  sec.appendChild(desc);
+
+  contacts.forEach(function(c){
+    var item=document.createElement("div");item.className="chat-contact";
+    item.innerHTML='<div class="chat-av">'+(c.nom||"?")[0]+'</div><div class="chat-body"><div class="chat-name">'+c.nom+'</div><div class="chat-role">'+(c.structure||"")+'</div></div><span style="font-size:11px;color:var(--blue)">Consulter</span>';
+    item.onclick=(function(contact){return function(){openChatWith(contact);};})(c);
+    sec.appendChild(item);
+  });
+
+  if(!contacts.length){
+    var empty=document.createElement("div");empty.style.cssText="font-size:12px;color:var(--text3)";
+    empty.textContent="Ajoutez des intervenants dans Cercle de soin.";
+    sec.appendChild(empty);
+  }
+  el.appendChild(sec);
+
+  var draftSec=document.createElement("div");draftSec.className="section hidden";draftSec.id="chatDraftSection";
+  var dt=document.createElement("div");dt.className="section-title";dt.id="chatDraftTitle";dt.textContent="Question pour --";draftSec.appendChild(dt);
+  var chatBox=document.createElement("div");chatBox.className="chat-draft";
+  var ta=document.createElement("textarea");ta.id="chatDraftText";ta.placeholder="Posez votre question...";
+  chatBox.appendChild(ta);draftSec.appendChild(chatBox);
+  var askBtn=document.createElement("button");askBtn.textContent="Obtenir avis expert";askBtn.style.cssText="width:100%;padding:10px;border-radius:var(--rs);background:var(--purple-bg);border:1px solid var(--purple-b);color:var(--purple-l);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:8px";askBtn.onclick=genMsgIA;draftSec.appendChild(askBtn);
+  var respDiv=document.createElement("div");respDiv.id="chatResponse";respDiv.style.cssText="display:none;margin-top:10px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px;font-size:13px;color:var(--text2);line-height:1.7;white-space:pre-wrap";draftSec.appendChild(respDiv);
+  var copyBtn=document.createElement("button");copyBtn.textContent="Copier la reponse";copyBtn.style.cssText="width:100%;padding:10px;border-radius:var(--rs);background:transparent;border:1px solid var(--border);color:var(--text2);font-size:13px;cursor:pointer;font-family:inherit;margin-top:6px";copyBtn.onclick=copierMsg;draftSec.appendChild(copyBtn);
+  el.appendChild(draftSec);
+}
+
+function renderPPCS(d,el){
+  if(!d.ppcs||!d.ppcs.content){el.innerHTML='<div class="no-content">Aucun PPCS.<br><a href="mediasante_premiere_visite.html" style="color:var(--blue)">Faire la premiere visite</a></div>';return;}
+  const v=d.ppcs_valide;
+  el.innerHTML='<div class="ppcs-status" style="background:'+(v?"var(--green-bg)":"var(--amber-bg)")+';border:1px solid '+(v?"var(--green-b)":"var(--amber-b)")+'">'+
+    '<span style="font-size:16px">'+(v?"&#9989;":"&#9203;")+'</span>'+
+    '<div><div style="font-size:13px;font-weight:600;color:'+(v?"var(--green)":"var(--amber)")+'">'+(v?"PPCS valide":"En attente de validation")+"</div>"+
+    (v?'<div style="font-size:11px;color:var(--text3)">Par '+v.valideur+" - "+new Date(v.date).toLocaleDateString("fr-FR")+"</div>":"")+
+    "</div>"+(!v?'<button onclick="validerPPCS()" style="margin-left:auto;padding:6px 12px;border-radius:var(--rs);background:var(--green);border:none;color:var(--bg);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">Valider</button>':"")+
+    "</div>"+
+    '<div class="ppcs-body">'+d.ppcs.content+"</div>"+
+    "<button onclick=\"exportPPCS()\" style=\"width:100%;padding:11px;border-radius:var(--r);background:transparent;border:1px solid var(--border);color:var(--text2);font-size:13px;font-family:inherit;cursor:pointer;margin-top:10px\">Copier le PPCS</button>";
+}
+
+function validerPPCS(){
+  const user=localStorage.getItem("mediasante_user")||"Clinicien";
+  updateDossier({ppcs_valide:{date:new Date().toISOString(),valideur:user}});
+  renderTab("ppcs");renderAlerts(getDossier());showToast("PPCS valide");
+}
+
+function renderPrevision(d,el){
+  const pv=d.prevision_ia;
+  el.innerHTML='<div style="font-size:12px;color:var(--text3);line-height:1.6;margin-bottom:14px">IA analyse le dossier et propose un plan sur 3-6 mois.</div>'+
+    (pv?'<div style="font-size:11px;color:var(--text3);margin-bottom:8px">Genere le '+new Date(pv.date).toLocaleDateString("fr-FR",{day:"numeric",month:"long"})+"</div>"+
+    '<div class="card"><div style="font-size:13px;color:var(--text2);line-height:1.8;white-space:pre-wrap">'+pv.content+"</div></div>"+
+    '<button onclick="genererPrevision()" style="width:100%;padding:11px;border-radius:var(--r);background:var(--purple-bg);border:1px solid var(--purple-b);color:var(--purple-l);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:10px">Regenerer</button>':
+    '<button onclick="genererPrevision()" style="width:100%;padding:14px;border-radius:var(--r);background:var(--purple);border:none;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">Generer le plan</button>');
+}
+
+async function genererPrevision(){
+  const d=getDossier();const p=d.data&&d.data.patient||{};
+  const name=[p.prenom,p.nom].filter(Boolean).join(" ")||"Patient";
+  const alerts=Object.values(d.data&&d.data.alerts||{}).flat();
+  const droits=(d.droits||[]).map(dr=>dr.type+": "+dr.statut).join(", ");
+  const cercle=(d.cercle_soin||[]).map(c=>c.nom+" ("+c.role+")").join(", ");
+  const el=document.getElementById("tabContent");
+  el.innerHTML='<div style="text-align:center;padding:40px;color:var(--text3);font-size:24px;animation:pulse 1s infinite">&#10024;</div>';
+  const apiKey=getApiKey();
+  const tmpl="PLAN D ACCOMPAGNEMENT - "+name+"\nDate: "+new Date().toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"})+"\n\n1. PRIORITES IMMEDIATES (J+7 a J+30)\n"+(alerts.slice(0,3).map(function(a,i){return ""+(i+1)+". "+a;}).join("\n")||"Completer l evaluation initiale")+"\n\n2. ACTIONS DU MOIS SUIVANT\nMise en place des aides identifiees\nCoordination avec le cercle de soin\n\n3. SUIVI A 3 MOIS\nReevaluation de la situation\n\n4. OBJECTIFS A 6 MOIS\nStabilisation de la situation\n\n5. INDICATEURS DE SUCCES\nDroits ouverts\nPatient satisfait";
+  if(!apiKey.startsWith("sk-")){updateDossier({prevision_ia:{date:new Date().toISOString(),content:tmpl}});renderTab("prevision");return;}
+  try{
+    const resp=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+    body:JSON.stringify({model:"claude-sonnet-4-5",max_tokens:800,messages:[{role:"user",content:"Tu es coordinateur DAC 93 Nord. Genere un plan accompagnement 3-6 mois pour: "+name+", "+p.age+". Situation: "+(d.data&&d.data.demande||"")+". Alertes: "+alerts.join(", ")+". GIR "+(d.evaluation&&d.evaluation.gir||"non fait")+". Droits: "+droits+". Cercle soin: "+cercle+". Structure: 1.PRIORITES IMMEDIATES J+7-J+30, 2.ACTIONS MOIS SUIVANT, 3.SUIVI 3 MOIS, 4.OBJECTIFS 6 MOIS, 5.INDICATEURS SUCCES. Concret, structures et dispositifs du 93."}]})});
+    const data=await resp.json();const text=data.content&&data.content[0]&&data.content[0].text||tmpl;
+    updateDossier({prevision_ia:{date:new Date().toISOString(),content:text}});renderTab("prevision");showToast("Plan genere");
+  }catch(e){updateDossier({prevision_ia:{date:new Date().toISOString(),content:tmpl}});renderTab("prevision");}
+}
+
+function doMaps(){const d=getDossier();const a=d&&d.data&&d.data.patient&&d.data.patient.adresse||"";if(!a){showToast("Adresse non renseignee");return;}window.open("https://maps.google.com/?q="+encodeURIComponent(a),"_blank");}
+function doCall(){const d=getDossier();const t=d&&d.data&&d.data.patient&&d.data.patient.tel||"";if(!t){showToast("Telephone non renseigne - completez la fiche");return;}window.location.href="tel:"+t;}
+function doRDV(){localStorage.setItem("ps_rdvs_prefill_patient",getPatientId());window.location.href="mediasante_agenda.html";}
+
+function openEditPatient(){
+  const d=getDossier();const p=d&&d.data&&d.data.patient||{};
+  ["prenom","nom","adresse","tel","email","langue"].forEach(k=>document.getElementById("ep_"+k).value=p[k]||"");
+  document.getElementById("ep_sexe").value=p.sexe||"M";
+  document.getElementById("ep_naissance").value=p.naissance||"";
+  document.getElementById("ep_couverture").value=p.couverture||"";
+  document.getElementById("ep_notes").value=p.notes_admin||"";
+  document.getElementById("ovEditPatient").classList.remove("hidden");
+}
+
+function savePatientEdit(){
+  const d=getDossier();
+  const patient=Object.assign({},d.data&&d.data.patient||{},{
+    prenom:document.getElementById("ep_prenom").value,nom:document.getElementById("ep_nom").value,
+    sexe:document.getElementById("ep_sexe").value,naissance:document.getElementById("ep_naissance").value,
+    adresse:document.getElementById("ep_adresse").value,tel:document.getElementById("ep_tel").value,
+    email:document.getElementById("ep_email").value,couverture:document.getElementById("ep_couverture").value,
+    langue:document.getElementById("ep_langue").value,notes_admin:document.getElementById("ep_notes").value,
+  });
+  updateDossier({data:Object.assign({},d.data,{patient:patient})});
+  closeModal("ovEditPatient");renderAll();showToast("Fiche mise a jour");
+}
+
+function openCercleModal(){
+  editCercleId=null;
+  document.getElementById("cercleTitle").textContent="Ajouter un intervenant";
+  ["c_nom","c_structure","c_tel","c_email","c_notes"].forEach(id=>document.getElementById(id).value="");
+  document.getElementById("c_role").value="mt";
+  document.getElementById("btnDelCercle").classList.add("hidden");
+  document.getElementById("ovCercle").classList.remove("hidden");
+}
+
+function editCercleItem(id){
+  const d=getDossier();const item=(d.cercle_soin||[]).find(c=>c.id===id);if(!item)return;
+  editCercleId=id;
+  document.getElementById("cercleTitle").textContent="Modifier l intervenant";
+  document.getElementById("c_role").value=item.role||"mt";
+  document.getElementById("c_nom").value=item.nom||"";
+  document.getElementById("c_structure").value=item.structure||"";
+  document.getElementById("c_tel").value=item.tel||"";
+  document.getElementById("c_email").value=item.email||"";
+  document.getElementById("c_notes").value=item.notes||"";
+  document.getElementById("btnDelCercle").classList.remove("hidden");
+  document.getElementById("ovCercle").classList.remove("hidden");
+}
+
+function saveCercle(){
+  const nom=document.getElementById("c_nom").value.trim();if(!nom){showToast("Nom requis");return;}
+  const d=getDossier();const cercle=d.cercle_soin||[];
+  const entry={id:editCercleId||"cs_"+Date.now(),role:document.getElementById("c_role").value,nom:nom,structure:document.getElementById("c_structure").value.trim(),tel:document.getElementById("c_tel").value.trim(),email:document.getElementById("c_email").value.trim(),notes:document.getElementById("c_notes").value.trim()};
+  if(editCercleId){const i=cercle.findIndex(c=>c.id===editCercleId);if(i>=0)cercle.splice(i,1,entry);else cercle.push(entry);}else cercle.push(entry);
+  updateDossier({cercle_soin:cercle});closeModal("ovCercle");renderTab("cercle");showToast(editCercleId?"Mis a jour":"Ajoute");
+}
+
+function deleteCercle(){
+  if(!editCercleId||!confirm("Supprimer ?"))return;
+  const d=getDossier();updateDossier({cercle_soin:(d.cercle_soin||[]).filter(c=>c.id!==editCercleId)});
+  closeModal("ovCercle");renderTab("cercle");showToast("Supprime");
+}
+
+function openDroitModal(){
+  editDroitId=null;
+  document.getElementById("droitTitle").textContent="Ajouter un droit";
+  document.getElementById("d_type").value="CSS / C2S";
+  document.getElementById("d_statut").value="a_ouvrir";
+  document.getElementById("d_debut").value="";
+  document.getElementById("d_fin").value="";
+  document.getElementById("d_notes").value="";
+  document.getElementById("btnDelDroit").classList.add("hidden");
+  document.getElementById("ovDroit").classList.remove("hidden");
+}
+
+function editDroit(id){
+  const d=getDossier();const droit=(d.droits||[]).find(dr=>dr.id===id);if(!droit)return;
+  editDroitId=id;
+  document.getElementById("droitTitle").textContent="Modifier le droit";
+  document.getElementById("d_type").value=droit.type||"";
+  document.getElementById("d_statut").value=droit.statut||"a_ouvrir";
+  document.getElementById("d_debut").value=droit.debut||"";
+  document.getElementById("d_fin").value=droit.fin||"";
+  document.getElementById("d_notes").value=droit.notes||"";
+  document.getElementById("btnDelDroit").classList.remove("hidden");
+  document.getElementById("ovDroit").classList.remove("hidden");
+}
+
+function saveDroit(){
+  const d=getDossier();const droits=d.droits||[];
+  const entry={id:editDroitId||"dr_"+Date.now(),type:document.getElementById("d_type").value,statut:document.getElementById("d_statut").value,debut:document.getElementById("d_debut").value,fin:document.getElementById("d_fin").value,notes:document.getElementById("d_notes").value};
+  if(editDroitId){const i=droits.findIndex(dr=>dr.id===editDroitId);if(i>=0)droits.splice(i,1,entry);else droits.push(entry);}else droits.push(entry);
+  updateDossier({droits:droits});closeModal("ovDroit");renderAlerts(getDossier());renderTab("resume");showToast(editDroitId?"Mis a jour":"Ajoute");
+}
+
+function deleteDroit(){
+  if(!editDroitId||!confirm("Supprimer ?"))return;
+  const d=getDossier();updateDossier({droits:(d.droits||[]).filter(dr=>dr.id!==editDroitId)});
+  closeModal("ovDroit");renderAlerts(getDossier());renderTab("resume");showToast("Supprime");
+}
+
+function closeModal(id){document.getElementById(id).classList.add("hidden");}
+
+function openChatWith(contact){
+  activeChatContact=contact;
+  var sec=document.getElementById("chatDraftSection");
+  var title=document.getElementById("chatDraftTitle");
+  if(sec)sec.classList.remove("hidden");
+  if(title)title.textContent="Question pour "+(contact.nom||"l expert");
+  var ta=document.getElementById("chatDraftText");
+  if(ta)ta.focus();
+}
+
+function getRolePersona(role, nom){
+  const personas={
+    mt:"Tu es Dr. "+(nom||"Martin")+" medecin generaliste. Reponds aux questions de coordination de soin avec l expertise d un medecin traitant. Connaissances : prescriptions, ALD, hospitalisations, protocoles.",
+    spec:"Tu es un medecin specialiste. Reponds avec precision sur ton domaine de specialite.",
+    ide:"Tu es infirmier(e) coordinateur(trice). Reponds sur les soins infirmiers, SSIAD, HAD, surveillance clinique.",
+    as:"Tu es assistante sociale specialisee dans les droits sociaux. Reponds sur CSS, AME, APA, RSA, AAH, MDPH, CAF, logement social.",
+    ssiad:"Tu es coordinateur(trice) SSIAD. Reponds sur les soins infirmiers a domicile, les conditions d admission, les procedures.",
+    cpam:"Tu es referent partenariat CPAM. Reponds sur droits maladie, CSS, AME, ALD, IJ, procedures de deblocage.",
+    mdph:"Tu es referent MDPH. Reponds sur AAH, RQTH, PCH, AEEH, carte CMI, delais et procedures.",
+    ergo:"Tu es ergotherapeute. Reponds sur adaptations domicile, aides techniques, evaluations fonctionnelles.",
+    psy:"Tu es psychologue clinicien(ne). Reponds sur sante mentale, orientation CMP, evaluation cognitive.",
+    famille:"Tu es conseiller(e) en aide aux aidants. Reponds sur le soutien aux aidants familiaux, les droits, le repit.",
+    pharma:"Tu es pharmacien(ne). Reponds sur medicaments, interactions, observance, dispositifs medicaux.",
+  };
+  return personas[role]||("Tu es "+(nom||"un expert")+" specialiste. Reponds de facon concrete et pratique aux questions du coordinateur DAC.");
+}
+
+function copierMsg(){
+  var respEl=document.getElementById("chatResponse");
+  var text=respEl?respEl.textContent:document.getElementById("chatDraftText")&&document.getElementById("chatDraftText").value||"";
+  navigator.clipboard.writeText(text).then(function(){showToast("Copie");});
+}
+
+function callNumber(tel){
+  if(!tel){showToast("Numero non renseigne");return;}
+  window.location.href="tel:"+tel;
+}
+
+function _old_genMsgIA_cleanup(){}
+
+function ouvrirCarte(){
+  const id=getPatientId();
+  if(!id){showToast("Aucun dossier selectionne");return;}
+  localStorage.setItem("fiche_patient_id",id);
+  window.location.href="mediasante_carte_mentale.html?id="+id;
+}
+
+function showToast(msg){
+  const t=document.createElement("div");
+  t.style.cssText="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e2230;border:1px solid rgba(255,255,255,.18);color:#f0f1f5;padding:9px 18px;border-radius:20px;font-size:12px;z-index:999;white-space:nowrap;pointer-events:none";
+  t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2400);
+}
+
+async function genMsgIA(){
+  const question=document.getElementById("chatDraftText").value.trim();
+  if(!question){showToast("Posez une question");return;}
+  const apiKey=getApiKey();const d=getDossier();const p=d&&d.data&&d.data.patient||{};
+  const name=[p.prenom,p.nom].filter(Boolean).join(" ")||"le patient";
+  const respEl=document.getElementById("chatResponse");
+  if(respEl){respEl.style.display="block";respEl.textContent="Consultation en cours...";}
+  if(!apiKey.startsWith("sk-")){
+    if(respEl)respEl.textContent="Cle API requise pour consulter un expert. Ajoutez votre cle en haut de page.";
+    return;
+  }
+  const persona=activeChatContact&&activeChatContact.role?getRolePersona(activeChatContact.role,activeChatContact.nom):"Tu es un professionnel de sante expert.";
+  try{
+    const resp=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+    body:JSON.stringify({model:"claude-sonnet-4-5",max_tokens:500,messages:[{role:"user",content:persona+"\n\nContexte patient: "+name+", "+p.age+". "+((d&&d.data&&d.data.demande)||"")+"\n\nQuestion du coordinateur DAC: "+question+"\n\nReponds comme un vrai specialiste, de facon concrete et pratique. Cite les dispositifs, delais et procedures reelles."}]})});
+    const data=await resp.json();const text=data.content&&data.content[0]&&data.content[0].text||"";
+    if(respEl)respEl.textContent=text||"Pas de reponse";
+    showToast("Reponse obtenue");
+  }catch(e){if(respEl)respEl.textContent="Erreur de connexion. Verifiez votre cle API.";}
+  // Ancienne version supprimée
+  return;
+}
+</script>
+</body>
+</html>

@@ -11,7 +11,7 @@
   --text:#f0f1f5;--text2:#8b8fa8;--text3:#565a72;
   --purple:#7c6ff7;--purple-l:#a99ef9;--purple-bg:rgba(124,111,247,0.12);--purple-b:rgba(124,111,247,0.3);
   --teal:#3ecfaa;--teal-bg:rgba(62,207,170,0.1);--teal-b:rgba(62,207,170,0.25);
-  --amber:#f0a43a;--amber-bg:rgba(240,164,58,0.1);--amber-b:rgba(240,164,58,0.25);
+  --amber:#f0a43a;--amber-bg:rgba(240,164,58,0.1);--amber-b:rgba(240,164,58,0.25);--gold:#ffd700;--gold-bg:rgba(255,215,0,0.1);--gold-b:rgba(255,215,0,0.25);
   --red:#e05c6a;--red-bg:rgba(224,92,106,0.1);--red-b:rgba(224,92,106,0.25);
   --green:#4cba82;--green-bg:rgba(76,186,130,0.1);--green-b:rgba(76,186,130,0.25);
   --blue:#5b9ef7;--blue-bg:rgba(91,158,247,0.1);--blue-b:rgba(91,158,247,0.25);
@@ -299,7 +299,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
     <!-- ACTIVITÉ RÉCENTE -->
     <div class="sec-header" style="margin-top:4px">
       <div class="sec-title">Activité récente</div>
-      <div class="sec-link" onclick="openModule('transmissions')">Tout voir</div>
+      <div class="sec-link" onclick="openFichePatient(t.dossierId)" style="cursor:pointer">Tout voir</div>
     </div>
     <div class="recent-list" id="recentList"></div>
 
@@ -364,13 +364,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
 const MODULES = [
   {id:'famo',     name:'Admission (FAMO)',   desc:'Créer un nouveau dossier patient',   icon:'📋', color:'var(--purple-l)', bg:'var(--purple-bg)', file:'mediasante_famo.html',          badge:null,    featured:true},
   {id:'courriers',name:'Courriers IA',        desc:'40+ modèles générés en 1 clic',     icon:'✉️', color:'var(--teal)',     bg:'var(--teal-bg)',   file:'mediasante_courriers.html',       badge:'IA',    featured:false},
-  {id:'staff',    name:'Staff IA',            desc:'Conseil des 8 experts pluridisciplinaires', icon:'🧠', color:'var(--amber)', bg:'var(--amber-bg)', file:'mediasante_staff_ia.html', badge:'IA',    featured:true},
+  {id:'staff',    name:'Staff IA',            desc:'Conseil des 9 experts pluridisciplinaires', icon:'🧠', color:'var(--amber)', bg:'var(--amber-bg)', file:'mediasante_staff_ia.html', badge:'IA',    featured:true},
   {id:'visite',   name:'Première visite',     desc:'AGGIR · IADL · Up & Go · PPCS',    icon:'🏠', color:'var(--green)',   bg:'var(--green-bg)', file:'mediasante_premiere_visite.html', badge:null,    featured:false},
   {id:'transmissions',name:'Transmissions',   desc:'Journal de bord du dossier',        icon:'📝', color:'var(--blue)',    bg:'var(--blue-bg)',  file:'mediasante_transmissions.html',   badge:null,    featured:false},
   {id:'messagerie',name:'Messagerie',         desc:'Chat sécurisé inter-professionnels',icon:'💬', color:'var(--purple-l)',bg:'var(--purple-bg)',file:'mediasante_messagerie.html',      badge:null,    featured:false},
   {id:'orientation',name:'Orientation',       desc:'Annuaire 93 · IA d\'orientation',   icon:'🗺️', color:'var(--amber)',  bg:'var(--amber-bg)', file:'mediasante_orientation.html',     badge:null,    featured:false},
   {id:'dashboard',name:'Dashboard',           desc:'Activité · Ruptures · Rapport ARS', icon:'📊', color:'var(--teal)',   bg:'var(--teal-bg)',  file:'mediasante_dashboard.html',       badge:null,    featured:false},
   {id:'agenda',   name:'Agenda & Coordination',desc:'RDV · Relances · Volet médical · Multi-structures', icon:'📅', color:'var(--blue)', bg:'var(--blue-bg)', file:'mediasante_agenda.html', badge:'NEW', featured:true},
+  {id:'dossiers', name:'Mes Dossiers',           desc:'Fiches patients · Cercle de soin · Documents', icon:'👤', color:'var(--purple)', bg:'var(--purple-bg)', file:'mediasante_fiche_patient.html', badge:null, featured:false},
+  {id:'carte',    name:'Carte Mentale',          desc:'Creusage · Analyse · Plan d\'action staff',    icon:'🗺️', color:'var(--gold)',   bg:'var(--gold-bg)',   file:'mediasante_carte_mentale.html',  badge:'NEW', featured:true},
 ];
 
 // ═══ STATE ═══
@@ -438,7 +440,47 @@ function goHome() {
 function openModule(id) {
   const mod = MODULES.find(m => m.id === id);
   if (!mod) return;
+  // Module dossiers : afficher la liste avant d'ouvrir
+  if(id === 'dossiers') { showDossiersList(); return; }
+  if(id === 'carte') {
+    const dossiers = getDossiers();
+    if(!dossiers.length){ openModule('famo'); return; }
+    if(dossiers.length === 1){ localStorage.setItem('fiche_patient_id', dossiers[0].id); window.location.href = 'mediasante_carte_mentale.html?id=' + dossiers[0].id; return; }
+    showDossiersList('carte');
+    return;
+  }
   window.location.href = mod.file;
+}
+
+function showDossiersList() {
+  const dossiers = getDossiers();
+  if(!dossiers.length) { openModule('famo'); return; }
+  // Si un seul dossier, ouvrir directement
+  if(dossiers.length === 1) { openFichePatient(dossiers[0].id); return; }
+  // Plusieurs dossiers : afficher un sélecteur
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;display:flex;align-items:flex-end;justify-content:center';
+  overlay.onclick = e => { if(e.target===overlay) overlay.remove(); };
+  const modal = document.createElement('div');
+  modal.style.cssText = 'background:#161820;border-top:1px solid rgba(255,255,255,.08);border-radius:16px 16px 0 0;padding:18px 16px 36px;width:100%;max-width:540px;max-height:80vh;overflow-y:auto';
+  modal.innerHTML = '<div style="font-size:16px;font-weight:700;margin-bottom:14px">Choisir un dossier patient</div>';
+  dossiers.forEach(d => {
+    const p = d.data?.patient || {};
+    const name = [p.prenom, p.nom].filter(Boolean).join(' ') || d.id;
+    const ini = ((p.prenom||'?')[0]+(p.nom||'?')[0]).toUpperCase();
+    const item = document.createElement('div');
+    item.style.cssText = 'display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.07);background:#1e2130;margin-bottom:6px;cursor:pointer';
+    item.innerHTML = '<div style="width:36px;height:36px;border-radius:50%;background:rgba(139,124,248,.12);border:1px solid rgba(139,124,248,.25);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#b3a9fc;flex-shrink:0">'+ini+'</div><div style="flex:1"><div style="font-size:13px;font-weight:600">'+name+'</div><div style="font-size:11px;color:#4a4e6a;margin-top:1px">'+d.id+(d.evaluation?' · GIR '+d.evaluation.gir:'')+'</div></div><span style="font-size:11px;color:#4d9ef6">Ouvrir →</span>';
+    item.onclick = () => { overlay.remove(); openFichePatient(d.id); };
+    modal.appendChild(item);
+  });
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+}
+
+function openFichePatient(id) {
+  localStorage.setItem('fiche_patient_id', id);
+  window.location.href = 'mediasante_fiche_patient.html?id=' + id;
 }
 
 function showSearch() {
@@ -622,7 +664,7 @@ function renderRecentActivity() {
   dossiers.forEach(d => {
     const p = d.data?.patient || {};
     const name = [p.prenom, p.nom].filter(Boolean).join(' ') || d.id;
-    getTransmissions(d.id).slice(0, 3).forEach(t => allTx.push({ ...t, patientName: name }));
+    getTransmissions(d.id).slice(0, 3).forEach(t => allTx.push({ ...t, patientName: name, dossierId: d.id }));
   });
   allTx.sort((a, b) => new Date(b.date) - new Date(a.date));
 
@@ -635,7 +677,7 @@ function renderRecentActivity() {
     return;
   }
   el.innerHTML = allTx.slice(0, 6).map(t => `
-    <div class="ra-item" onclick="openModule('transmissions')">
+    <div class="ra-item" onclick="openFichePatient(t.dossierId)" style="cursor:pointer">
       <div class="ra-dot" style="background:${typeColors[t.type] || '#565a72'}"></div>
       <div class="ra-body">
         <div class="ra-title">${t.title || '(sans titre)'}</div>

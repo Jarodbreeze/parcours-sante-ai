@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ParcourSanté AI — Carte Mentale</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&display=swap');
+
+:root{
+  --bg:#06080f;--bg2:#0d1018;--bg3:#131722;
+  --text:#e8eaf5;--text2:#6b7194;--text3:#2d3154;
+  --red:#ff4d6d;--red-dim:rgba(255,77,109,0.15);--red-glow:rgba(255,77,109,0.4);
+  --green:#00e5a0;--green-dim:rgba(0,229,160,0.12);--green-glow:rgba(0,229,160,0.35);
+  --blue:#4d9eff;--blue-dim:rgba(77,158,255,0.12);--blue-glow:rgba(77,158,255,0.35);
+  --amber:#ffb347;--amber-dim:rgba(255,179,71,0.12);--amber-glow:rgba(255,179,71,0.35);
+  --purple:#b47fff;--purple-dim:rgba(180,127,255,0.12);--purple-glow:rgba(180,127,255,0.35);
+  --teal:#00d4ff;--teal-dim:rgba(0,212,255,0.12);--teal-glow:rgba(0,212,255,0.35);
+  --pink:#ff6eb4;--pink-dim:rgba(255,110,180,0.12);--pink-glow:rgba(255,110,180,0.35);
+  --gold:#ffd700;--gold-dim:rgba(255,215,0,0.12);--gold-glow:rgba(255,215,0,0.35);
+}
+
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:'Sora',system-ui,sans-serif;color:var(--text);-webkit-font-smoothing:antialiased}
+
+/* TOPBAR */
+.topbar{position:fixed;top:0;left:0;right:0;height:52px;background:rgba(6,8,15,0.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.05);display:flex;align-items:center;padding:0 14px;gap:10px;z-index:100}
+.back-btn{padding:5px 11px;border-radius:6px;border:1px solid rgba(255,255,255,0.12);background:transparent;color:var(--text2);font-size:11px;cursor:pointer;font-family:inherit}
+.tb-title{font-size:13px;font-weight:600;flex:1;text-align:center;letter-spacing:-.2px}
+.phase-btns{display:flex;gap:4px;background:rgba(255,255,255,0.04);border-radius:8px;padding:3px}
+.phase-btn{padding:4px 10px;border-radius:5px;font-size:10px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--text3);font-family:inherit;transition:all .2s;white-space:nowrap}
+.phase-btn.active{background:var(--blue);color:#fff;box-shadow:0 0 12px var(--blue-glow)}
+
+/* CANVAS AREA */
+.canvas-wrap{position:fixed;top:52px;left:0;right:0;bottom:56px;overflow:hidden;cursor:grab}
+.canvas-wrap.grabbing{cursor:grabbing}
+.canvas{position:absolute;width:3000px;height:3000px;top:0;left:0;transform-origin:0 0}
+
+/* SVG LINES */
+.lines-svg{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1}
+
+/* NODES */
+.node{position:absolute;z-index:10;cursor:pointer;transition:filter .2s}
+.node:hover{filter:brightness(1.15)}
+
+/* CENTRE */
+.node-center{width:140px;height:140px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:radial-gradient(circle at 40% 35%,rgba(255,215,0,0.25),rgba(255,215,0,0.05));border:2px solid var(--gold);box-shadow:0 0 40px var(--gold-glow),inset 0 0 30px rgba(255,215,0,0.05);padding:10px;animation:breathe 3s ease-in-out infinite}
+@keyframes breathe{0%,100%{box-shadow:0 0 40px var(--gold-glow),inset 0 0 30px rgba(255,215,0,0.05)}50%{box-shadow:0 0 60px var(--gold-glow),0 0 80px rgba(255,215,0,0.1),inset 0 0 30px rgba(255,215,0,0.08)}}
+.node-center-name{font-size:13px;font-weight:700;color:var(--gold);line-height:1.2;margin-bottom:2px}
+.node-center-age{font-size:10px;color:rgba(255,215,0,0.6)}
+.node-center-icon{font-size:22px;margin-bottom:4px}
+
+/* BRANCHES */
+.node-branch{min-width:130px;max-width:170px;border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;position:relative;transition:transform .2s,box-shadow .2s}
+.node-branch:hover{transform:scale(1.05)}
+.node-branch-icon{font-size:20px;line-height:1}
+.node-branch-label{font-size:11px;font-weight:700;letter-spacing:.02em;line-height:1.3}
+.node-branch-count{font-size:9px;opacity:.7;margin-top:1px}
+
+/* SUBNODES */
+.node-sub{border-radius:20px;padding:5px 10px;font-size:10px;font-weight:600;cursor:pointer;border:1px solid;max-width:150px;text-align:center;line-height:1.3;transition:all .15s;position:relative}
+.node-sub:hover{transform:scale(1.05)}
+.node-sub-edit{position:absolute;top:-6px;right:-6px;width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,0.15);border:none;color:rgba(255,255,255,0.7);font-size:9px;cursor:pointer;display:none;align-items:center;justify-content:center;line-height:1}
+.node-sub:hover .node-sub-edit{display:flex}
+
+/* ADD BUTTON */
+.node-add{width:28px;height:28px;border-radius:50%;border:1px dashed;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;opacity:.5;transition:all .2s;margin:0 auto}
+.node-add:hover{opacity:1;transform:scale(1.2)}
+
+/* PHASE BADGE */
+.phase-badge{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:700;padding:5px 14px;border-radius:20px;letter-spacing:.06em;z-index:50;pointer-events:none}
+
+/* BOTTOM BAR */
+.bottom-bar{position:fixed;bottom:0;left:0;right:0;height:56px;background:rgba(6,8,15,0.97);backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:space-around;padding:0 8px;z-index:100}
+.bb-btn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 10px;border-radius:8px;border:none;background:transparent;color:var(--text2);cursor:pointer;font-family:inherit;transition:all .15s;min-width:52px}
+.bb-btn:hover{background:rgba(255,255,255,0.05);color:var(--text)}
+.bb-btn-icon{font-size:18px;line-height:1}
+.bb-btn-label{font-size:9px;font-weight:600;letter-spacing:.04em}
+.bb-btn.primary{background:linear-gradient(135deg,rgba(77,158,255,0.2),rgba(77,158,255,0.05));border:1px solid rgba(77,158,255,0.3);color:var(--blue)}
+
+/* MODAL NOTE */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px)}
+.overlay.hidden{display:none}
+.modal{background:var(--bg2);border-top:1px solid rgba(255,255,255,.08);border-radius:20px 20px 0 0;padding:20px 16px 40px;width:100%;max-width:540px;max-height:80vh;overflow-y:auto}
+.modal-title{font-size:15px;font-weight:700;margin-bottom:14px;color:var(--text)}
+.modal-close{float:right;background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;margin-top:-3px}
+.modal-inp{width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;color:var(--text);font-size:13px;padding:10px 12px;outline:none;font-family:inherit;margin-bottom:10px}
+.modal-inp:focus{border-color:rgba(77,158,255,0.4)}
+.modal-btn{width:100%;padding:12px;border-radius:10px;background:var(--blue);border:none;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+
+/* LOADING */
+.loading-overlay{position:fixed;inset:0;background:rgba(6,8,15,0.9);z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;backdrop-filter:blur(8px)}
+.loading-overlay.hidden{display:none}
+.loading-orb{width:60px;height:60px;border-radius:50%;background:radial-gradient(circle,var(--blue),transparent);animation:pulse-orb 1.5s ease-in-out infinite;box-shadow:0 0 40px var(--blue-glow)}
+@keyframes pulse-orb{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.3);opacity:.7}}
+.loading-text{font-size:14px;font-weight:600;color:var(--text2);letter-spacing:.04em}
+
+/* TOOLTIP */
+.tooltip{position:fixed;background:rgba(13,16,24,0.95);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--text);z-index:150;pointer-events:none;max-width:220px;line-height:1.5;backdrop-filter:blur(8px)}
+.tooltip.hidden{display:none}
+
+/* PARTICLE BG */
+.particles{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.particle{position:absolute;border-radius:50%;animation:float linear infinite;opacity:0}
+@keyframes float{0%{transform:translateY(100vh) rotate(0deg);opacity:0}10%{opacity:1}90%{opacity:.3}100%{transform:translateY(-100px) rotate(720deg);opacity:0}}
+</style>
+</head>
+<body>
+
+<!-- PARTICLES BG -->
+<div class="particles" id="particles"></div>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-orb"></div>
+  <div class="loading-text" id="loadingText">Génération de la carte...</div>
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <button class="back-btn" onclick="window.location.href='mediasante_fiche_patient.html'">&#8249; Fiche</button>
+  <div class="tb-title" id="tbTitle">Carte Mentale</div>
+  <div class="phase-btns">
+    <button class="phase-btn active" id="btn-phase1" onclick="setPhase(1)">Creusage</button>
+    <button class="phase-btn" id="btn-phase2" onclick="setPhase(2)">Analyse</button>
+    <button class="phase-btn" id="btn-phase3" onclick="setPhase(3)">Plan</button>
+  </div>
+</div>
+
+<!-- CANVAS -->
+<div class="canvas-wrap" id="canvasWrap">
+  <div class="canvas" id="canvas">
+    <svg class="lines-svg" id="linesSvg"></svg>
+  </div>
+</div>
+
+<!-- PHASE BADGE -->
+<div class="phase-badge hidden" id="phaseBadge"></div>
+
+<!-- BOTTOM BAR -->
+<div class="bottom-bar">
+  <button class="bb-btn" onclick="resetView()">
+    <span class="bb-btn-icon">&#127968;</span>
+    <span class="bb-btn-label">Centrer</span>
+  </button>
+  <button class="bb-btn" onclick="zoomIn()">
+    <span class="bb-btn-icon">&#43;</span>
+    <span class="bb-btn-label">Zoom +</span>
+  </button>
+  <button class="bb-btn primary" onclick="genererIA()">
+    <span class="bb-btn-icon">&#10024;</span>
+    <span class="bb-btn-label">IA Analyse</span>
+  </button>
+  <button class="bb-btn" onclick="zoomOut()">
+    <span class="bb-btn-icon">&#8722;</span>
+    <span class="bb-btn-label">Zoom -</span>
+  </button>
+  <button class="bb-btn" onclick="exporterCarte()">
+    <span class="bb-btn-icon">&#128190;</span>
+    <span class="bb-btn-label">Exporter</span>
+  </button>
+</div>
+
+<!-- MODAL NOTE -->
+<div class="overlay hidden" id="noteOverlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">&#215;</button>
+    <div class="modal-title" id="noteTitle">Ajouter une note</div>
+    <input type="text" class="modal-inp" id="noteInput" placeholder="Saisir une information..." />
+    <button class="modal-btn" onclick="saveNote()">Ajouter</button>
+  </div>
+</div>
+
+<!-- TOOLTIP -->
+<div class="tooltip hidden" id="tooltip"></div>
+
+<script>
+// ═══ DONNÉES ═══
+const getDossiers=()=>JSON.parse(localStorage.getItem("mediasante_dossiers")||"[]");
+const getApiKey=()=>localStorage.getItem("mediasante_api_key")||"";
+function getPatientId(){const p=new URLSearchParams(window.location.search);return p.get("id")||localStorage.getItem("fiche_patient_id");}
+function getDossier(){return getDossiers().find(d=>d.id===getPatientId());}
+
+// ═══ ÉTAT ═══
+let currentPhase=1;
+let scale=1;
+let panX=0,panY=0;
+let isPanning=false;
+let startX=0,startY=0;
+let editingBranch=null;
+let mapData={phase1:{},phase2:{},phase3:{}};
+
+// ═══ BRANCHES CONFIG ═══
+const BRANCHES=[
+  {id:"identite",   label:"Identité",          icon:"👤", color:"var(--gold)",   dim:"var(--gold-dim)",   glow:"var(--gold-glow)",   angle:-90,  dist:220, keys:["nom","prenom","age","adresse","sexe","naissance","tel"]},
+  {id:"signalant",  label:"Signalant",          icon:"📢", color:"var(--blue)",   dim:"var(--blue-dim)",   glow:"var(--blue-glow)",   angle:-30,  dist:240, keys:["demandeur","structure","date_appel"]},
+  {id:"entourage",  label:"Entourage",          icon:"👨‍👩‍👧", color:"var(--green)",  dim:"var(--green-dim)",  glow:"var(--green-glow)",  angle:30,   dist:240, keys:["famille","aidants","isolement"]},
+  {id:"sante",      label:"Santé",              icon:"🏥", color:"var(--red)",    dim:"var(--red-dim)",    glow:"var(--red-glow)",    angle:90,   dist:240, keys:["pathologies","traitements","allergies"]},
+  {id:"autonomie",  label:"Autonomie",          icon:"♿", color:"var(--amber)",  dim:"var(--amber-dim)",  glow:"var(--amber-glow)",  angle:150,  dist:240, keys:["gir","iadl","upgo","mobilite"]},
+  {id:"droits",     label:"Droits & Admin",     icon:"📋", color:"var(--purple)", dim:"var(--purple-dim)", glow:"var(--purple-glow)", angle:210,  dist:240, keys:["couverture","droits_ouverts","titre_sejour"]},
+  {id:"communication",label:"Communication",   icon:"💬", color:"var(--teal)",   dim:"var(--teal-dim)",   glow:"var(--teal-glow)",   angle:270,  dist:230, keys:["langue","barriere","tel"]},
+  {id:"demande",    label:"Demande",            icon:"🎯", color:"var(--pink)",   dim:"var(--pink-dim)",   glow:"var(--pink-glow)",   angle:330,  dist:240, keys:["motif","urgence","attentes"]},
+];
+
+const CENTER={x:1500,y:1500};
+
+// ═══ INIT ═══
+window.addEventListener("load",()=>{
+  createParticles();
+  const d=getDossier();
+  if(d){
+    const p=d.data&&d.data.patient||{};
+    const name=[p.prenom,p.nom].filter(Boolean).join(" ")||"Patient";
+    document.getElementById("tbTitle").textContent=name;
+    mapData=loadMapData(d.id)||{phase1:{},phase2:{},phase3:{}};
+    buildPhase1FromDossier(d);
+  }
+  initCanvas();
+  renderMap();
+  setTimeout(()=>{resetView();document.getElementById("loadingOverlay").classList.add("hidden");},800);
+});
+
+function loadMapData(id){
+  try{return JSON.parse(localStorage.getItem("carte_"+id)||"null");}catch(e){return null;}
+}
+function saveMapData(){
+  const d=getDossier();if(!d)return;
+  localStorage.setItem("carte_"+d.id,JSON.stringify(mapData));
+}
+
+// ═══ CONSTRUCTION DEPUIS DOSSIER ═══
+function buildPhase1FromDossier(d){
+  const p=d.data&&d.data.patient||{};
+  const alerts=d.data&&d.data.alerts||{};
+  const dem=d.data&&d.data.demandeur||{};
+
+  if(!mapData.phase1.identite)mapData.phase1.identite=[];
+  if(!mapData.phase1.signalant)mapData.phase1.signalant=[];
+  if(!mapData.phase1.sante)mapData.phase1.sante=[];
+  if(!mapData.phase1.autonomie)mapData.phase1.autonomie=[];
+  if(!mapData.phase1.droits)mapData.phase1.droits=[];
+  if(!mapData.phase1.entourage)mapData.phase1.entourage=[];
+  if(!mapData.phase1.communication)mapData.phase1.communication=[];
+  if(!mapData.phase1.demande)mapData.phase1.demande=[];
+
+  // Identité
+  if(p.prenom||p.nom)addUnique("phase1","identite",[p.prenom,p.nom].filter(Boolean).join(" "));
+  if(p.age)addUnique("phase1","identite",p.age);
+  if(p.adresse)addUnique("phase1","identite",p.adresse);
+  if(p.tel)addUnique("phase1","identite","Tel: "+p.tel);
+  if(p.naissance)addUnique("phase1","identite","Né(e) le "+p.naissance);
+
+  // Signalant
+  if(dem.nom)addUnique("phase1","signalant",dem.nom);
+  if(dem.structure)addUnique("phase1","signalant",dem.structure);
+  if(dem.profil)addUnique("phase1","signalant",dem.profil);
+
+  // Santé
+  (alerts.sante||[]).forEach(a=>addUnique("phase1","sante",a));
+  if(p.traitements)addUnique("phase1","sante","Traitements: "+p.traitements);
+
+  // Autonomie
+  (alerts.autonomie||[]).forEach(a=>addUnique("phase1","autonomie",a));
+  if(d.evaluation){
+    if(d.evaluation.gir)addUnique("phase1","autonomie","GIR "+d.evaluation.gir);
+    if(d.evaluation.iadl!==undefined)addUnique("phase1","autonomie","IADL "+d.evaluation.iadl+"/8");
+    if(d.evaluation.upgo)addUnique("phase1","autonomie","Up&Go "+d.evaluation.upgo+"s");
+  }
+
+  // Droits
+  if(p.couverture)addUnique("phase1","droits",p.couverture);
+  (alerts.admin||[]).forEach(a=>addUnique("phase1","droits",a));
+  (d.droits||[]).forEach(dr=>addUnique("phase1","droits",dr.type+" : "+dr.statut));
+
+  // Entourage & Communication
+  (alerts.env||[]).forEach(a=>addUnique("phase1","entourage",a));
+  const cercle=d.cercle_soin||[];
+  cercle.filter(c=>c.role==="famille").forEach(c=>addUnique("phase1","entourage",c.nom));
+  if(p.langue)addUnique("phase1","communication",p.langue);
+
+  // Habitat
+  (alerts.habitat||[]).forEach(a=>addUnique("phase1","autonomie",a));
+
+  // Demande
+  if(d.data&&d.data.demande)addUnique("phase1","demande",d.data.demande.slice(0,60));
+
+  saveMapData();
+}
+
+function addUnique(phase,branch,text){
+  if(!text||!text.trim())return;
+  const arr=mapData[phase][branch]||[];
+  if(!arr.includes(text.trim())){arr.push(text.trim());mapData[phase][branch]=arr;}
+}
+
+// ═══ RENDER ═══
+function renderMap(){
+  const canvas=document.getElementById("canvas");
+  const svg=document.getElementById("linesSvg");
+  // Supprimer les anciens noeuds (garder le svg)
+  Array.from(canvas.children).forEach(c=>{if(c!==svg)c.remove();});
+  svg.innerHTML="";
+
+  const d=getDossier();
+  const p=d&&d.data&&d.data.patient||{};
+  const name=[p.prenom,p.nom].filter(Boolean).join(" ")||"Patient";
+
+  // Centre
+  const centerEl=document.createElement("div");
+  centerEl.className="node node-center";
+  centerEl.style.cssText="left:"+(CENTER.x-70)+"px;top:"+(CENTER.y-70)+"px;width:140px;height:140px";
+  centerEl.innerHTML='<div class="node-center-icon">&#127968;</div><div class="node-center-name">'+name+'</div><div class="node-center-age">'+(p.age||"")+(p.sexe?" · "+(p.sexe==="M"?"H":"F"):"")+"</div>";
+  canvas.appendChild(centerEl);
+
+  // Branches
+  const phaseKey="phase"+currentPhase;
+  BRANCHES.forEach(br=>{
+    const rad=br.angle*Math.PI/180;
+    const bx=CENTER.x+Math.cos(rad)*br.dist;
+    const by=CENTER.y+Math.sin(rad)*br.dist;
+    const items=mapData[phaseKey]&&mapData[phaseKey][br.id]||[];
+
+    // Ligne centre → branche
+    drawLine(svg,CENTER.x,CENTER.y,bx,by,br.color,3,0.6);
+
+    // Noeud branche
+    const brEl=document.createElement("div");
+    brEl.className="node node-branch";
+    brEl.style.cssText="left:"+(bx-75)+"px;top:"+(by-50)+"px;background:"+br.dim+";border:1.5px solid "+br.color+";box-shadow:0 0 20px "+br.glow+";";
+    brEl.innerHTML='<div class="node-branch-icon">'+br.icon+'</div><div class="node-branch-label" style="color:'+br.color+'">'+br.label+'</div><div class="node-branch-count" style="color:'+br.color+'">'+(items.length?items.length+" éléments":"vide")+"</div>";
+    brEl.onclick=()=>showBranchPanel(br,bx,by);
+    canvas.appendChild(brEl);
+
+    // Sub-noeuds
+    const maxSub=6;
+    items.slice(0,maxSub).forEach((item,i)=>{
+      const spread=items.slice(0,maxSub).length;
+      const spreadRad=rad+(i-(spread-1)/2)*0.35;
+      const subDist=150+Math.floor(i/2)*30;
+      const sx=bx+Math.cos(spreadRad)*subDist;
+      const sy=by+Math.sin(spreadRad)*subDist;
+
+      drawLine(svg,bx,by,sx,sy,br.color,1.5,0.4);
+
+      const subEl=document.createElement("div");
+      subEl.className="node node-sub";
+      subEl.style.cssText="left:"+(sx-65)+"px;top:"+(sy-18)+"px;color:"+br.color+";border-color:"+br.color+"44;background:"+br.dim+";";
+      subEl.textContent=item.length>22?item.slice(0,22)+"…":item;
+      subEl.title=item;
+      subEl.onclick=e=>{e.stopPropagation();showTooltip(e,item,br.color);};
+      canvas.appendChild(subEl);
+    });
+
+    if(items.length>maxSub){
+      const moreRad=rad+((maxSub)-(items.length-1)/2)*0.35;
+      const mx=bx+Math.cos(rad)*300;
+      const my=by+Math.sin(rad)*300;
+      const moreEl=document.createElement("div");
+      moreEl.className="node node-sub";
+      moreEl.style.cssText="left:"+(mx-40)+"px;top:"+(my-14)+"px;color:"+br.color+";border-color:"+br.color+"33;background:rgba(0,0,0,0.3);font-style:italic;";
+      moreEl.textContent="+"+(items.length-maxSub)+" autres";
+      canvas.appendChild(moreEl);
+    }
+
+    // Bouton ajouter
+    const addRad=rad;
+    const ax=bx+Math.cos(addRad)*110;
+    const ay=by+Math.sin(addRad)*110;
+    const addEl=document.createElement("button");
+    addEl.className="node node-add";
+    addEl.style.cssText="left:"+(ax-14)+"px;top:"+(ay-14)+"px;border-color:"+br.color+";color:"+br.color+";";
+    addEl.textContent="+";
+    addEl.onclick=e=>{e.stopPropagation();openNoteModal(br.id,br.label,br.color);};
+    canvas.appendChild(addEl);
+  });
+
+  // Phase badge
+  const badges=["","CREUSAGE — Recueil d'informations","ANALYSE — Problématiques identifiées","PLAN D'ACTION — Décisions du staff"];
+  const badge=document.getElementById("phaseBadge");
+  badge.textContent=badges[currentPhase];
+  badge.className="phase-badge";
+  const badgeColors=["","var(--blue)","var(--amber)","var(--green)"];
+  badge.style.cssText="background:"+badgeColors[currentPhase]+"22;border:1px solid "+badgeColors[currentPhase]+"44;color:"+badgeColors[currentPhase]+";position:fixed;bottom:70px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:700;padding:4px 12px;border-radius:20px;letter-spacing:.06em;z-index:50;pointer-events:none;white-space:nowrap";
+}
+
+function drawLine(svg,x1,y1,x2,y2,color,width,opacity){
+  const line=document.createElementNS("http://www.w3.org/2000/svg","path");
+  const cx=(x1+x2)/2;
+  const cy=(y1+y2)/2;
+  const dx=x2-x1,dy=y2-y1;
+  const d="M"+x1+","+y1+" Q"+(cx-dy*0.2)+","+(cy+dx*0.2)+" "+x2+","+y2;
+  line.setAttribute("d",d);
+  line.setAttribute("stroke",color);
+  line.setAttribute("stroke-width",width);
+  line.setAttribute("opacity",opacity);
+  line.setAttribute("fill","none");
+  line.setAttribute("stroke-linecap","round");
+  svg.appendChild(line);
+}
+
+// ═══ PHASES ═══
+function setPhase(n){
+  currentPhase=n;
+  [1,2,3].forEach(i=>{
+    const btn=document.getElementById("btn-phase"+i);
+    btn.classList.toggle("active",i===n);
+  });
+  renderMap();
+}
+
+// ═══ MODAL NOTE ═══
+let currentBranchId=null;
+function openNoteModal(branchId,label,color){
+  currentBranchId=branchId;
+  document.getElementById("noteTitle").textContent="Ajouter — "+label;
+  document.getElementById("noteTitle").style.color=color;
+  document.getElementById("noteInput").value="";
+  document.getElementById("noteOverlay").classList.remove("hidden");
+  setTimeout(()=>document.getElementById("noteInput").focus(),100);
+}
+
+function saveNote(){
+  const val=document.getElementById("noteInput").value.trim();
+  if(!val)return;
+  const phaseKey="phase"+currentPhase;
+  if(!mapData[phaseKey][currentBranchId])mapData[phaseKey][currentBranchId]=[];
+  mapData[phaseKey][currentBranchId].push(val);
+  saveMapData();
+  closeModal();
+  renderMap();
+}
+
+function closeModal(){document.getElementById("noteOverlay").classList.add("hidden");}
+
+document.getElementById("noteInput").addEventListener("keydown",e=>{if(e.key==="Enter")saveNote();});
+
+// ═══ BRANCH PANEL ═══
+function showBranchPanel(br,bx,by){
+  const phaseKey="phase"+currentPhase;
+  const items=mapData[phaseKey]&&mapData[phaseKey][br.id]||[];
+  openNoteModal(br.id,br.label,br.color);
+}
+
+// ═══ TOOLTIP ═══
+function showTooltip(e,text,color){
+  const tip=document.getElementById("tooltip");
+  tip.textContent=text;
+  tip.style.cssText="position:fixed;background:rgba(13,16,24,0.97);border:1px solid "+color+"44;border-radius:10px;padding:10px 12px;font-size:12px;color:"+color+";z-index:150;pointer-events:none;max-width:240px;line-height:1.5;backdrop-filter:blur(8px);top:"+(e.clientY-60)+"px;left:"+Math.min(e.clientX-60,window.innerWidth-260)+"px;";
+  tip.classList.remove("hidden");
+  setTimeout(()=>tip.classList.add("hidden"),2500);
+}
+
+// ═══ GÉNÉRATION IA ═══
+async function genererIA(){
+  const apiKey=getApiKey();
+  const d=getDossier();if(!d)return;
+  const p=d.data&&d.data.patient||{};
+  const name=[p.prenom,p.nom].filter(Boolean).join(" ")||"Patient";
+
+  document.getElementById("loadingText").textContent="L'IA analyse la situation...";
+  document.getElementById("loadingOverlay").classList.remove("hidden");
+
+  if(!apiKey.startsWith("sk-")){
+    // Mode sans clé — génération basée sur les données existantes
+    genererSansIA(d);
+    return;
+  }
+
+  const phase1Data=mapData.phase1||{};
+  const context=Object.entries(phase1Data).map(([k,v])=>k+": "+v.join(", ")).join("\n");
+
+  try{
+    const resp=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+      body:JSON.stringify({model:"claude-sonnet-4-5",max_tokens:800,messages:[{role:"user",content:"Tu es coordinateur DAC 93 Nord. Analyse cette situation patient et génère les phases 2 et 3 de la carte mentale.\n\nPATIENT: "+name+"\nDONNÉES:\n"+context+"\n\nGénère un JSON valide UNIQUEMENT:\n{\n  \"phase2\": {\n    \"identite\": [],\n    \"signalant\": [],\n    \"entourage\": [\"problématiques entourage\"],\n    \"sante\": [\"problématiques santé prioritaires\"],\n    \"autonomie\": [\"problématiques autonomie\"],\n    \"droits\": [\"droits manquants urgents\"],\n    \"communication\": [],\n    \"demande\": [\"analyse de la demande\"]\n  },\n  \"phase3\": {\n    \"identite\": [],\n    \"signalant\": [],\n    \"entourage\": [\"action entourage J+X\"],\n    \"sante\": [\"action santé J+X\"],\n    \"autonomie\": [\"action autonomie J+X\"],\n    \"droits\": [\"action droit J+X\"],\n    \"communication\": [\"action com J+X\"],\n    \"demande\": [\"objectif final\"]\n  }\n}\nMax 4 items par branche. Actions courtes et concrètes."}]})
+    });
+    const data=await resp.json();
+    let text=data.content&&data.content[0]&&data.content[0].text||"{}";
+    text=text.replace(/```json|```/g,"").trim();
+    const match=text.match(/\{[\s\S]*\}/);
+    if(match){
+      const result=JSON.parse(match[0]);
+      if(result.phase2)mapData.phase2=result.phase2;
+      if(result.phase3)mapData.phase3=result.phase3;
+      saveMapData();
+      setPhase(2);
+      showToast("Analyse IA générée ✓");
+    }
+  }catch(e){
+    genererSansIA(d);
+  }
+  document.getElementById("loadingOverlay").classList.add("hidden");
+}
+
+function genererSansIA(d){
+  const alerts=d.data&&d.data.alerts||{};
+  const p=d.data&&d.data.patient||{};
+
+  mapData.phase2={
+    identite:[],signalant:[],
+    entourage:(alerts.env||[]).concat(["Vérifier réseau aidants","Évaluer isolement social"]).slice(0,4),
+    sante:(alerts.sante||[]).concat(["Stabiliser pathologies prioritaires","Coordonner avec MT"]).slice(0,4),
+    autonomie:(alerts.autonomie||[]).concat(d.evaluation?["GIR "+d.evaluation.gir+" - plan aide à définir"]:[]).slice(0,4),
+    droits:(alerts.admin||[]).concat(["Ouvrir droits manquants","Contacter CPAM 93"]).slice(0,4),
+    communication:p.langue&&p.langue!=="Français"?["Interprète à prévoir","Support bilingue"]:[],
+    demande:["Analyser faisabilité","Définir priorités avec le patient"],
+  };
+
+  mapData.phase3={
+    identite:[],signalant:[],
+    entourage:["Contact aidant J+7","Visite évaluation J+15"],
+    sante:["RDV MT - coordination J+7","Bilan médical complet J+30"],
+    autonomie:["Dossier APA J+7","Mise en place SSIAD J+15","Évaluation ergo J+30"],
+    droits:["Renouvellement droits J+7","Dépôt dossier MDPH J+15"],
+    communication:p.langue&&p.langue!=="Français"?["Interprète RDV J+7"]:[],
+    demande:["Réévaluation à 3 mois","Objectif: stabilisation situation"],
+  };
+
+  saveMapData();
+  setPhase(2);
+  document.getElementById("loadingOverlay").classList.add("hidden");
+  showToast("Plan généré (mode hors-ligne)");
+}
+
+// ═══ EXPORT ═══
+function exporterCarte(){
+  const d=getDossier();
+  const p=d&&d.data&&d.data.patient||{};
+  const name=[p.prenom,p.nom].filter(Boolean).join(" ")||"Patient";
+  const date=new Date().toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"});
+
+  let txt="CARTE MENTALE — STAFF DAC\n";
+  txt+="Patient: "+name+"\n";
+  txt+="Date: "+date+"\n";
+  txt+="=".repeat(50)+"\n\n";
+
+  ["phase1","phase2","phase3"].forEach((ph,i)=>{
+    const phNames=["CREUSAGE","ANALYSE","PLAN D ACTION"];
+    txt+="\n"+phNames[i]+":\n"+"-".repeat(30)+"\n";
+    BRANCHES.forEach(br=>{
+      const items=mapData[ph]&&mapData[ph][br.id]||[];
+      if(items.length){
+        txt+=br.icon+" "+br.label+":\n";
+        items.forEach(item=>txt+="  - "+item+"\n");
+      }
+    });
+  });
+
+  navigator.clipboard.writeText(txt).then(()=>showToast("Carte copiée ✓ — collez dans n'importe quel doc"));
+}
+
+// ═══ CANVAS PAN & ZOOM ═══
+function initCanvas(){
+  const wrap=document.getElementById("canvasWrap");
+  panX=(window.innerWidth-CENTER.x*scale)/2;
+  panY=(window.innerHeight-CENTER.y*scale)/2-52;
+  applyTransform();
+
+  // Touch
+  let touches={};let lastDist=0;
+  wrap.addEventListener("touchstart",e=>{
+    e.preventDefault();
+    if(e.touches.length===1){isPanning=true;startX=e.touches[0].clientX-panX;startY=e.touches[0].clientY-panY;}
+    else if(e.touches.length===2){lastDist=getDist(e.touches);}
+  },{passive:false});
+  wrap.addEventListener("touchmove",e=>{
+    e.preventDefault();
+    if(e.touches.length===1&&isPanning){panX=e.touches[0].clientX-startX;panY=e.touches[0].clientY-startY;applyTransform();}
+    else if(e.touches.length===2){const d=getDist(e.touches);const delta=(d-lastDist)*0.01;zoomAt(delta,window.innerWidth/2,window.innerHeight/2);lastDist=d;}
+  },{passive:false});
+  wrap.addEventListener("touchend",()=>{isPanning=false;});
+
+  // Mouse
+  wrap.addEventListener("mousedown",e=>{if(e.button===0){isPanning=true;wrap.classList.add("grabbing");startX=e.clientX-panX;startY=e.clientY-panY;}});
+  window.addEventListener("mousemove",e=>{if(isPanning){panX=e.clientX-startX;panY=e.clientY-startY;applyTransform();}});
+  window.addEventListener("mouseup",()=>{isPanning=false;document.getElementById("canvasWrap").classList.remove("grabbing");});
+  wrap.addEventListener("wheel",e=>{e.preventDefault();zoomAt(e.deltaY<0?0.1:-0.1,e.clientX,e.clientY);},{passive:false});
+}
+
+function getDist(touches){return Math.hypot(touches[0].clientX-touches[1].clientX,touches[0].clientY-touches[1].clientY);}
+function applyTransform(){document.getElementById("canvas").style.transform="translate("+panX+"px,"+panY+"px) scale("+scale+")";}
+function zoomAt(delta,cx,cy){const ns=Math.max(0.3,Math.min(2.5,scale+delta));const f=ns/scale;panX=cx-(cx-panX)*f;panY=cy-(cy-panY)*f;scale=ns;applyTransform();}
+function zoomIn(){zoomAt(0.15,window.innerWidth/2,window.innerHeight/2);}
+function zoomOut(){zoomAt(-0.15,window.innerWidth/2,window.innerHeight/2);}
+function resetView(){scale=0.9;panX=(window.innerWidth-CENTER.x*scale)/2;panY=((window.innerHeight-52-56)-CENTER.y*scale)/2+52;applyTransform();}
+
+// ═══ PARTICLES ═══
+function createParticles(){
+  const cont=document.getElementById("particles");
+  const colors=["rgba(77,158,255,0.3)","rgba(0,229,160,0.3)","rgba(255,77,109,0.25)","rgba(255,215,0,0.2)","rgba(180,127,255,0.25)"];
+  for(let i=0;i<25;i++){
+    const p=document.createElement("div");p.className="particle";
+    const size=Math.random()*3+1;
+    p.style.cssText="width:"+size+"px;height:"+size+"px;left:"+Math.random()*100+"%;background:"+colors[Math.floor(Math.random()*colors.length)]+";animation-duration:"+(Math.random()*20+10)+"s;animation-delay:"+(-Math.random()*20)+"s;";
+    cont.appendChild(p);
+  }
+}
+
+// ═══ TOAST ═══
+function showToast(msg){
+  const t=document.createElement("div");
+  t.style.cssText="position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:rgba(13,16,24,0.97);border:1px solid rgba(255,255,255,.15);color:#e8eaf5;padding:9px 18px;border-radius:20px;font-size:12px;z-index:999;white-space:nowrap;pointer-events:none;font-family:Sora,system-ui,sans-serif;backdrop-filter:blur(8px)";
+  t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2400);
+}
+</script>
+</body>
+</html>
