@@ -409,6 +409,19 @@ window.addEventListener('load', () => {
   const k = getApiKey(); if(k) document.getElementById('apiKeyInput').value = k.slice(0,12)+'...';
   renderExpertsGrid();
   renderHistory();
+  // Pré-sélectionner le dossier courant si vient du FAMO ou fiche patient
+  const currentId = localStorage.getItem('fiche_patient_id');
+  if(currentId) {
+    const dossiers = getDossiers();
+    const d = dossiers.find(x => x.id === currentId);
+    if(d) {
+      setTimeout(() => {
+        // Pré-remplir le sélecteur de dossier
+        const sel = document.getElementById('dossierSelect');
+        if(sel) { sel.value = currentId; selectDossier(currentId); }
+      }, 200);
+    }
+  }
 });
 
 function renderExpertsGrid() {

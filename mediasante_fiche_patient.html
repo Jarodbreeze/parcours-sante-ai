@@ -324,7 +324,16 @@ function renderHero(d){
   const iadl=d.evaluation&&d.evaluation.iadl;
   const upgo=d.evaluation&&d.evaluation.upgo;
   const score=d.score||"--";
-  const statut=d.ppcs_valide?{l:"PPCS valide",bg:"var(--green-bg)",c:"var(--green)",b:"var(--green-b)"}:
+  // Statut manuel du dossier
+  const statutManuel = d.statut_manuel;
+  const statutColors = {
+    actif:    {l:"Actif",         bg:"var(--green-bg)",  c:"var(--green)",   b:"var(--green-b)"},
+    attente:  {l:"En attente",    bg:"var(--amber-bg)",  c:"var(--amber)",   b:"var(--amber-b)"},
+    suspendu: {l:"Suspendu",      bg:"var(--red-bg)",    c:"var(--red)",     b:"var(--red-b)"},
+    cloture:  {l:"Clôturé",       bg:"var(--bg3)",       c:"var(--text3)",   b:"var(--border)"},
+  };
+  const statut = statutManuel ? statutColors[statutManuel] :
+    d.ppcs_valide?{l:"PPCS valide",bg:"var(--green-bg)",c:"var(--green)",b:"var(--green-b)"}:
     d.ppcs?{l:"PPCS a valider",bg:"var(--amber-bg)",c:"var(--amber)",b:"var(--amber-b)"}:
     d.evaluation?{l:"Evaluation faite",bg:"var(--blue-bg)",c:"var(--blue)",b:"var(--blue-b)"}:
     {l:"Dossier ouvert",bg:"var(--purple-bg)",c:"var(--purple-l)",b:"var(--purple-b)"};
@@ -340,7 +349,7 @@ function renderHero(d){
         '<div class="patient-name">'+name+"</div>"+
         '<div class="patient-meta">'+age+(p.sexe?" - "+(p.sexe==="M"?"Homme":"Femme"):"")+(p.couverture?" - "+p.couverture:"")+"</div>"+
         '<div class="patient-meta" style="color:var(--text3)">'+adresse+"</div>"+
-        '<div class="dossier-badge" style="background:'+statut.bg+';color:'+statut.c+';border:1px solid '+statut.b+'">'+statut.l+" - "+d.id+"</div>"+
+        '<div class="dossier-badge" style="background:'+statut.bg+';color:'+statut.c+';border:1px solid '+statut.b+';cursor:pointer" onclick="changerStatut()">'+statut.l+' ▾ · '+d.id+"</div>"+
       "</div>"+
     "</div>"+
     '<div class="quick-actions">'+
@@ -743,6 +752,73 @@ function callNumber(tel){
 }
 
 function _old_genMsgIA_cleanup(){}
+
+function changerStatut(){
+  const d=getDossier();if(!d)return;
+  const actuel=d.statut_manuel||'actif';
+
+  const overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:flex;align-items:flex-end;justify-content:center';
+  overlay.onclick=function(e){if(e.target===overlay)overlay.remove();};
+
+  const modal=document.createElement('div');
+  modal.style.cssText='background:#161820;border-top:1px solid rgba(255,255,255,.08);border-radius:16px 16px 0 0;padding:20px 16px 36px;width:100%;max-width:540px';
+
+  const title=document.createElement('div');
+  title.style.cssText='font-size:15px;font-weight:700;margin-bottom:14px';
+  title.textContent='Statut du dossier';
+  modal.appendChild(title);
+
+  const options=[
+    {val:'actif',    label:'Actif',       desc:'Accompagnement en cours',             color:'var(--green)'},
+    {val:'attente',  label:'En attente',  desc:'En attente - document ou validation', color:'var(--amber)'},
+    {val:'suspendu', label:'Suspendu',    desc:'Accompagnement temporairement pause', color:'var(--red)'},
+    {val:'cloture',  label:'Cloture',     desc:'Accompagnement termine',              color:'var(--text3)'},
+  ];
+
+  options.forEach(function(opt){
+    const isActive=opt.val===actuel;
+    const item=document.createElement('div');
+    item.style.cssText='display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;border:1px solid '+(isActive?opt.color+'44':'rgba(255,255,255,.06)')+';background:'+(isActive?opt.color+'11':'transparent')+';margin-bottom:8px;cursor:pointer';
+    item.innerHTML='<div style="width:10px;height:10px;border-radius:50%;background:'+opt.color+';flex-shrink:0"></div><div><div style="font-size:13px;font-weight:600;color:'+(isActive?opt.color:'var(--text)')+'">'+opt.label+(isActive?' ✓':'')+'</div><div style="font-size:11px;color:var(--text3);margin-top:1px">'+opt.desc+'</div></div>';
+    item.onclick=(function(v){return function(){setStatutDossier(v,overlay);};})(opt.val);
+    modal.appendChild(item);
+  });
+
+  // Motif clôture
+  const motifWrap=document.createElement('div');
+  motifWrap.style.cssText='border-top:1px solid rgba(255,255,255,.06);padding-top:12px;margin-top:4px';
+  motifWrap.innerHTML='<div style="font-size:11px;color:var(--text3);margin-bottom:8px">Motif de cloture (si cloture)</div>';
+  const sel=document.createElement('select');
+  sel.id='motifCloture';
+  sel.style.cssText='width:100%;background:var(--bg);border:1px solid rgba(255,255,255,.08);border-radius:8px;color:var(--text);font-size:12px;padding:8px 10px;outline:none;font-family:inherit;-webkit-appearance:none';
+  ['','Objectifs atteints','Transfert vers autre structure','Refus du patient','Demenagement','Deces','Autre'].forEach(function(m){
+    const o=document.createElement('option');o.value=m;o.textContent=m||'-- Choisir --';sel.appendChild(o);
+  });
+  motifWrap.appendChild(sel);
+  modal.appendChild(motifWrap);
+
+  const cancelBtn=document.createElement('button');
+  cancelBtn.textContent='Annuler';
+  cancelBtn.style.cssText='width:100%;padding:10px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,.08);color:var(--text2);font-size:12px;cursor:pointer;font-family:inherit;margin-top:12px';
+  cancelBtn.onclick=function(){overlay.remove();};
+  modal.appendChild(cancelBtn);
+
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+}
+
+function setStatutDossier(val, overlay){
+  const motif=document.getElementById('motifCloture')?.value||'';
+  updateDossier({
+    statut_manuel:val,
+    statut_date:new Date().toISOString(),
+    statut_motif:val==='cloture'?motif:'',
+  });
+  if(overlay)overlay.remove();
+  renderAll();
+  showToast('Statut mis à jour : '+val);
+}
 
 function ouvrirCarte(){
   const id=getPatientId();

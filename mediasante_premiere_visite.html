@@ -617,14 +617,46 @@ function buildAGGIR(){
     const vars=AGGIR_VARS.filter(v=>v.group===group);
     el.innerHTML=vars.map(v=>`
       <div class="aggir-item" id="aggir-${v.id}">
-        <div class="aggir-label"><div class="aggir-name">${v.name}</div><div class="aggir-desc">${v.desc}</div></div>
+        <div class="aggir-label">
+          <div style="display:flex;align-items:center;gap:6px">
+            <div class="aggir-name">${v.name}</div>
+            <button onclick="showAGGIRHelp('${v.id}')" style="width:18px;height:18px;border-radius:50%;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.05);color:#8b8fa8;font-size:10px;cursor:pointer;font-family:inherit;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0">?</button>
+          </div>
+          <div class="aggir-desc">${v.desc}</div>
+        </div>
         <div class="aggir-score">
-          <div class="score-btn" id="agg-${v.id}-A" onclick="setAGGIR('${v.id}','A')">A</div>
-          <div class="score-btn" id="agg-${v.id}-B" onclick="setAGGIR('${v.id}','B')">B</div>
-          <div class="score-btn" id="agg-${v.id}-C" onclick="setAGGIR('${v.id}','C')">C</div>
+          <div class="score-btn" id="agg-${v.id}-A" onclick="setAGGIR('${v.id}','A')" title="A = Fait seul, totalement, habituellement et correctement">A</div>
+          <div class="score-btn" id="agg-${v.id}-B" onclick="setAGGIR('${v.id}','B')" title="B = Fait partiellement, ou pas toujours, ou pas correctement">B</div>
+          <div class="score-btn" id="agg-${v.id}-C" onclick="setAGGIR('${v.id}','C')" title="C = Ne fait pas du tout, toujours aidé">C</div>
         </div>
       </div>`).join('');
   });
+}
+
+function showAGGIRHelp(id){
+  const v = AGGIR_VARS.find(x=>x.id===id);
+  if(!v) return;
+  const guides = {
+    coherence: "A = Coherent, comprend et communique. B = Parfois confus. C = Ne comprend plus.",
+    orientation: "A = Se repere seul dans le temps et espace. B = Parfois desoriente. C = Totalement desoriente.",
+    toilette: "A = Se lave seul haut ET bas. B = Aide partielle. C = Dependant total.",
+    habillage: "A = Shabille seul complet. B = Aide partielle. C = Dependant total.",
+    alimentation: "A = Se sert et mange seul. B = Aide pour couper ou se servir. C = Doit etre nourri.",
+    elimination: "A = Continent, gere seul. B = Accidents occasionnels. C = Incontinent ou dependant.",
+    transferts: "A = Se leve et sasseoit seul. B = Aide pour certains transferts. C = Dependant pour tous.",
+    deplacements_int: "A = Se deplace seul a interieur. B = Aide ou equipement. C = Ne se deplace pas seul.",
+    deplacements_ext: "A = Sort seul. B = Surveillance necessaire. C = Ne sort pas seul.",
+    communication: "A = Telephone seul. B = Difficultes partielles. C = Ne peut pas telephoner.",
+    gestion: "A = Gere ses finances seul. B = Aide partielle. C = Ne peut pas gerer.",
+    cuisine: "A = Cuisine seul. B = Aide partielle. C = Ne peut pas cuisiner.",
+    menage: "A = Menage seul. B = Aide pour les gros travaux. C = Ne peut pas.",
+    transport: "A = Transports seul. B = Accompagnement necessaire. C = Ne peut pas.",
+    achats: "A = Courses seul. B = Aide partielle. C = Ne peut pas.",
+    suivi_medical: "A = Medicaments et RDV seul. B = Aide partielle. C = Dependant total.",
+    activites: "A = Activites seul. B = Activites aidees. C = Aucune activite sans aide.",
+  };
+  const guide = guides[id] || 'A = Autonome · B = Partiellement aidé · C = Totalement dépendant';
+  showToast('💡 ' + v.name + ' — ' + guide.split('.')[0]);
 }
 
 function setAGGIR(id,val){
@@ -694,13 +726,26 @@ const IADL_ITEMS=[
 ];
 
 function buildIADL(){
+  const iadlGuide = {
+    telephone: 'Peut utiliser le téléphone seul(e) — composer un numéro, décrocher, passer un appel.',
+    courses: 'Peut faire ses courses seul(e) — se déplacer au magasin, choisir, payer.',
+    repas: 'Peut préparer un repas chaud seul(e) — planifier, cuisiner, servir.',
+    menage: 'Peut entretenir le logement seul(e) — ménage courant, rangement.',
+    linge: 'Peut laver et entretenir son linge seul(e) — machine, étendre, ranger.',
+    transport: 'Peut utiliser les transports seul(e) — bus, métro, ou conduire.',
+    medicaments: 'Peut gérer ses médicaments seul(e) — prendre les bonnes doses aux bons moments.',
+    argent: 'Peut gérer son budget seul(e) — payer ses factures, gérer son compte.',
+  };
   const el=document.getElementById('iadlGrid');
   el.innerHTML=IADL_ITEMS.map(item=>`
     <div class="iadl-item" id="iadl-${item.id}" onclick="toggleIADL('${item.id}')">
       <div class="iadl-check" id="iadlc-${item.id}">
         <svg width="10" height="10" viewBox="0 0 10 10" fill="none" id="iadlchk-${item.id}" style="display:none"><path d="M2 5l2.5 2.5L8 3" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
       </div>
-      <div class="iadl-text">${item.label}</div>
+      <div style="flex:1">
+        <div class="iadl-text">${item.label}</div>
+        <div style="font-size:10px;color:#565a72;margin-top:1px;line-height:1.3">${iadlGuide[item.id]||''}</div>
+      </div>
     </div>`).join('');
 }
 

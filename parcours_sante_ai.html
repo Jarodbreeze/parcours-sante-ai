@@ -452,11 +452,14 @@ function openModule(id) {
   window.location.href = mod.file;
 }
 
-function showDossiersList() {
+function showDossiersList(target) {
   const dossiers = getDossiers();
   if(!dossiers.length) { openModule('famo'); return; }
   // Si un seul dossier, ouvrir directement
-  if(dossiers.length === 1) { openFichePatient(dossiers[0].id); return; }
+  if(dossiers.length === 1) {
+    if(target === 'carte') { localStorage.setItem('fiche_patient_id', dossiers[0].id); window.location.href = 'mediasante_carte_mentale.html?id=' + dossiers[0].id; return; }
+    openFichePatient(dossiers[0].id); return;
+  }
   // Plusieurs dossiers : afficher un sélecteur
   const overlay = document.createElement('div');
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;display:flex;align-items:flex-end;justify-content:center';
@@ -471,7 +474,7 @@ function showDossiersList() {
     const item = document.createElement('div');
     item.style.cssText = 'display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.07);background:#1e2130;margin-bottom:6px;cursor:pointer';
     item.innerHTML = '<div style="width:36px;height:36px;border-radius:50%;background:rgba(139,124,248,.12);border:1px solid rgba(139,124,248,.25);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#b3a9fc;flex-shrink:0">'+ini+'</div><div style="flex:1"><div style="font-size:13px;font-weight:600">'+name+'</div><div style="font-size:11px;color:#4a4e6a;margin-top:1px">'+d.id+(d.evaluation?' · GIR '+d.evaluation.gir:'')+'</div></div><span style="font-size:11px;color:#4d9ef6">Ouvrir →</span>';
-    item.onclick = () => { overlay.remove(); openFichePatient(d.id); };
+    item.onclick = (function(did){ return function(){ overlay.remove(); if(target==='carte'){localStorage.setItem('fiche_patient_id',did);window.location.href='mediasante_carte_mentale.html?id='+did;}else{openFichePatient(did);} }; })(d.id);
     modal.appendChild(item);
   });
   overlay.appendChild(modal);
@@ -632,6 +635,44 @@ function checkAlerts() {
   const dossiers = getDossiers();
   const alerts = computeAlerts(dossiers);
   const banner = document.getElementById('urgentBanner');
+  // Demander permission notifications
+  if(Notification && Notification.permission === 'default') {
+    Notification.requestPermission();
+  }
+  // Envoyer notifications si permission accordée
+  if(Notification && Notification.permission === 'granted') {
+    const lastNotif = parseInt(localStorage.getItem('last_notif_ts')||'0');
+    const now = Date.now();
+    const oneDayMs = 86400000;
+    if(now - lastNotif > oneDayMs) {
+      // Droits expirés
+      let urgents = 0;
+      dossiers.forEach(d => {
+        (d.droits||[]).forEach(dr => {
+          if(dr.statut==='expire') urgents++;
+        });
+      });
+      if(urgents > 0) {
+        new Notification('ParcourSanté AI — Action requise', {
+          body: urgents + ' droit(s) expiré(s) à renouveler dans vos dossiers',
+          icon: '/favicon.ico'
+        });
+      }
+      // Dossiers sans contact
+      const now2 = Date.now();
+      const sansContact = dossiers.filter(d => {
+        const txs = JSON.parse(localStorage.getItem('transmissions_'+d.id)||'[]');
+        return txs[0] && (now2 - new Date(txs[0].date)) > 15 * oneDayMs;
+      });
+      if(sansContact.length > 0 && urgents === 0) {
+        new Notification('ParcourSanté AI — Relances', {
+          body: sansContact.length + ' patient(s) sans contact depuis plus de 15 jours',
+          icon: '/favicon.ico'
+        });
+      }
+      localStorage.setItem('last_notif_ts', now.toString());
+    }
+  }
   if (alerts.length > 0) {
     banner.style.display = 'flex';
     document.getElementById('urgentTitle').textContent = alerts.length + ' dossier(s) sans contact depuis +15 jours';
@@ -712,15 +753,41 @@ function doSearch(q) {
   // Modules
   MODULES.filter(m => m.name.toLowerCase().includes(q.toLowerCase()) || m.desc.toLowerCase().includes(q.toLowerCase())).forEach(m => results.push({ section:'Modules', icon:m.icon, bg:m.bg, name:m.name, sub:m.desc, action:()=>openModule(m.id) }));
 
-  // Dossiers
-  getDossiers().filter(d => {
+  // Dossiers patients — recherche par nom, prénom, ID, adresse, téléphone
+  getDossiers().forEach(d => {
     const p = d.data?.patient || {};
-    const name = [p.prenom, p.nom].filter(Boolean).join(' ').toLowerCase();
-    return name.includes(q.toLowerCase()) || d.id.toLowerCase().includes(q.toLowerCase());
-  }).forEach(d => {
-    const p = d.data?.patient || {};
-    const name = [p.prenom, p.nom].filter(Boolean).join(' ') || d.id;
-    results.push({ section:'Dossiers', icon:'👤', bg:'var(--purple-bg)', name, sub:d.id + ' · Dossier patient', action:()=>openModule('transmissions') });
+    const fullName = [p.prenom, p.nom].filter(Boolean).join(' ');
+    const searchFields = [fullName, d.id, p.adresse||'', p.tel||'', p.email||'', p.langue||''].join(' ').toLowerCase();
+    if(!searchFields.includes(q.toLowerCase())) return;
+
+    const age = p.age ? p.age + ' ans' : '';
+    const statut = d.ppcs_valide ? 'PPCS validé' : d.ppcs ? 'PPCS à valider' : d.evaluation ? 'Évalué' : 'Admission';
+    const droits = (d.droits||[]).map(dr=>dr.type).join(', ');
+    const alerts = Object.values(d.data?.alerts||{}).flat();
+    const hasUrgent = alerts.length > 0 || (d.droits||[]).some(dr=>dr.statut==='expire'||dr.statut==='a_ouvrir');
+
+    results.push({
+      section: 'Patients',
+      icon: hasUrgent ? '⚠️' : '👤',
+      bg: hasUrgent ? 'var(--red-bg)' : 'var(--purple-bg)',
+      name: fullName || d.id,
+      sub: [d.id, age, statut, droits].filter(Boolean).join(' · '),
+      action: () => openFichePatient(d.id)
+    });
+
+    // Aussi chercher dans les transmissions du dossier
+    const txs = JSON.parse(localStorage.getItem('transmissions_'+d.id)||'[]');
+    txs.filter(t => (t.title||'').toLowerCase().includes(q.toLowerCase()) || (t.content||'').toLowerCase().includes(q.toLowerCase()))
+      .slice(0,2).forEach(t => {
+        results.push({
+          section: 'Transmissions',
+          icon: '📝',
+          bg: 'var(--teal-bg)',
+          name: t.title || 'Note',
+          sub: (fullName||d.id) + ' · ' + new Date(t.date).toLocaleDateString('fr-FR'),
+          action: () => openFichePatient(d.id)
+        });
+      });
   });
 
   if (!results.length) { el.innerHTML = '<div style="text-align:center;padding:32px 20px;color:var(--text3);font-size:13px">Aucun résultat pour "' + q + '"</div>'; return; }
@@ -737,17 +804,95 @@ function doSearch(q) {
 
 // ═══ PROFILE ═══
 function showProfile() {
-  const name = prompt('Modifier votre nom :', userProfile.nom || '');
-  if (name !== null && name.trim()) {
-    userProfile.nom = name.trim();
-    userProfile.avatar = initials(name.trim());
-    localStorage.setItem('ps_user_profile', JSON.stringify(userProfile));
-    localStorage.setItem('mediasante_user', name.trim());
-    renderHome();
-  }
+  // Panneau profil complet
+  const existing = document.getElementById('profilePanel');
+  if(existing) { existing.remove(); return; }
+
+  const panel = document.createElement('div');
+  panel.id = 'profilePanel';
+  panel.style.cssText = 'position:fixed;top:52px;right:8px;width:280px;background:#161820;border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:16px;z-index:200;box-shadow:0 8px 32px rgba(0,0,0,.6)';
+
+  const apiKey = localStorage.getItem('mediasante_api_key') || '';
+  const apiDisplay = apiKey ? apiKey.slice(0,8)+'...' : 'Non configurée';
+
+  panel.innerHTML = `
+    <div style="font-size:13px;font-weight:700;margin-bottom:12px;color:#f0f1f5">Mon profil</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div>
+        <div style="font-size:10px;color:#565a72;margin-bottom:3px;text-transform:uppercase;letter-spacing:.06em">Nom</div>
+        <input id="pp_nom" type="text" value="${userProfile.nom||''}" placeholder="Votre nom" style="width:100%;background:#0f1117;border:1px solid rgba(255,255,255,.08);border-radius:6px;color:#f0f1f5;font-size:12px;padding:7px 9px;outline:none;font-family:inherit"/>
+      </div>
+      <div>
+        <div style="font-size:10px;color:#565a72;margin-bottom:3px;text-transform:uppercase;letter-spacing:.06em">Fonction</div>
+        <select id="pp_role" style="width:100%;background:#0f1117;border:1px solid rgba(255,255,255,.08);border-radius:6px;color:#f0f1f5;font-size:12px;padding:7px 9px;outline:none;font-family:inherit;-webkit-appearance:none">
+          <option value="mediateur" ${userProfile.role==='mediateur'?'selected':''}>Médiateur(trice) en santé</option>
+          <option value="coordinateur" ${userProfile.role==='coordinateur'?'selected':''}>Coordinateur de parcours</option>
+          <option value="ide" ${userProfile.role==='ide'?'selected':''}>IDE coordinateur(trice)</option>
+          <option value="as" ${userProfile.role==='as'?'selected':''}>Assistante sociale</option>
+          <option value="sr" ${userProfile.role==='sr'?'selected':''}>Secrétariat Renforcé</option>
+          <option value="autre" ${userProfile.role==='autre'?'selected':''}>Autre professionnel DAC</option>
+        </select>
+      </div>
+      <div>
+        <div style="font-size:10px;color:#565a72;margin-bottom:3px;text-transform:uppercase;letter-spacing:.06em">Structure</div>
+        <input id="pp_structure" type="text" value="${userProfile.structure||''}" placeholder="DAC 93 Nord..." style="width:100%;background:#0f1117;border:1px solid rgba(255,255,255,.08);border-radius:6px;color:#f0f1f5;font-size:12px;padding:7px 9px;outline:none;font-family:inherit"/>
+      </div>
+      <div style="border-top:1px solid rgba(255,255,255,.06);padding-top:10px;margin-top:2px">
+        <div style="font-size:10px;color:#565a72;margin-bottom:3px;text-transform:uppercase;letter-spacing:.06em">Clé API Claude</div>
+        <div style="display:flex;gap:6px">
+          <input id="pp_api" type="password" placeholder="sk-ant-..." value="${apiKey}" style="flex:1;background:#0f1117;border:1px solid rgba(255,255,255,.08);border-radius:6px;color:#f0f1f5;font-size:11px;padding:7px 9px;outline:none;font-family:monospace"/>
+        </div>
+        <div style="font-size:10px;color:#565a72;margin-top:4px;line-height:1.4">Saisie une fois ici → active l'IA dans tous les modules</div>
+      </div>
+      <button onclick="activerNotifications()" id="notifBtn" style="width:100%;padding:8px;border-radius:8px;background:rgba(240,164,58,0.1);border:1px solid rgba(240,164,58,0.3);color:var(--amber);font-size:12px;cursor:pointer;font-family:inherit;margin-top:4px">🔔 Activer les notifications</button>
+      <button onclick="saveProfile()" style="width:100%;padding:10px;border-radius:8px;background:var(--purple);border:none;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:6px">Enregistrer</button>
+      <button onclick="document.getElementById('profilePanel').remove()" style="width:100%;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,.08);color:#8b8fa8;font-size:12px;cursor:pointer;font-family:inherit">Fermer</button>
+    </div>
+  `;
+
+  document.body.appendChild(panel);
+  // Fermer si clic en dehors
+  setTimeout(()=>{ document.addEventListener('click', function handler(e){ if(!panel.contains(e.target)&&e.target.id!=='userAvatar'){panel.remove();document.removeEventListener('click',handler);}},true); }, 100);
 }
 
-// ═══ UTILS ═══
+function activerNotifications() {
+  if(!Notification) { showToast('Notifications non supportées sur ce navigateur'); return; }
+  Notification.requestPermission().then(p => {
+    if(p==='granted') showToast('Notifications activées ✓');
+    else showToast('Notifications refusées par le navigateur');
+  });
+}
+
+function saveProfile() {
+  const nom = document.getElementById('pp_nom')?.value.trim() || userProfile.nom;
+  const role = document.getElementById('pp_role')?.value || userProfile.role;
+  const structure = document.getElementById('pp_structure')?.value.trim() || userProfile.structure;
+  const apiKey = document.getElementById('pp_api')?.value.trim();
+
+  if(nom) {
+    userProfile.nom = nom;
+    userProfile.role = role;
+    userProfile.structure = structure;
+    userProfile.avatar = initials(nom);
+    localStorage.setItem('ps_user_profile', JSON.stringify(userProfile));
+    localStorage.setItem('mediasante_user', nom);
+  }
+  if(apiKey && apiKey.startsWith('sk-')) {
+    localStorage.setItem('mediasante_api_key', apiKey);
+  }
+
+  document.getElementById('profilePanel')?.remove();
+  renderGreeting();
+  updateAvatar();
+  showToast('Profil mis à jour ✓');
+}
+
+function updateAvatar() {
+  const av = document.getElementById('userAvatar');
+  if(av) av.textContent = userProfile.avatar || initials(userProfile.nom) || '?';
+}
+
+
 function getDossiers() { return JSON.parse(localStorage.getItem('mediasante_dossiers') || '[]'); }
 function getTransmissions(id) { return JSON.parse(localStorage.getItem('transmissions_' + id) || '[]'); }
 

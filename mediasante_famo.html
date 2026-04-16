@@ -464,6 +464,21 @@
       <input type="tel" id="p_tel" placeholder="06..." />
     </div>
     <div class="field">
+      <div class="field-label">Email</div>
+      <input type="email" id="p_email" placeholder="adresse@mail.com" />
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="field">
+      <div class="field-label">Sexe</div>
+      <select id="p_sexe">
+        <option value="">...</option>
+        <option value="M">Masculin</option>
+        <option value="F">Féminin</option>
+        <option value="N">Non précisé</option>
+      </select>
+    </div>
+    <div class="field">
       <div class="field-label">Situation</div>
       <select id="p_situation">
         <option value="">...</option>
@@ -474,6 +489,24 @@
         <option>Sans domicile fixe</option>
       </select>
     </div>
+  </div>
+  <div class="grid2">
+    <div class="field">
+      <div class="field-label">Langue principale</div>
+      <input type="text" id="p_langue" placeholder="Français, Arabe, Bambara..." />
+    </div>
+    <div class="field">
+      <div class="field-label">N° Sécurité Sociale</div>
+      <input type="text" id="p_secu" placeholder="X XX XX XX XXX XXX XX" />
+    </div>
+  </div>
+  <div class="field">
+    <div class="field-label">Traitements en cours</div>
+    <textarea id="p_traitements" placeholder="Médicaments, posologies, prescripteurs..." style="resize:vertical;min-height:60px;line-height:1.5"></textarea>
+  </div>
+  <div class="field">
+    <div class="field-label">Antécédents médicaux connus</div>
+    <textarea id="p_antecedents" placeholder="Pathologies, hospitalisations, chirurgies..." style="resize:vertical;min-height:60px;line-height:1.5"></textarea>
   </div>
 
   <div class="divider"></div>
@@ -924,6 +957,11 @@
         <span class="next-btn-text"><strong>Lancer le Staff IA</strong><br><small style="color:var(--text3)">Analyse des experts IA</small></span>
         <span class="next-btn-arrow">→</span>
       </button>
+      <button class="next-btn" onclick="ouvrirFichePatient()">
+        <span class="next-btn-icon">👤</span>
+        <span class="next-btn-text"><strong>Ouvrir la fiche patient</strong><br><small style="color:var(--text3)">Cercle de soin · Documents · Carte</small></span>
+        <span class="next-btn-arrow">→</span>
+      </button>
     </div>
   </div>
 </div>
@@ -1070,7 +1108,16 @@ function collectFAMO() {
       nom: document.getElementById('p_nom').value,
       prenom: document.getElementById('p_prenom').value,
       age: document.getElementById('p_age').value,
+      naissance: document.getElementById('p_ddn').value,
       adresse: document.getElementById('p_adresse').value,
+      tel: document.getElementById('p_tel')?.value || '',
+      email: document.getElementById('p_email')?.value || '',
+      sexe: document.getElementById('p_sexe')?.value || '',
+      langue: document.getElementById('p_langue')?.value || '',
+      secu: document.getElementById('p_secu')?.value || '',
+      traitements: document.getElementById('p_traitements')?.value || '',
+      antecedents: document.getElementById('p_antecedents')?.value || '',
+      situation: document.getElementById('p_situation')?.value || '',
     },
     demande: document.getElementById('demande_exprimee').value,
     alerts,
@@ -1185,10 +1232,16 @@ function submitFAMO() {
   const dossiers = JSON.parse(localStorage.getItem('mediasante_dossiers') || '[]');
   dossiers.push({ id, date: new Date().toISOString(), data: famoData, score: selectedScore, motifs: [document.getElementById('motif_a').value, document.getElementById('motif_b').value, document.getElementById('motif_c').value] });
   localStorage.setItem('mediasante_dossiers', JSON.stringify(dossiers));
+  localStorage.setItem('fiche_patient_id', id); // ID courant pour Staff IA et Fiche
   document.getElementById('dossierId').textContent = id;
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.getElementById('panel-success').classList.add('active');
   document.getElementById('progressFill').style.width = '100%';
+}
+
+function ouvrirFichePatient() {
+  const id = document.getElementById('dossierId')?.textContent;
+  if(id) { localStorage.setItem('fiche_patient_id', id); window.location.href = 'mediasante_fiche_patient.html?id=' + id; }
 }
 
 function newFAMO() {
