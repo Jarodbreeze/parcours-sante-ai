@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ParcourSante AI — Carte Patients</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+:root{
+  --bg:#0a0c12;--bg2:#111318;--bg3:#181b24;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.15);
+  --text:#eef0f7;--text2:#7c82a0;--text3:#3d4260;
+  --blue:#4d9ef6;--blue-bg:rgba(77,158,246,0.12);--blue-b:rgba(77,158,246,0.28);
+  --red:#e8556a;--red-bg:rgba(232,85,106,0.12);--red-b:rgba(232,85,106,0.28);
+  --green:#3db87a;--green-bg:rgba(61,184,122,0.12);--green-b:rgba(61,184,122,0.28);
+  --amber:#f5a623;--amber-bg:rgba(245,166,35,0.12);--amber-b:rgba(245,166,35,0.28);
+  --purple:#8b7cf8;--purple-bg:rgba(139,124,248,0.12);--purple-b:rgba(139,124,248,0.28);
+  --r:12px;--rs:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased;overflow:hidden}
+
+.topbar{height:52px;background:rgba(10,12,18,0.97);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:10px;flex-shrink:0;z-index:1000}
+.back-btn{padding:5px 11px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:11px;cursor:pointer;font-family:inherit}
+.tb-title{font-size:13px;font-weight:600;flex:1;text-align:center}
+.badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-b)}
+
+/* TABS */
+.tabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0}
+.tab{flex:1;padding:10px;text-align:center;font-size:12px;font-weight:600;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s}
+.tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+
+/* MAP */
+#mapContainer{flex:1;position:relative}
+#map{width:100%;height:100%}
+.leaflet-container{background:#0d1018}
+
+/* LEGENDE */
+.legend{position:absolute;bottom:70px;left:10px;z-index:500;background:rgba(10,12,18,0.95);border:1px solid var(--border);border-radius:var(--rs);padding:8px 10px;font-size:10px;backdrop-filter:blur(8px)}
+.legend-item{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.legend-item:last-child{margin-bottom:0}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.legend-label{color:var(--text2);font-weight:500}
+
+/* BOTTOM BAR */
+.bottom-bar{height:56px;background:rgba(10,12,18,0.97);border-top:1px solid var(--border);display:flex;align-items:center;padding:0 8px;gap:6px;flex-shrink:0;z-index:1000}
+.bb-btn{flex:1;padding:8px 4px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:2px;transition:all .15s}
+.bb-btn:hover{background:var(--bg3);color:var(--text)}
+.bb-btn.active{background:var(--blue-bg);border-color:var(--blue-b);color:var(--blue)}
+.bb-btn-icon{font-size:16px}
+
+/* TOURNEE PANEL */
+.tournee-panel{flex:1;overflow-y:auto;padding:14px}
+.tournee-header{font-size:13px;font-weight:700;margin-bottom:4px}
+.tournee-sub{font-size:11px;color:var(--text3);margin-bottom:14px;line-height:1.5}
+.patient-select-list{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.patient-select-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--rs);border:1px solid var(--border);background:var(--bg2);cursor:pointer;transition:all .15s}
+.patient-select-item.selected{border-color:var(--blue-b);background:var(--blue-bg)}
+.patient-select-item:hover{border-color:var(--border2)}
+.psi-av{width:32px;height:32px;border-radius:50%;background:var(--purple-bg);border:1px solid var(--purple-b);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#b3a9fc;flex-shrink:0}
+.psi-body{flex:1;min-width:0}
+.psi-name{font-size:12px;font-weight:600}
+.psi-addr{font-size:10px;color:var(--text3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.psi-check{width:18px;height:18px;border-radius:4px;border:1.5px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;transition:all .15s}
+.patient-select-item.selected .psi-check{background:var(--blue);border-color:var(--blue);color:#fff}
+
+.btn-calcul{width:100%;padding:12px;border-radius:var(--r);background:var(--blue);border:none;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:10px}
+.btn-calcul:hover{opacity:.9}
+.btn-calcul:disabled{opacity:.4;cursor:not-allowed}
+
+/* RÉSULTAT TOURNÉE */
+.tournee-result{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:10px}
+.tr-header{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.tr-step{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.tr-step:last-child{border-bottom:none}
+.tr-num{width:24px;height:24px;border-radius:50%;background:var(--blue-bg);border:1px solid var(--blue-b);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--blue);flex-shrink:0}
+.tr-body{flex:1;min-width:0}
+.tr-name{font-size:12px;font-weight:600}
+.tr-addr{font-size:10px;color:var(--text3);margin-top:1px}
+.tr-dist{font-size:10px;color:var(--amber);font-weight:600;flex-shrink:0}
+.tr-total{padding:8px 12px;background:var(--green-bg);border-radius:var(--rs);font-size:12px;font-weight:600;color:var(--green);text-align:center;margin-top:8px}
+.btn-nav{width:100%;padding:10px;border-radius:var(--rs);background:var(--green-bg);border:1px solid var(--green-b);color:var(--green);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:6px}
+
+/* POPUP */
+.custom-popup .leaflet-popup-content-wrapper{background:rgba(17,19,24,0.97);border:1px solid rgba(255,255,255,.1);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.5);color:#eef0f7;font-family:-apple-system,BlinkMacSystemFont,sans-serif}
+.custom-popup .leaflet-popup-tip{background:rgba(17,19,24,0.97)}
+.popup-name{font-size:13px;font-weight:700;margin-bottom:4px}
+.popup-id{font-size:10px;color:#7c82a0;margin-bottom:8px}
+.popup-row{font-size:11px;color:#7c82a0;margin-bottom:3px}
+.popup-row strong{color:#eef0f7}
+.popup-btns{display:flex;gap:6px;margin-top:10px}
+.popup-btn{flex:1;padding:6px 8px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:none;font-family:inherit;text-align:center}
+
+.no-dossiers{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:40px;text-align:center;color:var(--text3);gap:10px}
+.no-dossiers-icon{font-size:40px}
+.no-dossiers-text{font-size:13px;line-height:1.6}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="back-btn" onclick="window.location.href='index.html'">&#8249; Accueil</button>
+  <div class="tb-title">Carte Patients</div>
+  <span class="badge" id="countBadge">0 patients</span>
+</div>
+
+<div class="tabs">
+  <div class="tab active" id="tab-carte" onclick="switchView('carte')">&#128205; Carte</div>
+  <div class="tab" id="tab-tournee" onclick="switchView('tournee')">&#128643; Tournée</div>
+</div>
+
+<!-- VUE CARTE -->
+<div id="mapContainer" style="display:flex;flex-direction:column">
+  <div id="map"></div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#e8556a"></div><div class="legend-label">Urgent — action requise</div></div>
+    <div class="legend-item"><div class="legend-dot" style="background:#f5a623"></div><div class="legend-label">Relance — 15j sans contact</div></div>
+    <div class="legend-item"><div class="legend-dot" style="background:#3db87a"></div><div class="legend-label">Suivi OK</div></div>
+    <div class="legend-item"><div class="legend-dot" style="background:#8b7cf8"></div><div class="legend-label">PPCS a valider</div></div>
+  </div>
+</div>
+
+<!-- VUE TOURNÉE -->
+<div id="tourneeContainer" style="display:none;flex:1;overflow:hidden;display:none;flex-direction:column">
+  <div class="tournee-panel" id="tourneePanel"></div>
+</div>
+
+<!-- BOTTOM BAR -->
+<div class="bottom-bar">
+  <button class="bb-btn" onclick="centerMap()">
+    <span class="bb-btn-icon">&#127968;</span>
+    <span>Centrer</span>
+  </button>
+  <button class="bb-btn" id="btnMaPos" onclick="maPosition()">
+    <span class="bb-btn-icon">&#127981;</span>
+    <span>Ma position</span>
+  </button>
+  <button class="bb-btn" id="btnTout" onclick="toggleTous()">
+    <span class="bb-btn-icon">&#128100;</span>
+    <span>Tous</span>
+  </button>
+  <button class="bb-btn" id="btnUrgents" onclick="filtrerUrgents()">
+    <span class="bb-btn-icon">&#128308;</span>
+    <span>Urgents</span>
+  </button>
+</div>
+
+<script>
+// ═══ DONNÉES ═══
+const getDossiers=()=>JSON.parse(localStorage.getItem("mediasante_dossiers")||"[]");
+
+// Adresses par défaut pour les dossiers sans coordonnées (Seine-Saint-Denis)
+const DEFAULT_COORDS_93 = [48.9362, 2.3597]; // Centre 93
+
+// Géocodage approximatif basé sur l'adresse (commune du 93)
+function guessCoordsFromAddress(adresse) {
+  if(!adresse) return null;
+  const a = adresse.toLowerCase();
+  const communes93 = {
+    "saint-denis": [48.9362, 2.3597],
+    "epinay": [48.9543, 2.3182],
+    "bobigny": [48.9095, 2.4397],
+    "saint-ouen": [48.9122, 2.3333],
+    "aubervilliers": [48.9175, 2.3836],
+    "pantin": [48.8997, 2.4028],
+    "montreuil": [48.8636, 2.4481],
+    "vincennes": [48.8478, 2.4392],
+    "noisy": [48.8503, 2.5502],
+    "rosny": [48.8697, 2.4836],
+    "neuilly": [48.8892, 2.3083],
+    "levallois": [48.8953, 2.2886],
+    "clichy": [48.9041, 2.3061],
+    "bondy": [48.9022, 2.4829],
+    "drancy": [48.9233, 2.4483],
+    "aulnay": [48.9403, 2.4967],
+    "sevran": [48.9314, 2.5283],
+    "villepinte": [48.9686, 2.5453],
+    "tremblay": [48.9572, 2.5747],
+    "stains": [48.9506, 2.3844],
+    "la courneuve": [48.9261, 2.3953],
+    "pierrefitte": [48.9631, 2.3622],
+    "villeneuve": [48.9325, 2.4739],
+    "livry": [48.9197, 2.5381],
+    "clichy-sous-bois": [48.9083, 2.5564],
+    "montfermeil": [48.9011, 2.5644],
+    "le raincy": [48.8994, 2.5211],
+  };
+  for(const [key, coords] of Object.entries(communes93)) {
+    if(a.includes(key)) return coords;
+  }
+  // Île-de-France par défaut avec variation aléatoire
+  return [48.85 + (Math.random()-0.5)*0.15, 2.35 + (Math.random()-0.5)*0.3];
+}
+
+function getUrgenceLevel(d) {
+  const now = Date.now();
+  const droits = d.droits||[];
+  const alerts = Object.values(d.data&&d.data.alerts||{}).flat();
+  const txs = JSON.parse(localStorage.getItem("transmissions_"+d.id)||"[]");
+  const daysSinceContact = txs[0] ? Math.floor((now-new Date(txs[0].date))/86400000) : 999;
+
+  if(droits.some(dr=>dr.statut==="expire") || alerts.length > 3) return "urgent";
+  if(daysSinceContact > 15 || alerts.length > 1) return "relance";
+  if(d.ppcs && !d.ppcs_valide) return "ppcs";
+  return "ok";
+}
+
+const URGENCE_COLORS = {
+  urgent: "#e8556a",
+  relance: "#f5a623",
+  ppcs: "#8b7cf8",
+  ok: "#3db87a",
+};
+
+// ═══ ÉTAT ═══
+let map, markers=[], myPosMarker=null;
+let currentView="carte";
+let filterMode="tous"; // tous | urgents
+let selectedForTournee=new Set();
+let tourneeResult=null;
+
+// ═══ INIT ═══
+window.addEventListener("load", function(){
+  initMap();
+  renderTourneePanel();
+});
+
+function initMap(){
+  map = L.map("map", {
+    center: DEFAULT_COORDS_93,
+    zoom: 12,
+    zoomControl: false,
+  });
+
+  // Tiles sombres
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+    attribution: "CartoDB",
+    maxZoom: 19,
+  }).addTo(map);
+
+  L.control.zoom({ position: "bottomright" }).addTo(map);
+
+  loadPatients();
+}
+
+function loadPatients(){
+  const dossiers = getDossiers();
+  document.getElementById("countBadge").textContent = dossiers.length+" patient"+(dossiers.length>1?"s":"");
+
+  // Supprimer anciens markers
+  markers.forEach(m => map.removeLayer(m));
+  markers = [];
+
+  if(!dossiers.length){
+    document.getElementById("map").innerHTML = "<div class=\"no-dossiers\"><div class=\"no-dossiers-icon\">&#128205;</div><div class=\"no-dossiers-text\">Aucun dossier patient.<br>Creez un dossier via l Admission.</div></div>";
+    return;
+  }
+
+  const bounds = [];
+
+  dossiers.forEach(function(d){
+    const p = d.data&&d.data.patient||{};
+    const name = [p.prenom, p.nom].filter(Boolean).join(" ")||d.id;
+    const adresse = p.adresse||"";
+    const coords = guessCoordsFromAddress(adresse);
+    if(!coords) return;
+
+    const urgence = getUrgenceLevel(d);
+    const color = URGENCE_COLORS[urgence];
+
+    // Créer un marker circulaire coloré
+    const marker = L.circleMarker(coords, {
+      radius: 12,
+      fillColor: color,
+      color: "rgba(0,0,0,0.5)",
+      weight: 2,
+      opacity: 1,
+      fillOpacity: 0.9,
+    });
+
+    // Popup personnalisé
+    const ini = ((p.prenom||"?")[0]+(p.nom||"?")[0]).toUpperCase();
+    const alerts = Object.values(d.data&&d.data.alerts||{}).flat();
+    const droits = (d.droits||[]);
+    const gir = d.evaluation&&d.evaluation.gir;
+    const txs = JSON.parse(localStorage.getItem("transmissions_"+d.id)||"[]");
+    const lastContact = txs[0] ? new Date(txs[0].date).toLocaleDateString("fr-FR",{day:"numeric",month:"short"}) : "Jamais";
+
+    const popupHTML = '<div class="popup-name">'+name+'</div>'+
+      '<div class="popup-id">'+d.id+'</div>'+
+      '<div class="popup-row">&#128197; Dernier contact : <strong>'+lastContact+'</strong></div>'+
+      (gir?'<div class="popup-row">&#129340; GIR : <strong>'+gir+'</strong></div>':'')+
+      (alerts.length?'<div class="popup-row">&#9888; '+alerts.length+' alerte(s)</div>':'')+
+      (droits.some(dr=>dr.statut==="expire")?'<div class="popup-row" style="color:#e8556a">&#128308; Droit(s) expire(s)</div>':'')+
+      '<div class="popup-btns">'+
+        '<button class="popup-btn" style="background:#4d9ef644;color:#4d9ef6" data-pid="'+d.id+'" onclick="ouvrirFiche(this.dataset.pid)">Fiche</button>'+
+        (adresse?'<button class="popup-btn" style="background:#3db87a44;color:#3db87a" data-addr="'+encodeURIComponent(adresse)+'" onclick="naviguerVers(this.dataset.addr)">&#128205; Maps</button>':'')+
+      '</div>';
+
+    marker.bindPopup(popupHTML, {
+      className: "custom-popup",
+      maxWidth: 220,
+    });
+
+    // Label avec initiales
+    marker.bindTooltip(ini, {
+      permanent: true,
+      className: "leaflet-tooltip-dark",
+      direction: "center",
+      offset: [0, 0],
+    });
+
+    marker.addTo(map);
+    marker.dossierData = d;
+    marker.urgenceLevel = urgence;
+    markers.push(marker);
+    bounds.push(coords);
+  });
+
+  if(bounds.length) {
+    map.fitBounds(bounds, { padding: [30, 30], maxZoom: 14 });
+  }
+}
+
+function ouvrirFiche(id){
+  localStorage.setItem("fiche_patient_id", id);
+  window.location.href = "mediasante_fiche_patient.html?id="+id;
+}
+
+function naviguerVers(adresse){
+  window.open("https://maps.google.com/?q="+adresse, "_blank");
+}
+
+function centerMap(){
+  if(markers.length){
+    const bounds = markers.map(m => m.getLatLng());
+    map.fitBounds(bounds, { padding: [30, 30], maxZoom: 14 });
+  } else {
+    map.setView(DEFAULT_COORDS_93, 12);
+  }
+}
+
+function maPosition(){
+  if(!navigator.geolocation){ showToast("Geolocalisation non disponible"); return; }
+  navigator.geolocation.getCurrentPosition(function(pos){
+    const latlng = [pos.coords.latitude, pos.coords.longitude];
+    if(myPosMarker) map.removeLayer(myPosMarker);
+    myPosMarker = L.circleMarker(latlng, {
+      radius: 8,
+      fillColor: "#4d9ef6",
+      color: "white",
+      weight: 2,
+      fillOpacity: 1,
+    }).addTo(map);
+    myPosMarker.bindPopup("Votre position").openPopup();
+    map.setView(latlng, 14);
+    document.getElementById("btnMaPos").classList.add("active");
+  }, function(){
+    showToast("Impossible d obtenir votre position");
+  });
+}
+
+function filtrerUrgents(){
+  filterMode = filterMode==="urgents"?"tous":"urgents";
+  document.getElementById("btnUrgents").classList.toggle("active", filterMode==="urgents");
+  markers.forEach(function(m){
+    if(filterMode==="urgents"){
+      if(m.urgenceLevel==="urgent"||m.urgenceLevel==="relance") {
+        m.addTo(map);
+        m.setStyle({fillOpacity:0.9});
+      } else {
+        m.setStyle({fillOpacity:0.15});
+      }
+    } else {
+      m.setStyle({fillOpacity:0.9});
+    }
+  });
+}
+
+function toggleTous(){
+  filterMode = "tous";
+  document.getElementById("btnUrgents").classList.remove("active");
+  markers.forEach(function(m){ m.setStyle({fillOpacity:0.9}); });
+}
+
+// ═══ VUE TOURNÉE ═══
+function switchView(view){
+  currentView = view;
+  ["carte","tournee"].forEach(function(v){
+    document.getElementById("tab-"+v).classList.toggle("active", v===view);
+  });
+  document.getElementById("mapContainer").style.display = view==="carte"?"flex":"none";
+  const tc = document.getElementById("tourneeContainer");
+  tc.style.display = view==="tournee"?"flex":"none";
+  if(view==="tournee") renderTourneePanel();
+}
+
+function renderTourneePanel(){
+  const dossiers = getDossiers().filter(function(d){
+    return d.data&&d.data.patient&&d.data.patient.adresse;
+  });
+  const panel = document.getElementById("tourneePanel");
+  panel.innerHTML = "";
+
+  if(!dossiers.length){
+    panel.innerHTML = "<div class='no-dossiers'><div class='no-dossiers-icon'>&#128643;</div><div class='no-dossiers-text'>Aucun dossier avec adresse renseignee.</div></div>";
+    return;
+  }
+
+  const header = document.createElement("div");
+  header.className = "tournee-header";
+  header.innerHTML = "&#128643; Optimiser ma tournee";
+  panel.appendChild(header);
+
+  const sub = document.createElement("div");
+  sub.className = "tournee-sub";
+  sub.textContent = "Selectionnez les patients a visiter. L outil calcule l itineraire optimal pour minimiser vos deplacements.";
+  panel.appendChild(sub);
+
+  const list = document.createElement("div");
+  list.className = "patient-select-list";
+  list.id = "pSelectList";
+
+  dossiers.forEach(function(d){
+    const p = d.data.patient;
+    const name = [p.prenom,p.nom].filter(Boolean).join(" ")||d.id;
+    const ini = ((p.prenom||"?")[0]+(p.nom||"?")[0]).toUpperCase();
+    const isSelected = selectedForTournee.has(d.id);
+    const urgence = getUrgenceLevel(d);
+    const urgColor = URGENCE_COLORS[urgence];
+
+    const item = document.createElement("div");
+    item.className = "patient-select-item" + (isSelected?" selected":"");
+    item.innerHTML = '<div class="psi-av" style="border-color:'+urgColor+'44;background:'+urgColor+'11;color:'+urgColor+'">'+ini+'</div>'+
+      '<div class="psi-body"><div class="psi-name">'+name+'</div><div class="psi-addr">'+p.adresse+'</div></div>'+
+      '<div class="psi-check">'+(isSelected?"&#10003;":"")+"</div>";
+    item.onclick = (function(did){ return function(){ toggleSelect(this, did); }; })(d.id);
+    list.appendChild(item);
+  });
+
+  panel.appendChild(list);
+
+  const btn = document.createElement("button");
+  btn.className = "btn-calcul";
+  btn.id = "btnCalcul";
+  btn.textContent = "Calculer itineraire ("+selectedForTournee.size+" selectionne"+(selectedForTournee.size>1?"s":"")+")";
+  btn.disabled = selectedForTournee.size < 2;
+  btn.onclick = calculerTournee;
+  panel.appendChild(btn);
+
+  if(tourneeResult){
+    panel.innerHTML += renderTourneeResult(tourneeResult);
+  }
+}
+
+function toggleSelect(el, id){
+  if(selectedForTournee.has(id)){
+    selectedForTournee.delete(id);
+    el.classList.remove("selected");
+    el.querySelector(".psi-check").textContent = "";
+  } else {
+    selectedForTournee.add(id);
+    el.classList.add("selected");
+    el.querySelector(".psi-check").innerHTML = "&#10003;";
+  }
+  const btn = document.getElementById("btnCalcul");
+  if(btn){
+    btn.disabled = selectedForTournee.size < 2;
+    btn.textContent = "&#9889; Calculer l'itineraire optimal ("+selectedForTournee.size+" selectionne"+(selectedForTournee.size>1?"s":"")+")";
+  }
+}
+
+function calculerTournee(){
+  const dossiers = getDossiers();
+  const selected = dossiers.filter(d => selectedForTournee.has(d.id));
+
+  // Algorithme nearest neighbor pour optimiser la tournée
+  const patients = selected.map(function(d){
+    const p = d.data.patient;
+    const coords = guessCoordsFromAddress(p.adresse);
+    return {
+      id: d.id,
+      name: [p.prenom,p.nom].filter(Boolean).join(" ")||d.id,
+      adresse: p.adresse,
+      coords: coords,
+      urgence: getUrgenceLevel(d),
+    };
+  });
+
+  // Partir de la position actuelle (ou du centre 93 si pas de géoloc)
+  let startCoords = DEFAULT_COORDS_93;
+
+  // Algorithme nearest neighbor
+  const visited = new Set();
+  const route = [];
+  let current = {coords: startCoords, name: "Votre depart"};
+
+  while(visited.size < patients.length){
+    let minDist = Infinity;
+    let nearest = null;
+    patients.forEach(function(p){
+      if(visited.has(p.id)) return;
+      const dist = haversine(current.coords, p.coords);
+      if(dist < minDist){ minDist=dist; nearest=p; }
+    });
+    if(nearest){
+      route.push({...nearest, distFromPrev: minDist});
+      visited.add(nearest.id);
+      current = nearest;
+    }
+  }
+
+  const totalDist = route.reduce(function(acc,p){ return acc+(p.distFromPrev||0); }, 0);
+  tourneeResult = { route, totalDist };
+
+  renderTourneePanel();
+  // Afficher la route sur la carte aussi
+  switchView("carte");
+  showRouteOnMap(route);
+  setTimeout(function(){ switchView("tournee"); }, 1000);
+}
+
+function haversine(c1, c2){
+  const R=6371;
+  const dLat=(c2[0]-c1[0])*Math.PI/180;
+  const dLon=(c2[1]-c1[1])*Math.PI/180;
+  const a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(c1[0]*Math.PI/180)*Math.cos(c2[0]*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+function showRouteOnMap(route){
+  // Tracer la ligne de tournée sur la carte
+  const latlngs = route.map(function(p){ return p.coords; });
+  L.polyline(latlngs, {
+    color: "#4d9ef6",
+    weight: 3,
+    opacity: 0.7,
+    dashArray: "8, 6",
+  }).addTo(map);
+  if(latlngs.length) map.fitBounds(latlngs, {padding:[30,30]});
+}
+
+function renderTourneeResult(result){
+  const urgLabels={urgent:"URGENT",relance:"A relancer",ppcs:"PPCS",ok:"OK"};
+  const urgColors={urgent:"var(--red)",relance:"var(--amber)",ppcs:"var(--purple)",ok:"var(--green)"};
+  let html = '<div class="tournee-result">';
+  html += '<div class="tr-header">Itineraire optimise</div>';
+  result.route.forEach(function(p,i){
+    const dist = p.distFromPrev?p.distFromPrev.toFixed(1)+"km":"—";
+    html += '<div class="tr-step">'+
+      '<div class="tr-num">'+(i+1)+'</div>'+
+      '<div class="tr-body">'+
+        '<div class="tr-name">'+p.name+'</div>'+
+        '<div class="tr-addr">'+p.adresse+'</div>'+
+      '</div>'+
+      '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">'+
+        '<span style="font-size:9px;font-weight:700;padding:2px 5px;border-radius:3px;background:'+urgColors[p.urgence]+'22;color:'+urgColors[p.urgence]+'">'+urgLabels[p.urgence]+'</span>'+
+        '<span class="tr-dist">'+dist+'</span>'+
+      '</div>'+
+    '</div>';
+  });
+  html += '<div class="tr-total">Distance totale estimee : '+result.totalDist.toFixed(1)+' km</div>';
+  html += '</div>';
+  html += '<button class="btn-nav" onclick="lancerNavigation()">&#128205; Lancer la navigation Google Maps</button>';
+  return html;
+}
+
+function lancerNavigation(){
+  if(!tourneeResult) return;
+  const waypoints = tourneeResult.route.map(function(p){ return encodeURIComponent(p.adresse); });
+  const dest = waypoints.pop();
+  const wps = waypoints.length ? "&waypoints="+waypoints.join("|") : "";
+  const url = "https://www.google.com/maps/dir/?api=1&destination="+dest+wps+"&travelmode=driving";
+  window.open(url, "_blank");
+}
+
+function showToast(msg){
+  const t=document.createElement("div");
+  t.style.cssText="position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:#1e2230;border:1px solid rgba(255,255,255,.18);color:#f0f1f5;padding:9px 18px;border-radius:20px;font-size:12px;z-index:9999;white-space:nowrap;pointer-events:none";
+  t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2400);
+}
+</script>
+</body>
+</html>

@@ -420,6 +420,54 @@ const STRUCTURES = [
 
   // ESAT
   {id:'es1',type:'esat',name:'ESAT Horizon 93',ville:'Bondy',adresse:'1 rue des Chantiers, 93140',tel:'01 48 48 XX XX',public:'Adultes en situation de handicap (RQTH)',capacite:'80 places travail',desc:'Établissement et service d\'aide par le travail. Espaces verts, sous-traitance industrielle légère.',tags:['RQTH requis','Espaces verts','Insertion pro'],dispo:true,featured:false},
+
+
+  // MAILLAGE TERRITORIAL MULTI-DEPARTEMENTS
+  {id:"dac92",type:"dac",name:"DAC 92 Hauts-de-Seine",ville:"Nanterre",adresse:"2 rue des Canibouts, 92000 Nanterre",tel:"01 55 87 XX XX",public:"Situations complexes 92",capacite:null,desc:"Dispositif Appui Coordination Hauts-de-Seine. Couvre les communes du 92.",tags:["DAC","92","Coordination"],dispo:true,featured:false},
+  {id:"dac95",type:"dac",name:"DAC 95 Val-d Oise",ville:"Cergy",adresse:"5 rue de la Paix, 95000 Cergy",tel:"01 30 XX XX XX",public:"Situations complexes 95",capacite:null,desc:"Dispositif Appui Coordination Val-d Oise. Contact pour transfert ou coordination inter-DAC.",tags:["DAC","95","Coordination"],dispo:true,featured:false},
+  {id:"dac94",type:"dac",name:"DAC 94 Val-de-Marne",ville:"Creteil",adresse:"40 av. de Verdun, 94000 Creteil",tel:"01 43 XX XX XX",public:"Situations complexes 94",capacite:null,desc:"Dispositif Appui Coordination Val-de-Marne.",tags:["DAC","94","Coordination"],dispo:true,featured:false},
+  {id:"dac75",type:"dac",name:"DAC Paris",ville:"Paris",adresse:"44 rue Cambronne, 75015 Paris",tel:"01 XX XX XX XX",public:"Situations complexes Paris",capacite:null,desc:"Coordination des parcours complexes sur Paris intra-muros.",tags:["DAC","75","Paris"],dispo:true,featured:false},
+
+  {id:"mdph92",type:"mdph",name:"MDPH 92 Hauts-de-Seine",ville:"Nanterre",adresse:"64 av. de la Republique, 92015 Nanterre",tel:"0800 00 92 92",public:"Personnes en situation de handicap 92",capacite:null,desc:"Maison Departementale Personnes Handicapees. AAH, PCH, RQTH, carte CMI. Lun-Ven 9h-17h.",tags:["MDPH","92","AAH","PCH","RQTH"],dispo:true,featured:false},
+  {id:"mdph94",type:"mdph",name:"MDPH 94 Val-de-Marne",ville:"Creteil",adresse:"1 pl. Salvador Allende, 94011 Creteil",tel:"01 43 77 35 35",public:"Personnes en situation de handicap 94",capacite:null,desc:"MDPH Val-de-Marne. Dossiers AAH, PCH, AEEH, RQTH, carte mobilite inclusion.",tags:["MDPH","94","AAH","PCH"],dispo:true,featured:false},
+  {id:"mdph95",type:"mdph",name:"MDPH 95 Val-d Oise",ville:"Cergy",adresse:"3 av. de la Palette, 95032 Cergy",tel:"01 34 XX XX XX",public:"Personnes en situation de handicap 95",capacite:null,desc:"MDPH Val-d Oise.",tags:["MDPH","95","AAH","PCH"],dispo:true,featured:false},
+
+  {id:"cpam92",type:"cpam",name:"CPAM 92 Hauts-de-Seine",ville:"Nanterre",adresse:"10 rue des Trois Fontanot, 92000 Nanterre",tel:"3646",public:"Tous assures 92",capacite:null,desc:"CPAM Hauts-de-Seine. Droits maladie, CSS, AME, indemnites journalieres, ALD.",tags:["CPAM","92","CSS","AME"],dispo:true,featured:false},
+  {id:"cpam94",type:"cpam",name:"CPAM 94 Val-de-Marne",ville:"Creteil",adresse:"45 av. Raspail, 94107 Saint-Maur",tel:"3646",public:"Tous assures 94",capacite:null,desc:"CPAM Val-de-Marne.",tags:["CPAM","94","CSS","AME"],dispo:true,featured:false},
+
+  {id:"ssiad92",type:"ssiad",name:"SSIAD Croix-Rouge 92",ville:"Levallois-Perret",adresse:"12 rue Victor Hugo, 92300 Levallois",tel:"01 47 57 XX XX",public:"GIR 1-4, 60+",capacite:"40 places",desc:"Service Soins Infirmiers A Domicile Croix-Rouge. Soins techniques, nursing, coordination.",tags:["SSIAD","92","Soins domicile"],dispo:true,featured:false},
+  {id:"ssiad94",type:"ssiad",name:"SSIAD ADOMA 94",ville:"Ivry-sur-Seine",adresse:"5 rue Voltaire, 94200 Ivry",tel:"01 46 71 XX XX",public:"GIR 1-4, personnes handicapees",capacite:"35 places",desc:"SSIAD couvrant le Val-de-Marne sud.",tags:["SSIAD","94","Soins domicile"],dispo:true,featured:false},
+
+  // PROTECTION JURIDIQUE
+  {id:"pj1",type:"protection_juridique",name:"Service Tutelles UDAF 93",ville:"Bobigny",adresse:"15 rue Marceau, 93000 Bobigny",tel:"01 48 95 XX XX",public:"Majeurs proteges",capacite:null,desc:"Union Departementale Associations Familiales. Mesures de tutelle, curatelle, sauvegarde de justice. Mandataire judiciaire protection majeurs (MJPM).",tags:["Tutelle","Curatelle","MJPM","Protection juridique"],dispo:true,featured:false},
+  {id:"pj2",type:"protection_juridique",name:"ATMP 93 Association Tutelaire",ville:"Saint-Denis",adresse:"8 bd Carnot, 93200 Saint-Denis",tel:"01 48 09 XX XX",public:"Majeurs proteges toute situation",capacite:null,desc:"Association Tutelaire des Majeurs Proteges. Habilitation familiale, mandat de protection future, curatelle renforcee.",tags:["Tutelle","Curatelle","MJPM","Habilitation familiale"],dispo:true,featured:false},
+  {id:"pj3",type:"protection_juridique",name:"Juge des tutelles TJ Bobigny",ville:"Bobigny",adresse:"173 av. Paul Vaillant-Couturier, 93000 Bobigny",tel:"01 41 83 XX XX",public:"Toute demande de mesure de protection",capacite:null,desc:"Tribunal judiciaire de Bobigny. Depot des requetes en ouverture de tutelle et curatelle. Formulaire CERFA 15891.",tags:["Tribunal","Tutelle","Curatelle"],dispo:true,featured:false},
+
+  // TITRES DE SEJOUR
+  {id:"ts1",type:"titre_sejour",name:"Prefecture Seine-Saint-Denis",ville:"Bobigny",adresse:"1 esplanade Jean Moulin, 93007 Bobigny",tel:"Plateforme en ligne",public:"Etrangers residant en 93",capacite:null,desc:"Administration du prefet 93. Demandes de titre de sejour uniquement en ligne via Administration+. Delai moyen: 3-6 mois.",tags:["Titre de sejour","Prefecture","93","AME","Etranger"],dispo:true,featured:false},
+  {id:"ts2",type:"titre_sejour",name:"France Services Epinay-sur-Seine",ville:"Epinay-sur-Seine",adresse:"2 pl. de la Republique, 93800 Epinay",tel:"01 48 26 XX XX",public:"Tous publics aide demarches",capacite:null,desc:"Accompagnement administratif gratuit. Aide pour constituer les dossiers prefecture, CPAM, CAF. Rendez-vous sur place.",tags:["France Services","Titre de sejour","Aide administrative"],dispo:true,featured:false},
+  {id:"ts3",type:"titre_sejour",name:"GISTI Groupe Info Soutien Immigres",ville:"Paris",adresse:"3 villa Marces, 75011 Paris",tel:"01 43 14 84 84",public:"Personnes etrangeres",capacite:null,desc:"Association de defense des droits des etrangers. Consultations juridiques, accompagnement titre de sejour, AME, droits sociaux.",tags:["GISTI","Etranger","Titre de sejour","Juridique"],dispo:true,featured:false},
+
+  // DROITS EXCEPTIONNELS
+  {id:"de1",type:"droits_excep",name:"Fonds Action Sociale CAF 93",ville:"Bobigny",adresse:"CAF de Bobigny 19 av. du President Wilson",tel:"0810 25 93 00",public:"Allocataires CAF en difficulte",capacite:null,desc:"Aide exceptionnelle CAF. Dossier via TS referent. Aide logement FSL, aide alimentaire, aide equipement. Traitement 15-30 jours.",tags:["CAF","Aide exceptionnelle","FSL","Logement"],dispo:true,featured:false},
+  {id:"de2",type:"droits_excep",name:"Fonds de Solidarite Logement 93",ville:"Bobigny",adresse:"CD93 2 rue Simone de Beauvoir",tel:"01 43 93 XX XX",public:"Personnes en difficulte de logement",capacite:null,desc:"FSL pour impayes loyer, impayes charges, depot de garantie, aide demenagement. Dossier via AS referent.",tags:["FSL","Logement","Aide exceptionnelle","93"],dispo:true,featured:false},
+  {id:"de3",type:"droits_excep",name:"AME Urgente CPAM 93",ville:"Bobigny",adresse:"CPAM Bobigny",tel:"3646",public:"Personnes sans AME en urgence medicale",capacite:null,desc:"AME urgente pour soins ne pouvant attendre. Delivrance immediate sous 24h sur attestation medicale. A demander directement au guichet CPAM.",tags:["AME","Urgence","CPAM","Sans papiers"],dispo:true,featured:false},
+  {id:"de4",type:"droits_excep",name:"Secours Urgence CCAS Saint-Denis",ville:"Saint-Denis",adresse:"2 rue Jacques Prevert, 93200 Saint-Denis",tel:"01 49 33 XX XX",public:"Personnes en grande precarite Saint-Denis",capacite:null,desc:"Aide alimentaire urgence, colis alimentaires, epicerie sociale. Bon de pharmacie. Aide vestimentaire. Sur rendez-vous CCAS.",tags:["CCAS","Urgence","Alimentaire","Saint-Denis"],dispo:true,featured:false},
+
+  // AIDANTS FAMILIAUX
+  {id:"af1",type:"aidants",name:"Relayons-Nous 93 Plateforme Repit",ville:"Aubervilliers",adresse:"12 rue Henri Barbusse, 93300 Aubervilliers",tel:"01 48 33 XX XX",public:"Aidants familiaux du 93",capacite:null,desc:"Plateforme accompagnement et repit pour aidants. Sejours de repit, accueil de jour, formation aidants, soutien psychologique. Financement via CNSA.",tags:["Aidants","Repit","Formation","CNSA"],dispo:true,featured:false},
+  {id:"af2",type:"aidants",name:"ADMR IDF Soutien Aidants",ville:"Paris",adresse:"184 rue du Faubourg Saint-Antoine, 75012 Paris",tel:"01 43 XX XX XX",public:"Aidants familiaux IDF",capacite:null,desc:"Accompagnement des aidants familiaux. Droit au repit, remplacement temporaire, formations. Conge proche aidant possible.",tags:["Aidants","Repit","Conge proche aidant","AJPA"],dispo:true,featured:false},
+  {id:"af3",type:"aidants",name:"Cafe des Aidants Saint-Denis",ville:"Saint-Denis",adresse:"CCAS Saint-Denis",tel:"01 49 33 XX XX",public:"Aidants familiaux",capacite:null,desc:"Groupe de parole et echange pour aidants. 1er jeudi du mois 14h-16h. Gratuit, sans inscription. Anime par psychologue et AS.",tags:["Aidants","Groupe de parole","Gratuit","Saint-Denis"],dispo:true,featured:false},
+
+  // SORTIE HOSPITALISATION
+  {id:"sh1",type:"sortie_hospit",name:"Service Social CH Robert Ballanger",ville:"Aulnay-sous-Bois",adresse:"Bd Robert Ballanger, 93600 Aulnay",tel:"01 49 36 XX XX",public:"Patients hospitalises necessitant coordination sortie",capacite:null,desc:"Service social hospitalier. Coordination sortie complexe, lien DAC, mise en place aides domicile avant retour. Contacter 48h avant sortie prevue.",tags:["Sortie hospitalisation","Service social","CH Ballanger","Coordination"],dispo:true,featured:false},
+  {id:"sh2",type:"sortie_hospit",name:"MAIA 93 Maison Autonomie Integration",ville:"Saint-Denis",adresse:"DAC 93 Nord",tel:"01 48 09 XX XX",public:"Personnes agees situation complexe sortie hospit",capacite:null,desc:"Coordination MAIA pour sorties hospitalieres complexes personnes agees. Lien ville-hopital, gestionnaire de cas si besoin.",tags:["MAIA","Sortie hospitalisation","Personnes agees","Coordination"],dispo:true,featured:false},
+
+  // URGENCES NUIT ET WEEK-END
+  {id:"urg1",type:"urgence_nuit",name:"SAMU Social 93 - 115",ville:"Seine-Saint-Denis",adresse:"Disponible 24h/24",tel:"115",public:"Personnes sans abri, urgence sociale",capacite:null,desc:"Numero national urgence sociale. Disponible 24h/24, 7j/7. Orientation hebergement urgence, maraudes, CHRS. GRATUIT.",tags:["115","Urgence","SDF","Nuit","Week-end"],dispo:true,featured:false},
+  {id:"urg2",type:"urgence_nuit",name:"SOS Medecins 93",ville:"Seine-Saint-Denis",adresse:"Visites a domicile",tel:"01 47 07 77 77",public:"Urgence medicale domicile nuit et week-end",capacite:null,desc:"Visites medicales a domicile 24h/24. Alternative aux urgences. Ordonnances, arrets maladie, certificats. Prise en charge Assurance Maladie.",tags:["SOS Medecins","Urgence medicale","Nuit","Domicile"],dispo:true,featured:false},
+  {id:"urg3",type:"urgence_nuit",name:"Numero National 3114",ville:"National",adresse:"Disponible 24h/24",tel:"3114",public:"Crise psychologique, idees suicidaires",capacite:null,desc:"Numero national prevention suicide. Professionnels de sante disponibles 24h/24. Aussi pour professionnels confrontes a une situation de crise.",tags:["3114","Crise","Psychiatrie","Urgence","Nuit"],dispo:true,featured:false},
+  {id:"urg4",type:"urgence_nuit",name:"Astreinte DAC 93 Nord",ville:"Saint-Denis",adresse:"DAC 93 Nord",tel:"A renseigner",public:"Situations complexes hors heures",capacite:null,desc:"Coordinateur astreinte DAC 93 Nord pour situations qui ne peuvent attendre. Contacter le secretariat pour le numero astreinte.",tags:["DAC","Astreinte","Urgence","Week-end"],dispo:true,featured:false}
 ];
 
 // ═══ STATE ═══
@@ -445,6 +493,14 @@ const FILTER_GROUPS = [
     {val:'ccas',label:'CCAS'},
     {val:'esat',label:'ESAT'},
     {val:'cpam',label:'CPAM / MDPH'},
+    {val:'mdph',label:'MDPH'},
+    {val:'dac',label:'DAC (autre département)'},
+    {val:'protection_juridique',label:'Protection juridique'},
+    {val:'titre_sejour',label:'Titres de séjour'},
+    {val:'droits_excep',label:'Droits exceptionnels'},
+    {val:'aidants',label:'Aidants familiaux'},
+    {val:'sortie_hospit',label:'Sortie hospitalisation'},
+    {val:'urgence_nuit',label:'Urgences nuit/week-end'},
   ]},
   { id:'zone', label:'Zone géographique', icon:'📍', items:[
     {val:'nord',label:'Nord 93 (DAC Nord)'},

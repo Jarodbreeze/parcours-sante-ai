@@ -129,6 +129,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",sans-serif;backg
   <button class="back-btn" onclick="window.location.href='index.html'">&#8249; Accueil</button>
   <div class="tb-title" id="tbTitle">Fiche patient</div>
   <button class="tb-edit" onclick="openEditPatient()">Modifier</button>
+<button class="tb-edit" onclick="exportFicheComplete()" style="background:var(--blue-bg);border-color:var(--blue-b);color:var(--blue)">Export</button>
 </div>
 
 <div class="alerts-bar empty" id="alertsBar"></div>
@@ -565,14 +566,38 @@ function renderChat(d,el){
 function renderPPCS(d,el){
   if(!d.ppcs||!d.ppcs.content){el.innerHTML='<div class="no-content">Aucun PPCS.<br><a href="mediasante_premiere_visite.html" style="color:var(--blue)">Faire la premiere visite</a></div>';return;}
   const v=d.ppcs_valide;
-  el.innerHTML='<div class="ppcs-status" style="background:'+(v?"var(--green-bg)":"var(--amber-bg)")+';border:1px solid '+(v?"var(--green-b)":"var(--amber-b)")+'">'+
+  const versions=d.ppcs_versions||[];
+
+  let html='<div class="ppcs-status" style="background:'+(v?"var(--green-bg)":"var(--amber-bg)")+';border:1px solid '+(v?"var(--green-b)":"var(--amber-b)")+'">'+
     '<span style="font-size:16px">'+(v?"&#9989;":"&#9203;")+'</span>'+
-    '<div><div style="font-size:13px;font-weight:600;color:'+(v?"var(--green)":"var(--amber)")+'">'+(v?"PPCS valide":"En attente de validation")+"</div>"+
-    (v?'<div style="font-size:11px;color:var(--text3)">Par '+v.valideur+" - "+new Date(v.date).toLocaleDateString("fr-FR")+"</div>":"")+
+    '<div><div style="font-size:13px;font-weight:600;color:'+(v?"var(--green)":"var(--amber)")+'">'+(v?"PPCS valide v"+(d.ppcs.version||1):"En attente de validation")+"</div>"+
+    (v?'<div style="font-size:11px;color:var(--text3)">Par '+v.valideur+" le "+new Date(v.date).toLocaleDateString("fr-FR")+"</div>":"")+
     "</div>"+(!v?'<button onclick="validerPPCS()" style="margin-left:auto;padding:6px 12px;border-radius:var(--rs);background:var(--green);border:none;color:var(--bg);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">Valider</button>':"")+
-    "</div>"+
-    '<div class="ppcs-body">'+d.ppcs.content+"</div>"+
-    "<button onclick=\"exportPPCS()\" style=\"width:100%;padding:11px;border-radius:var(--r);background:transparent;border:1px solid var(--border);color:var(--text2);font-size:13px;font-family:inherit;cursor:pointer;margin-top:10px\">Copier le PPCS</button>";
+    "</div>";
+
+  // Contenu PPCS formaté
+  html+='<div style="font-size:11px;color:var(--text3);margin-bottom:8px">Version '+(d.ppcs.version||1)+' - Genere le '+new Date(d.ppcs.date).toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"})+'</div>';
+  html+='<div class="ppcs-body">'+d.ppcs.content+"</div>";
+
+  // Boutons d'action
+  html+='<button onclick="exportPPCS()" style="width:100%;padding:11px;border-radius:var(--r);background:transparent;border:1px solid var(--border);color:var(--text2);font-size:13px;font-family:inherit;cursor:pointer;margin-top:10px">Copier le PPCS</button>';
+  html+='<button onclick="imprimerPPCS()" style="width:100%;padding:10px;border-radius:var(--r);background:var(--blue-bg);border:1px solid var(--blue-b);color:var(--blue);font-size:13px;font-family:inherit;cursor:pointer;margin-top:6px">Imprimer / Export PDF</button>';
+
+  // Historique versions
+  if(versions.length){
+    html+='<div class="section" style="margin-top:16px"><div class="section-title">Historique des versions ('+versions.length+')</div>';
+    versions.slice().reverse().forEach(function(ver,i){
+      const realIdx=versions.length-1-i;
+      html+='<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);margin-bottom:6px">';
+      html+='<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;background:var(--bg3);color:var(--text3)">v'+(ver.version||'?')+'</span>';
+      html+='<span style="font-size:12px;color:var(--text2)">'+new Date(ver.date).toLocaleDateString("fr-FR",{day:"numeric",month:"long"})+'</span>';
+      html+='<button data-vidx="'+realIdx+'" onclick="restaurerVersion(parseInt(this.dataset.vidx))" style="margin-left:auto;font-size:10px;padding:3px 8px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;font-family:inherit">Restaurer</button>';
+      html+='</div>';
+    });
+    html+='</div>';
+  }
+
+  el.innerHTML=html;
 }
 
 function validerPPCS(){
@@ -825,6 +850,79 @@ function ouvrirCarte(){
   if(!id){showToast("Aucun dossier selectionne");return;}
   localStorage.setItem("fiche_patient_id",id);
   window.location.href="mediasante_carte_mentale.html?id="+id;
+}
+
+function exportFicheComplete(){
+  const d=getDossier();if(!d)return;
+  const p=d.data&&d.data.patient||{};
+  const name=[p.prenom,p.nom].filter(Boolean).join(" ")||"Patient";
+  const date=new Date().toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"});
+  const txs=JSON.parse(localStorage.getItem("transmissions_"+d.id)||"[]");
+  const droits=d.droits||[];
+  const cercle=d.cercle_soin||[];
+
+  let txt="";
+  txt+="FICHE PATIENT COMPLETE - "+name+"\n";
+  txt+="Generee le "+date+"\n";
+  txt+="=".repeat(60)+"\n\n";
+
+  txt+="IDENTITE\n"+"-".repeat(40)+"\n";
+  txt+="Nom : "+(p.nom||"—")+"\n";
+  txt+="Prenom : "+(p.prenom||"—")+"\n";
+  txt+="Date de naissance : "+(p.naissance||"—")+"\n";
+  txt+="Age : "+(p.age||"—")+"\n";
+  txt+="Sexe : "+(p.sexe||"—")+"\n";
+  txt+="Adresse : "+(p.adresse||"—")+"\n";
+  txt+="Telephone : "+(p.tel||"—")+"\n";
+  txt+="Email : "+(p.email||"—")+"\n";
+  txt+="Couverture : "+(p.couverture||"—")+"\n";
+  txt+="Langue : "+(p.langue||"—")+"\n\n";
+
+  txt+="EVALUATION\n"+"-".repeat(40)+"\n";
+  if(d.evaluation){
+    txt+="GIR : "+d.evaluation.gir+"\n";
+    txt+="IADL : "+d.evaluation.iadl+"/8\n";
+    txt+="Up & Go : "+(d.evaluation.upgo?d.evaluation.upgo+"s":"Non realise")+"\n";
+  } else {
+    txt+="Aucune evaluation realisee\n";
+  }
+  txt+="\n";
+
+  txt+="DROITS ET PRESTATIONS\n"+"-".repeat(40)+"\n";
+  if(droits.length){
+    droits.forEach(function(dr){ txt+="- "+dr.type+" : "+dr.statut+(dr.notes?" ("+dr.notes+")":"")+"\n"; });
+  } else {
+    txt+="Aucun droit enregistre\n";
+  }
+  txt+="\n";
+
+  txt+="CERCLE DE SOIN\n"+"-".repeat(40)+"\n";
+  if(cercle.length){
+    cercle.forEach(function(c){ txt+="- "+c.nom+" ("+c.role+") : "+(c.tel||"")+"\n"; });
+  } else {
+    txt+="Cercle de soin non renseigne\n";
+  }
+  txt+="\n";
+
+  txt+="DERNIÈRES TRANSMISSIONS\n"+"-".repeat(40)+"\n";
+  txs.slice(0,5).forEach(function(t){
+    txt+=new Date(t.date).toLocaleDateString("fr-FR")+" - "+t.title+"\n";
+    if(t.content) txt+="  "+t.content.slice(0,100)+(t.content.length>100?"...":"")+"\n";
+  });
+  txt+="\n";
+
+  if(d.ppcs&&d.ppcs.content){
+    txt+="PPCS\n"+"-".repeat(40)+"\n";
+    txt+=d.ppcs.content+"\n\n";
+  }
+
+  txt+="=".repeat(60)+"\n";
+  txt+="Dossier : "+d.id+" - Statut : "+(d.statut_manuel||"actif")+"\n";
+  txt+="ParcourSante AI - Document genere automatiquement\n";
+
+  navigator.clipboard.writeText(txt).then(function(){
+    showToast("Fiche copiee - Collez dans Word/Notes ✓");
+  });
 }
 
 function showToast(msg){

@@ -324,6 +324,53 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
     <div class="model-item" onclick="selectModel('tut_mandataire')">Courrier mandataire judiciaire</div>
     <div class="model-item" onclick="selectModel('tut_signalement')">Signalement situation à risque</div>
     <div class="model-item" onclick="selectModel('tut_mesure_protection')">Demande mesure de protection</div>
+    <div class="model-item" onclick="selectModel('pj_tutelle_requete')">Requête ouverture tutelle</div>
+    <div class="model-item" onclick="selectModel('pj_curatelle_info')">Information famille curatelle</div>
+    <div class="model-item" onclick="selectModel('pj_sauvegarde')">Demande sauvegarde de justice</div>
+  </div>
+
+  <!-- Titres de séjour -->
+  <div class="cat-header" onclick="toggleCat('ts')">
+    <div class="cat-icon" style="background:var(--teal-bg);color:var(--teal)">TS</div>
+    Titres de séjour
+    <span class="cat-arrow" id="arrow-ts">▶</span>
+  </div>
+  <div class="cat-items" id="cat-ts">
+    <div class="model-item" onclick="selectModel('ts_renouvellement')">Renouvellement titre de séjour</div>
+    <div class="model-item" onclick="selectModel('ts_etranger_malade')">Étranger malade — 1ère demande</div>
+  </div>
+
+  <!-- Droits exceptionnels -->
+  <div class="cat-header" onclick="toggleCat('de')">
+    <div class="cat-icon" style="background:var(--amber-bg);color:var(--amber)">DE</div>
+    Droits exceptionnels
+    <span class="cat-arrow" id="arrow-de">▶</span>
+  </div>
+  <div class="cat-items" id="cat-de">
+    <div class="model-item" onclick="selectModel('de_fsl')">Demande FSL — impayés logement</div>
+    <div class="model-item" onclick="selectModel('de_caf_urgence')">Aide exceptionnelle CAF</div>
+  </div>
+
+  <!-- Aidants familiaux -->
+  <div class="cat-header" onclick="toggleCat('af')">
+    <div class="cat-icon" style="background:var(--green-bg);color:var(--green)">AF</div>
+    Aidants familiaux
+    <span class="cat-arrow" id="arrow-af">▶</span>
+  </div>
+  <div class="cat-items" id="cat-af">
+    <div class="model-item" onclick="selectModel('af_repit')">Demande répit aidant</div>
+    <div class="model-item" onclick="selectModel('af_conge_proche')">Congé proche aidant</div>
+  </div>
+
+  <!-- APA domicile vs établissement -->
+  <div class="cat-header" onclick="toggleCat('apa')">
+    <div class="cat-icon" style="background:var(--purple-bg);color:var(--purple-l)">APA</div>
+    APA — Domicile &amp; Établissement
+    <span class="cat-arrow" id="arrow-apa">▶</span>
+  </div>
+  <div class="cat-items" id="cat-apa">
+    <div class="model-item" onclick="selectModel('apa_domicile')">APA à domicile — CD93</div>
+    <div class="model-item" onclick="selectModel('apa_etablissement')">APA en établissement — EHPAD</div>
   </div>
 
 </div><!-- /sidebar -->
@@ -440,6 +487,132 @@ const STRUCTURE = {
   adresse: "Seine-Saint-Denis (93)",
   tel: "À compléter",
   email: "À compléter"
+,
+
+  // ══════════════════════════════════
+  // PROTECTION JURIDIQUE
+  // ══════════════════════════════════
+  pj_tutelle_requete: {
+    title: "Requête en ouverture de tutelle", cat:"Protection juridique",
+    desc: "Courrier au juge des tutelles du TJ Bobigny pour demander l'ouverture d'une mesure de protection.",
+    fields: [
+      { id:"pj_nom_protege", label:"Nom de la personne à protéger", type:"text", ph:"M./Mme [NOM]" },
+      { id:"pj_motif", label:"Motif de la demande", type:"textarea", ph:"Altération des facultés mentales, impossibilité de gérer ses affaires..." },
+      { id:"pj_demandeur", label:"Qualité du demandeur", type:"select", opts:["Médecin traitant","Famille","Procureur de la République","Intéressé lui-même"] },
+    ],
+    vars: ["[NOM_PATIENT]","[DDN]","[ADRESSE]","[DATE_JOUR]","[PJ_MOTIF]","[PJ_DEMANDEUR]"]
+  },
+  pj_curatelle_info: {
+    title: "Information famille sur curatelle renforcée", cat:"Protection juridique",
+    desc: "Courrier d'information à la famille sur la procédure de curatelle renforcée et les étapes.",
+    fields: [
+      { id:"pj_famille", label:"Destinataire (lien familial)", type:"text", ph:"Ex: fils de M. Mbeki" },
+      { id:"pj_situation", label:"Situation justifiant la curatelle", type:"textarea", ph:"Difficultés de gestion financière, dépendance partielle..." },
+    ],
+    vars: ["[NOM_PATIENT]","[DATE_JOUR]","[PJ_FAMILLE]"]
+  },
+  pj_sauvegarde: {
+    title: "Demande de sauvegarde de justice", cat:"Protection juridique",
+    desc: "Courrier au médecin traitant pour initier une sauvegarde de justice en urgence (mesure provisoire rapide).",
+    fields: [
+      { id:"pj_urgence", label:"Motif d'urgence", type:"textarea", ph:"Actes préjudiciables imminents, signature de contrat abusif..." },
+    ],
+    vars: ["[NOM_PATIENT]","[DDN]","[DATE_JOUR]","[PJ_URGENCE]"]
+  },
+
+  // ══════════════════════════════════
+  // TITRES DE SÉJOUR
+  // ══════════════════════════════════
+  ts_renouvellement: {
+    title: "Accompagnement renouvellement titre de séjour", cat:"Titre de séjour",
+    desc: "Courrier d'accompagnement pour un renouvellement de titre de séjour avec prise en charge médicale.",
+    fields: [
+      { id:"ts_type", label:"Type de titre actuel", type:"select", opts:["Titre de séjour mention salarié","Titre de séjour vie privée et familiale","Titre de séjour étranger malade","Demandeur d'asile (OFPRA)","Sans titre — première demande"] },
+      { id:"ts_expiration", label:"Date d'expiration", type:"date" },
+      { id:"ts_motif_sante", label:"Pathologie nécessitant prise en charge", type:"textarea", ph:"Diabète de type 2, HTA, suivi psychiatrique..." },
+    ],
+    vars: ["[NOM_PATIENT]","[DDN]","[ADRESSE]","[DATE_JOUR]","[TS_TYPE]","[TS_MOTIF]"]
+  },
+  ts_etranger_malade: {
+    title: "Titre de séjour étranger malade — 1ère demande", cat:"Titre de séjour",
+    desc: "Soutien à la demande de titre de séjour pour soins (L.425-9 du CESEDA). Nécessite certificat médical OFII.",
+    fields: [
+      { id:"ts_pays", label:"Pays d'origine", type:"text", ph:"Ex: Mali, Côte d'Ivoire..." },
+      { id:"ts_pathologie", label:"Pathologie principale (grave)", type:"textarea", ph:"Traitement indispensable, non disponible dans le pays d'origine..." },
+      { id:"ts_medecin", label:"Médecin référent pour le certificat", type:"text", ph:"Dr. [NOM] — Cabinet médical..." },
+    ],
+    vars: ["[NOM_PATIENT]","[DDN]","[DATE_JOUR]","[TS_PAYS]","[TS_PATHOLOGIE]"]
+  },
+
+  // ══════════════════════════════════
+  // DROITS EXCEPTIONNELS
+  // ══════════════════════════════════
+  de_fsl: {
+    title: "Demande FSL — Fonds Solidarité Logement", cat:"Droits exceptionnels",
+    desc: "Courrier au CD93 pour une demande de FSL (impayés de loyer, charges, dépôt de garantie).",
+    fields: [
+      { id:"de_type_fsl", label:"Type d'aide FSL", type:"select", opts:["Impayés de loyer","Impayés de charges","Dépôt de garantie","Frais de déménagement","Aide à l'équipement"] },
+      { id:"de_montant", label:"Montant de la dette (€)", type:"text", ph:"Ex: 1200 €" },
+      { id:"de_situation", label:"Situation ayant conduit à l'impayé", type:"textarea", ph:"Perte d'emploi, hospitalisation, séparation..." },
+    ],
+    vars: ["[NOM_PATIENT]","[ADRESSE]","[DATE_JOUR]","[DE_TYPE]","[DE_MONTANT]","[DE_SITUATION]"]
+  },
+  de_caf_urgence: {
+    title: "Aide exceptionnelle CAF — Situation d'urgence", cat:"Droits exceptionnels",
+    desc: "Demande d'aide exceptionnelle auprès de l'Action Sociale CAF 93 pour situation d'urgence.",
+    fields: [
+      { id:"de_urgence_nature", label:"Nature de l'urgence", type:"select", opts:["Alimentation","Équipement ménager","Factures énergie","Frais de santé non remboursés","Autre"] },
+      { id:"de_urgence_motif", label:"Motif détaillé", type:"textarea", ph:"Ressources insuffisantes suite à..." },
+    ],
+    vars: ["[NOM_PATIENT]","[DDN]","[DATE_JOUR]","[DE_NATURE]","[DE_MOTIF]"]
+  },
+
+  // ══════════════════════════════════
+  // AIDANTS FAMILIAUX
+  // ══════════════════════════════════
+  af_repit: {
+    title: "Demande de répit aidant — CNSA", cat:"Aidants",
+    desc: "Courrier pour l'activation du droit au répit de l'aidant (financé via APA plan aide).",
+    fields: [
+      { id:"af_aidant_nom", label:"Nom de l'aidant", type:"text", ph:"Mme/M. [NOM]" },
+      { id:"af_relation", label:"Relation avec le patient", type:"text", ph:"Fils/Fille/Conjoint..." },
+      { id:"af_situation_aidant", label:"Situation de l'aidant", type:"textarea", ph:"Épuisement, arrêt maladie, besoin de soins personnels..." },
+      { id:"af_solution_repit", label:"Solution de répit souhaitée", type:"select", opts:["Accueil de jour du patient","Hébergement temporaire en EHPAD","Relais à domicile (SAAD)","Séjour de répit accompagné"] },
+    ],
+    vars: ["[NOM_PATIENT]","[DATE_JOUR]","[AF_AIDANT]","[AF_SOLUTION]"]
+  },
+  af_conge_proche: {
+    title: "Information congé proche aidant — Employeur", cat:"Aidants",
+    desc: "Courrier d'information à l'employeur de l'aidant sur le congé proche aidant (AJPA).",
+    fields: [
+      { id:"af_employeur", label:"Nom de l'employeur", type:"text", ph:"Ex: Mairie de Saint-Denis" },
+      { id:"af_duree_conge", label:"Durée souhaitée", type:"text", ph:"Ex: 3 mois" },
+    ],
+    vars: ["[NOM_PATIENT]","[DATE_JOUR]","[AF_EMPLOYEUR]","[AF_DUREE]"]
+  },
+
+  // ══════════════════════════════════
+  // APA DOMICILE VS ÉTABLISSEMENT
+  // ══════════════════════════════════
+  apa_domicile: {
+    title: "Demande APA à domicile — CD93", cat:"MDPH",
+    desc: "Courrier d'accompagnement pour demande d'APA à domicile auprès du Conseil Départemental 93.",
+    fields: [
+      { id:"apa_gir", label:"GIR évalué", type:"select", opts:["GIR 1","GIR 2","GIR 3","GIR 4"] },
+      { id:"apa_besoins", label:"Besoins identifiés à domicile", type:"textarea", ph:"Aide toilette, habillage, repas, mobilité..." },
+      { id:"apa_ressources", label:"Ressources mensuelles (estimation)", type:"text", ph:"Ex: 900 € mensuel" },
+    ],
+    vars: ["[NOM_PATIENT]","[DDN]","[ADRESSE]","[DATE_JOUR]","[APA_GIR]","[APA_BESOINS]"]
+  },
+  apa_etablissement: {
+    title: "Demande APA en établissement — Entrée EHPAD", cat:"MDPH",
+    desc: "Courrier pour demande d'APA en établissement (EHPAD). Différent de l'APA domicile — tarif dépendance.",
+    fields: [
+      { id:"apa_ehpad_nom", label:"Nom de l'EHPAD visé", type:"text", ph:"EHPAD [NOM], [VILLE]" },
+      { id:"apa_motif_entree", label:"Motif d'entrée en établissement", type:"textarea", ph:"Impossibilité maintien domicile, GIR 1-2, absence d'aidant..." },
+    ],
+    vars: ["[NOM_PATIENT]","[DDN]","[DATE_JOUR]","[APA_EHPAD]","[APA_MOTIF]"]
+  }
 };
 
 // ─── API KEY ───

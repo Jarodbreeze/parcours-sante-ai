@@ -938,19 +938,41 @@ Droits à ouvrir : ${droitsCoches.length?droitsCoches.join(', '):'Aucun identifi
 Alertes logement : ${logAlertes.length?logAlertes.join(', '):'Aucune'}
 Observations sociales : ${document.getElementById('s_obs').value||'Aucune'}
 
-Rédige un PPCS complet et structuré avec les sections suivantes :
-1. EN-TÊTE (date, patient, évaluateur, structure)
-2. SYNTHÈSE DE LA SITUATION (3-4 phrases)
-3. ÉVALUATION FONCTIONNELLE (AGGIR/GIR, IADL, motricité)
-4. ÉVALUATION SOCIALE ET DES DROITS
-5. BESOINS IDENTIFIÉS (liste hiérarchisée)
-6. OBJECTIFS DE COORDINATION (3-5 objectifs SMART)
-7. PLAN D'ACTION (actions, responsable, délai)
-8. ALERTES ET URGENCES (si applicable)
-9. PROCHAINE RÉÉVALUATION (date proposée)
-10. MENTION LÉGALE
+Redige un PPCS professionnel en 9 sections standardisees. Utilise exactement cette structure :
 
-Ton : professionnel, factuel, bienveillant. Langage accessible (pas de jargon excessif). Format texte structuré avec titres en MAJUSCULES. Commencer directement par le document, sans introduction.`;
+1. IDENTIFICATION
+   Patient, date, lieu, evaluateur, structure, coordinateur referent
+
+2. CONTEXTE ET MOTIF DE SIGNALEMENT
+   3-4 phrases resumant la situation et le motif de signalement
+
+3. EVALUATION FONCTIONNELLE
+   AGGIR : GIR avec interpretation
+   IADL : score et interpretation
+   Up & Go : resultat et risque de chute
+   Observations motrices
+
+4. EVALUATION SOCIALE ET DES DROITS
+   Couverture sante, logement, aidant, isolement, droits a ouvrir
+
+5. PROBLEMATIQUES IDENTIFIEES
+   Lister les problematiques par ordre de priorite (max 5)
+
+6. OBJECTIFS DU PLAN
+   Objectifs a 1 mois, 3 mois, 6 mois — specifiques et mesurables
+
+7. ACTIONS DECIDEES
+   Format : [action] — [responsable] — [delai]
+   Minimum 5 actions concretes et prioritaires pour le 93
+
+8. CERCLE DE SOIN MOBILISE
+   Intervenants identifies avec leurs roles
+
+9. SIGNATURE ET VALIDATION
+   Evaluateur, date, en attente de validation clinicien
+
+Separateur : utilisez des lignes de tirets entre les sections.
+Sois concret, specifique au territoire 93, actionnable.`;
 
   try{
     const resp=await fetch('https://api.anthropic.com/v1/messages',{
@@ -972,45 +994,79 @@ Ton : professionnel, factuel, bienveillant. Langage accessible (pas de jargon ex
 }
 
 function generatePPCSTemplate(name,gir,iadl,droits,log,date){
-  return`PLAN PERSONNALISÉ DE COORDINATION EN SANTÉ (PPCS)
-─────────────────────────────────────────────────
-Date : ${date}
-Patient : ${name}
-Évaluateur : ${document.getElementById('visite_pro').value||'[NOM ÉVALUATEUR]'}
-Structure : ParcourSanté AI — Dispositif d'Appui à la Coordination
+  var evaluateur=document.getElementById('visite_pro')&&document.getElementById('visite_pro').value||'Professionnel DAC';
+  var lieu=document.getElementById('visite_lieu')&&document.getElementById('visite_lieu').value||'Domicile';
+  var contexte=document.getElementById('visite_contexte')&&document.getElementById('visite_contexte').value||'Premiere visite de coordination';
+  var couverture=document.getElementById('s_couverture')&&document.getElementById('s_couverture').value||'A preciser';
+  var logement=document.getElementById('s_logement')&&document.getElementById('s_logement').value||'A preciser';
+  var aidant=document.getElementById('s_aidant')&&document.getElementById('s_aidant').value||'A preciser';
+  var isolement=document.getElementById('s_isolement')&&document.getElementById('s_isolement').value||'A preciser';
+  var obs_social=document.getElementById('s_obs')&&document.getElementById('s_obs').value||'';
+  var obs_moteur=document.getElementById('obs_moteur')&&document.getElementById('obs_moteur').value||'';
+  var upgoStr=upgoTime?upgoTime.toFixed(1)+'s ('+(upgoTime<12?'Normal':upgoTime<20?'Risque modere':'Risque eleve')+')':'Non realise';
+  var girLabel=gir>0?'GIR '+gir+' - '+(gir<=2?'Dependance totale':gir<=4?'Dependance partielle':'Dependance faible'):'A completer';
+  var iadlLabel=iadl+'/8 - '+(iadl<=2?'Deficit severe':iadl<=5?'Deficit modere':'Autonomie conservee');
+  var circleStr=currentDossier&&currentDossier.cercle_soin?(currentDossier.cercle_soin.map(function(c){return c.nom+' ('+c.role+')';})).join(', '):'A constituer';
+  var sep='━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
 
-─────────────────────────────────────────────────
-1. SYNTHÈSE DE LA SITUATION
-─────────────────────────────────────────────────
-Suite à une première visite à domicile, une évaluation multidimensionnelle a été réalisée auprès de ${name}.
-
-─────────────────────────────────────────────────
-2. ÉVALUATION FONCTIONNELLE
-─────────────────────────────────────────────────
-• AGGIR : ${gir>0?'GIR '+gir+' — '+(gir<=4?'ÉLIGIBLE APA':'autonomie conservée'):'Grille incomplète — à compléter'}
-• IADL (Lawton) : ${iadl}/8 — ${iadl<5?'Déficit sévère':iadl<7?'Déficit modéré':'Autonomie conservée'}
-• Test Up & Go : ${upgoTime?upgoTime.toFixed(2)+'s — '+(upgoTime<12?'Normal':upgoTime<20?'Risque modéré':'Risque élevé'):'Non réalisé'}
-
-─────────────────────────────────────────────────
-3. DROITS ET SITUATION SOCIALE
-─────────────────────────────────────────────────
-Couverture santé : ${document.getElementById('s_couverture').value||'À préciser'}
-Droits à ouvrir : ${droits.length?droits.join(' / '):'À évaluer'}
-Alertes logement : ${log.length?log.join(' / '):'Aucune'}
-${gir>0&&gir<=4?'\n⚡ PRIORITÉ : Initier dossier APA auprès du Conseil Départemental 93\n':''}
-─────────────────────────────────────────────────
-4. PLAN D'ACTION
-─────────────────────────────────────────────────
-${gir<=4&&gir>0?'1. Initier demande APA — CD93 — Immédiat\n':''}${droits.includes('CSS / C2S à ouvrir')?'• Renouvellement/ouverture CSS — CPAM 93\n':''}${droits.includes('AME à initier')?'• Dossier AME — CPAM 93\n':''}
-─────────────────────────────────────────────────
-5. PROCHAINE RÉÉVALUATION
-─────────────────────────────────────────────────
-Réévaluation proposée dans 3 mois.
-
-─────────────────────────────────────────────────
-MENTION LÉGALE
-─────────────────────────────────────────────────
-Ce document est un outil d'aide à la décision. Il ne se substitue pas à l'avis médical et doit être validé par un professionnel de santé qualifié avant toute décision clinique.`;
+  var t='';
+  t+=sep;
+  t+='PLAN PERSONNALISE DE COORDINATION EN SANTE (PPCS)\n';
+  t+=sep+'\n';
+  t+='1. IDENTIFICATION\n'+sep;
+  t+='Patient        : '+name+'\n';
+  t+='Date           : '+date+'\n';
+  t+='Lieu de visite : '+lieu+'\n';
+  t+='Evaluateur     : '+evaluateur+'\n';
+  t+='Structure      : DAC (Dispositif Appui Coordination)\n';
+  t+='Coordinateur   : A renseigner\n\n';
+  t+='2. CONTEXTE ET MOTIF DE SIGNALEMENT\n'+sep;
+  t+=contexte+'\n\n';
+  t+='3. EVALUATION FONCTIONNELLE\n'+sep;
+  t+='Grille AGGIR   : '+girLabel+'\n';
+  t+='IADL (Lawton)  : '+iadlLabel+'\n';
+  t+='Test Up & Go   : '+upgoStr+'\n';
+  t+='Observations   : '+(obs_moteur||'Aucune observation particuliere')+'\n';
+  if(gir>0&&gir<=4) t+='PRIORITE : Patient eligible APA (GIR '+gir+') - dossier a initier CD93\n';
+  t+='\n';
+  t+='4. EVALUATION SOCIALE ET DES DROITS\n'+sep;
+  t+='Couverture sante : '+couverture+'\n';
+  t+='Logement         : '+logement+'\n';
+  t+='Situation aidant : '+aidant+'\n';
+  t+='Isolement social : '+isolement+'\n';
+  t+='Droits a ouvrir  : '+(droits.length?droits.join(', '):'A evaluer')+'\n';
+  t+='Alertes habitat  : '+(log.length?log.join(', '):'Aucune')+'\n';
+  if(obs_social) t+='Observations : '+obs_social+'\n';
+  t+='\n';
+  t+='5. PROBLEMATIQUES IDENTIFIEES\n'+sep;
+  if(gir>0&&gir<=3) t+='-> Perte d autonomie severe necessitant des aides humaines\n';
+  if(iadl<=4) t+='-> Deficits IADL multiples impactant la vie quotidienne\n';
+  if(droits.length) t+='-> Droits non ouverts : '+droits.join(', ')+'\n';
+  if(log.length) t+='-> Alertes habitat : '+log.join(', ')+'\n';
+  t+='\n';
+  t+='6. OBJECTIFS DU PLAN\n'+sep;
+  t+='A 1 mois  : Mise en place des aides urgentes - droits prioritaires\n';
+  t+='A 3 mois  : Stabilisation de la situation a domicile\n';
+  t+='A 6 mois  : Reevaluation complete et ajustement du plan\n\n';
+  t+='7. ACTIONS DECIDEES\n'+sep;
+  if(gir>0&&gir<=4) t+='[ ] Dossier APA - CD93 - J+7\n';
+  if(droits.indexOf('CSS / C2S a ouvrir')>=0) t+='[ ] Ouverture CSS - CPAM 93 - J+7\n';
+  if(droits.indexOf('AME a initier')>=0) t+='[ ] Dossier AME - CPAM 93 - J+7\n';
+  t+='[ ] Contact medecin traitant pour coordination - J+7\n';
+  t+='[ ] Evaluation ergotherapeutique si besoin - J+30\n';
+  t+='[ ] Staff pluridisciplinaire DAC - A planifier\n\n';
+  t+='8. CERCLE DE SOIN MOBILISE\n'+sep;
+  t+=circleStr+'\n\n';
+  t+='9. SIGNATURE ET VALIDATION\n'+sep;
+  t+='Redige par      : '+evaluateur+'\n';
+  t+='Date            : '+date+'\n';
+  t+='Validation      : En attente du clinicien coordinateur\n';
+  t+='Reevaluation    : Dans 3 mois\n\n';
+  t+=sep;
+  t+='Document genere par ParcourSante AI - Version 1.0\n';
+  t+='Outil aide a la decision - Ne remplace pas le jugement clinique\n';
+  t+=sep;
+  return t;
 }
 
 function updatePPCSWords(){
@@ -1035,14 +1091,22 @@ function exportPDF(){
 
 function savePPCS(){
   const content=document.getElementById('ppcsBody').innerText;
-  if(!content.trim()){showToast('Rien à sauvegarder');return}
+  if(!content.trim()){showToast('Rien a sauvegarder');return}
   const dossiers=JSON.parse(localStorage.getItem('mediasante_dossiers')||'[]');
   if(currentPatient){
     const idx=dossiers.findIndex(d=>d.id===currentPatient.id);
     if(idx>=0){
-      dossiers[idx].ppcs={content,date:new Date().toISOString(),gir:computeGIR(),iadl:Object.values(iadlScores).filter(Boolean).length};
+      const newPPCS={content,date:new Date().toISOString(),gir:computeGIR(),iadl:Object.values(iadlScores).filter(Boolean).length,version:(dossiers[idx].ppcs_versions||[]).length+1};
+      // Archiver l'ancienne version si elle existe
+      if(dossiers[idx].ppcs && dossiers[idx].ppcs.content){
+        if(!dossiers[idx].ppcs_versions) dossiers[idx].ppcs_versions=[];
+        dossiers[idx].ppcs_versions.push(dossiers[idx].ppcs);
+        if(dossiers[idx].ppcs_versions.length>5) dossiers[idx].ppcs_versions.shift(); // Garder 5 versions max
+      }
+      dossiers[idx].ppcs=newPPCS;
+      dossiers[idx].ppcs_valide=null; // Reset validation si regénéré
       localStorage.setItem('mediasante_dossiers',JSON.stringify(dossiers));
-      showToast('PPCS sauvegardé dans le dossier ✓');return;
+      showToast('PPCS v'+newPPCS.version+' sauvegarde dans le dossier');return;
     }
   }
   // Sauvegarde locale si pas de dossier lié
