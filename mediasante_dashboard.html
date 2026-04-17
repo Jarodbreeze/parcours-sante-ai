@@ -2,24 +2,28 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+<link rel="stylesheet" href="ps_design.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>ParcourSanté AI — Dashboard</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <style>
 :root{
-  --bg:#0f1117;--bg2:#161820;--bg3:#1e2130;--bg4:#252840;
-  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.16);
-  --text:#f0f1f5;--text2:#8b8fa8;--text3:#565a72;
-  --purple:#7c6ff7;--purple-l:#a99ef9;--purple-bg:rgba(124,111,247,0.12);--purple-b:rgba(124,111,247,0.3);
-  --teal:#3ecfaa;--teal-bg:rgba(62,207,170,0.1);--teal-b:rgba(62,207,170,0.25);
-  --amber:#f0a43a;--amber-bg:rgba(240,164,58,0.1);--amber-b:rgba(240,164,58,0.25);
-  --red:#e05c6a;--red-bg:rgba(224,92,106,0.1);--red-b:rgba(224,92,106,0.25);
-  --green:#4cba82;--green-bg:rgba(76,186,130,0.1);--green-b:rgba(76,186,130,0.25);
-  --blue:#5b9ef7;--blue-bg:rgba(91,158,247,0.1);--blue-b:rgba(91,158,247,0.25);
-  --r:10px;--rs:7px;
+  /* Remap vers ps_design.css */
+  --bg:var(--bg);--bg2:var(--bg-2);--bg3:var(--bg-3);--bg4:var(--bg-4);
+  --border:var(--border);--border2:var(--border-2);
+  --text:var(--text);--text2:var(--text-2);--text3:var(--text-3);
+  --blue:var(--blue);--blue-bg:var(--blue-bg);--blue-b:var(--blue-border);
+  --purple:var(--purple);--purple-l:var(--purple-light);--purple-bg:var(--purple-bg);--purple-b:var(--purple-border);
+  --teal:var(--teal);--teal-bg:var(--teal-bg);--teal-b:var(--teal-border);
+  --amber:var(--amber);--amber-bg:var(--amber-bg);--amber-b:var(--amber-border);
+  --red:var(--red);--red-bg:var(--red-bg);--red-b:var(--red-border);
+  --green:var(--green);--green-bg:var(--green-bg);--green-b:var(--green-border);
+  --r:var(--radius-lg);--rs:var(--radius-md);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
 
 /* TOPBAR */
 .topbar{position:sticky;top:0;z-index:100;background:rgba(15,17,23,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 16px;height:52px;display:flex;align-items:center;gap:10px}
@@ -28,8 +32,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
 .logo-text{font-size:14px;font-weight:600;letter-spacing:-.3px}
 .logo-sub{font-size:11px;color:var(--text3);margin-left:2px}
 .badge-mode{font-size:10px;font-weight:600;letter-spacing:.08em;padding:3px 8px;border-radius:20px;background:var(--purple-bg);color:var(--purple-l);border:1px solid var(--purple-b)}
-.period-sel{margin-left:auto;background:var(--bg3);border:1px solid var(--border);border-radius:20px;color:var(--text2);font-size:11px;padding:5px 10px;outline:none;font-family:inherit;cursor:pointer}
-.export-btn{padding:5px 12px;border-radius:20px;background:var(--purple-bg);border:1px solid var(--purple-b);color:var(--purple-l);font-size:11px;cursor:pointer;font-family:inherit;white-space:nowrap}
+.period-sel{margin-left:auto;background:var(--bg3);border:1px solid var(--border);border-radius:20px;color:var(--text2);font-size:11px;padding:5px 10px;outline:none;font-family:var(--font-body);cursor:pointer}
+.export-btn{padding:5px 12px;border-radius:20px;background:var(--purple-bg);border:1px solid var(--purple-b);color:var(--purple-l);font-size:11px;cursor:pointer;font-family:var(--font-body);white-space:nowrap}
 
 /* TABS */
 .nav-tabs{display:flex;gap:2px;padding:0 16px;border-bottom:1px solid var(--border);background:var(--bg2);overflow-x:auto}
@@ -107,9 +111,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
 .ars-row:last-child{border-bottom:none}
 .ars-key{color:var(--text2)}
 .ars-val{font-weight:600;color:var(--text)}
-.btn-export-ars{width:100%;padding:11px;border-radius:var(--r);background:var(--purple);border:none;color:#fff;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;margin-top:10px;transition:opacity .15s}
+.btn-export-ars{width:100%;padding:11px;border-radius:var(--r);background:var(--purple);border:none;color:#fff;font-size:13px;font-weight:600;font-family:var(--font-body);cursor:pointer;margin-top:10px;transition:opacity .15s}
 .btn-export-ars:hover{opacity:.85}
-.btn-secondary{width:100%;padding:9px;border-radius:var(--r);background:transparent;border:1px solid var(--border);color:var(--text2);font-size:12px;font-family:inherit;cursor:pointer;margin-top:6px}
+.btn-secondary{width:100%;padding:9px;border-radius:var(--r);background:transparent;border:1px solid var(--border);color:var(--text2);font-size:12px;font-family:var(--font-body);cursor:pointer;margin-top:6px}
 
 /* ALERT CARDS */
 .alert-card{border-radius:var(--rs);padding:10px 12px;margin-bottom:8px;display:flex;gap:10px;align-items:flex-start}
@@ -146,9 +150,10 @@ circle.ring-fill{fill:none;stroke-linecap:round;transition:stroke-dashoffset .6s
 
 <!-- TOPBAR -->
 <div class="topbar">
-  <button onclick="window.location.href='index.html'" style="padding:5px 10px;border-radius:6px;border:1px solid rgba(255,255,255,0.15);background:transparent;color:#8b8fa8;font-size:11px;cursor:pointer;font-family:inherit;white-space:nowrap">‹ Accueil</button>
+  <button onclick="window.location.href='parcours_sante_ai.html'" style="padding:5px 10px;border-radius:6px;border:1px solid rgba(255,255,255,0.15);background:transparent;color:#8b8fa8;font-size:11px;cursor:pointer;font-family:var(--font-body);white-space:nowrap">‹ Accueil</button>
   <div class="logo">
-    <div class="logo-dot"></div>
+    <div class="logo-dot">
+  <button class="ps-theme-btn" onclick="toggleTheme()" title="Changer le theme">🌓</button></div>
     <span class="logo-text">ParcourSanté AI</span>
     <span class="logo-sub">Dashboard</span>
   </div>
@@ -427,44 +432,175 @@ function renderTab(id){
 
 // ═══ MON ACTIVITÉ ═══
 function renderMediateur(){
-  const s=getStatsFromRealData();
-  document.getElementById('metricsGrid').innerHTML=`
-    <div class="metric-card highlight">
-      <div class="metric-label">Dossiers actifs</div>
-      <div class="metric-val" style="color:var(--purple-l)">${s.dossiers_actifs}</div>
-      <div class="metric-sub">sur ${s.dossiers} total</div>
-    </div>
-    <div class="metric-card">
-      <div class="metric-label">Transmissions</div>
-      <div class="metric-val">${s.total_tx}</div>
-      <div class="metric-trend trend-up">↑ +12% vs période préc.</div>
-    </div>
-    <div class="metric-card">
-      <div class="metric-label">Visites domicile</div>
-      <div class="metric-val">${s.visites}</div>
-      <div class="metric-sub">accompagnements</div>
-    </div>
-    <div class="metric-card">
-      <div class="metric-label">Courriers envoyés</div>
-      <div class="metric-val">${s.courriers}</div>
-      <div class="metric-trend trend-up">↑ via ParcourSanté AI</div>
-    </div>
-    <div class="metric-card">
-      <div class="metric-label">Orientations</div>
-      <div class="metric-val">${s.orientations}</div>
-      <div class="metric-sub">structures activées</div>
-    </div>
-    <div class="metric-card">
-      <div class="metric-label">Droits ouverts</div>
-      <div class="metric-val" style="color:var(--green)">${s.droits_ouverts}</div>
-      <div class="metric-trend trend-up">↑ impact direct</div>
-    </div>`;
+  const dossiers = getDossiers();
+  const now = Date.now();
+  const rdvs = JSON.parse(localStorage.getItem('ps_rdvs')||'[]');
 
-  renderActivityChart(s);
-  renderTxTypesChart(s);
-  renderDroitsChart(s);
-  renderImpact(s);
+  // ── CALCUL MÉTRIQUES RÉELLES ──
+  const actifs = dossiers.filter(d => !d.statut_manuel || d.statut_manuel === 'actif').length;
+
+  // Alertes urgentes
+  const alertesUrgentes = [];
+  dossiers.forEach(d => {
+    const p = d.data&&d.data.patient||{};
+    const name = [p.prenom,p.nom].filter(Boolean).join(' ')||d.id;
+    (d.droits||[]).forEach(dr => {
+      if(dr.statut==='expire') alertesUrgentes.push({dossier:d, name, msg:dr.type+' expiré'});
+    });
+    const txs = JSON.parse(localStorage.getItem('transmissions_'+d.id)||'[]');
+    const days = txs[0] ? Math.floor((now-new Date(txs[0].date))/86400000) : 999;
+    if(days>15) alertesUrgentes.push({dossier:d, name, msg:'Sans contact depuis '+days+'j'});
+  });
+
+  // Prochains RDV (7 jours)
+  const today = new Date().toISOString().split('T')[0];
+  const in7days = new Date(Date.now()+7*86400000).toISOString().split('T')[0];
+  const prochainRDV = rdvs.filter(r=>r.date>=today&&r.date<=in7days&&r.statut!=='annule')
+    .sort((a,b)=>a.date.localeCompare(b.date)||a.heure.localeCompare(b.heure)).slice(0,5);
+
+  // Staff/RESAD/RCP à préparer
+  const staffRDV = rdvs.filter(r=>r.type==='staff'&&r.date>=today)
+    .sort((a,b)=>a.date.localeCompare(b.date)).slice(0,3);
+
+  // Taux complétion moyen
+  let totalComp = 0;
+  dossiers.forEach(d => {
+    let s=20;
+    if(d.evaluation)s+=25;
+    if(d.ppcs)s+=25;
+    if(d.ppcs_valide)s+=15;
+    if((d.droits||[]).some(dr=>dr.statut==='ouvert'))s+=15;
+    totalComp+=Math.min(s,100);
+  });
+  const tauxComp = dossiers.length ? Math.round(totalComp/dossiers.length) : 0;
+  const compColor = tauxComp>=80?'var(--green)':tauxComp>=50?'var(--amber)':'var(--red)';
+
+  const el = document.getElementById('metricsGrid');
+
+  // ── MÉTRIQUES PRINCIPALES ──
+  el.innerHTML = `
+    <div class="metric-card highlight" onclick="window.location.href='parcours_sante_ai.html'" style="cursor:pointer">
+      <div class="metric-label">Dossiers actifs</div>
+      <div class="metric-val" style="color:var(--purple-l)">${actifs}</div>
+      <div class="metric-sub">sur ${dossiers.length} total</div>
+    </div>
+    <div class="metric-card" style="cursor:pointer" onclick="scrollTo(0,document.getElementById('alertes-section').offsetTop)">
+      <div class="metric-label">Alertes urgentes</div>
+      <div class="metric-val" style="color:${alertesUrgentes.length?'var(--red)':'var(--green)'}">${alertesUrgentes.length}</div>
+      <div class="metric-sub">${alertesUrgentes.length?'action requise':'tout est à jour'}</div>
+    </div>
+    <div class="metric-card" style="cursor:pointer" onclick="window.location.href='mediasante_agenda.html'">
+      <div class="metric-label">RDV cette semaine</div>
+      <div class="metric-val" style="color:var(--blue)">${prochainRDV.length}</div>
+      <div class="metric-sub">${prochainRDV.length?prochainRDV[0].heure+' — '+prochainRDV[0].titre.slice(0,20):'aucun prévu'}</div>
+    </div>
+    <div class="metric-card" style="cursor:pointer" onclick="window.location.href='mediasante_staff_prep.html'">
+      <div class="metric-label">Staff / RCP à préparer</div>
+      <div class="metric-val" style="color:var(--amber)">${staffRDV.length}</div>
+      <div class="metric-sub">${staffRDV.length?new Date(staffRDV[0].date+'T12:00:00').toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'}):'aucun planifié'}</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Taux de complétion</div>
+      <div class="metric-val" style="color:${compColor}">${tauxComp}%</div>
+      <div style="margin-top:8px;height:4px;background:rgba(255,255,255,.08);border-radius:2px">
+        <div style="height:100%;width:${tauxComp}%;background:${compColor};border-radius:2px;transition:width .5s"></div>
+      </div>
+    </div>
+  `;
+
+  // ── ALERTES URGENTES ──
+  let alertHtml = '<div id="alertes-section" style="margin-top:20px">';
+  alertHtml += '<div class="section-label" style="font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--text3);text-transform:uppercase;margin-bottom:10px">Alertes urgentes</div>';
+  if(alertesUrgentes.length){
+    alertesUrgentes.slice(0,5).forEach(a => {
+      alertHtml += `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--red-bg);border:1px solid var(--red-b);border-radius:8px;margin-bottom:6px;cursor:pointer" onclick="ouvrirDossier('${a.dossier.id}')">
+        <span style="font-size:14px">⚠️</span>
+        <div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--red)">${a.name}</div><div style="font-size:11px;color:var(--text3)">${a.msg}</div></div>
+        <span style="font-size:11px;color:var(--red)">→</span>
+      </div>`;
+    });
+  } else {
+    alertHtml += '<div style="padding:12px;text-align:center;font-size:13px;color:var(--text3)">✓ Aucune alerte urgente — tous vos dossiers sont à jour</div>';
+  }
+  alertHtml += '</div>';
+
+  // ── PROCHAINS RDV ──
+  alertHtml += '<div style="margin-top:20px">';
+  alertHtml += "<div style=\"font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--text3);text-transform:uppercase;margin-bottom:10px\">Prochains RDV &nbsp;<a href=\"mediasante_agenda.html\" style=\"font-size:10px;color:var(--blue);font-weight:500\">Voir tout</a></div>";
+  if(prochainRDV.length){
+    const typeColors={"visite":"#5b9ef7","consultation":"#4cba82","rdv_admin":"#a99ef9","staff":"#f0a43a","accompagnement":"#3ecfaa","relance":"#d4882a"};
+    prochainRDV.forEach(r => {
+      const dt = new Date(r.date+'T12:00:00');
+      const dateStr = dt.toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'});
+      const color = typeColors[r.type]||'#5b9ef7';
+      alertHtml += `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;margin-bottom:6px">
+        <div style="width:3px;height:36px;border-radius:2px;background:${color};flex-shrink:0"></div>
+        <div style="width:50px;flex-shrink:0"><div style="font-size:12px;font-weight:600;color:var(--text2)">${r.heure}</div><div style="font-size:10px;color:var(--text3)">${dateStr}</div></div>
+        <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.titre}</div><div style="font-size:11px;color:var(--text3)">${r.lieu||''}</div></div>
+      </div>`;
+    });
+  } else {
+    alertHtml += '<div style="padding:12px;text-align:center;font-size:13px;color:var(--text3)">Aucun RDV prévu cette semaine</div>';
+  }
+  alertHtml += '</div>';
+
+  // ── STAFF/RESAD/RCP ──
+  alertHtml += '<div style="margin-top:20px">';
+  alertHtml += "<div style=\"font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--text3);text-transform:uppercase;margin-bottom:10px\">Staff / RESAD / RCP &nbsp;<a href=\"mediasante_staff_ia.html\" style=\"font-size:10px;color:var(--blue);font-weight:500\">Preparer</a></div>";
+  if(staffRDV.length){
+    staffRDV.forEach(r => {
+      const dt = new Date(r.date+'T12:00:00');
+      const dateStr = dt.toLocaleDateString('fr-FR',{day:'numeric',month:'long'});
+      const jours = Math.ceil((new Date(r.date+'T12:00:00')-new Date())/86400000);
+      alertHtml += `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--amber-bg);border:1px solid var(--amber-b);border-radius:8px;margin-bottom:6px;cursor:pointer" onclick="window.location.href='mediasante_staff_prep.html'">
+        <span style="font-size:18px">👥</span>
+        <div style="flex:1"><div style="font-size:13px;font-weight:600">${r.titre}</div><div style="font-size:11px;color:var(--text3)">${dateStr} — dans ${jours}j</div></div>
+        <span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-b)">Préparer</span>
+      </div>`;
+    });
+  } else {
+    alertHtml += '<div style="padding:12px;background:var(--bg2);border-radius:8px;font-size:13px;color:var(--text3)">Aucun staff planifie &mdash; <a href="mediasante_staff_ia.html" style="color:var(--blue)">Lancer une analyse IA</a></div>';
+  }
+  alertHtml += '</div>';
+
+  // ── ÉTAT DES DOSSIERS ──
+  if(dossiers.length){
+    alertHtml += '<div style="margin-top:20px">';
+    alertHtml += '<div class="section-label" style="font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--text3);text-transform:uppercase;margin-bottom:10px">État des dossiers</div>';
+    dossiers.filter(d=>!d.statut_manuel||d.statut_manuel==='actif').slice(0,6).forEach(d => {
+      const p=d.data&&d.data.patient||{};
+      const name=[p.prenom,p.nom].filter(Boolean).join(' ')||d.id;
+      const ini=((p.prenom||'?')[0]+(p.nom||'?')[0]).toUpperCase();
+      let comp=20;
+      if(d.evaluation)comp+=25;
+      if(d.ppcs)comp+=25;
+      if(d.ppcs_valide)comp+=15;
+      if((d.droits||[]).some(dr=>dr.statut==='ouvert'))comp+=15;
+      comp=Math.min(comp,100);
+      const cc=comp>=80?'var(--green)':comp>=50?'var(--amber)':'var(--red)';
+      alertHtml += `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;margin-bottom:6px;cursor:pointer" onclick="ouvrirDossier('${d.id}')">
+        <div style="width:32px;height:32px;border-radius:50%;background:var(--purple-bg);border:1px solid var(--purple-b);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--purple-l);flex-shrink:0">${ini}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600">${name}</div>
+          <div style="margin-top:4px;display:flex;align-items:center;gap:6px">
+            <div style="flex:1;height:3px;background:rgba(255,255,255,.06);border-radius:2px"><div style="height:100%;width:${comp}%;background:${cc};border-radius:2px"></div></div>
+            <span style="font-size:10px;font-weight:700;color:${cc}">${comp}%</span>
+          </div>
+        </div>
+        <span style="font-size:11px;color:var(--blue)">→</span>
+      </div>`;
+    });
+    alertHtml += '</div>';
+  }
+
+  el.innerHTML += alertHtml;
 }
+
+function ouvrirDossier(id){
+  localStorage.setItem('fiche_patient_id', id);
+  window.location.href = 'mediasante_fiche_patient.html?id='+id;
+}
+
 
 function renderActivityChart(s){
   const ctx=document.getElementById('activityChart').getContext('2d');

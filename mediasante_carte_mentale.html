@@ -2,33 +2,37 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+<link rel="stylesheet" href="ps_design.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>ParcourSanté AI — Carte Mentale</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&display=swap');
 
 :root{
-  --bg:#06080f;--bg2:#0d1018;--bg3:#131722;
-  --text:#e8eaf5;--text2:#6b7194;--text3:#2d3154;
-  --red:#ff4d6d;--red-dim:rgba(255,77,109,0.15);--red-glow:rgba(255,77,109,0.4);
-  --green:#00e5a0;--green-dim:rgba(0,229,160,0.12);--green-glow:rgba(0,229,160,0.35);
-  --blue:#4d9eff;--blue-dim:rgba(77,158,255,0.12);--blue-glow:rgba(77,158,255,0.35);
-  --amber:#ffb347;--amber-dim:rgba(255,179,71,0.12);--amber-glow:rgba(255,179,71,0.35);
-  --purple:#b47fff;--purple-dim:rgba(180,127,255,0.12);--purple-glow:rgba(180,127,255,0.35);
-  --teal:#00d4ff;--teal-dim:rgba(0,212,255,0.12);--teal-glow:rgba(0,212,255,0.35);
-  --pink:#ff6eb4;--pink-dim:rgba(255,110,180,0.12);--pink-glow:rgba(255,110,180,0.35);
-  --gold:#ffd700;--gold-dim:rgba(255,215,0,0.12);--gold-glow:rgba(255,215,0,0.35);
+  /* Remap vers ps_design.css */
+  --bg:var(--bg);--bg2:var(--bg-2);--bg3:var(--bg-3);--bg4:var(--bg-4);
+  --border:var(--border);--border2:var(--border-2);
+  --text:var(--text);--text2:var(--text-2);--text3:var(--text-3);
+  --blue:var(--blue);--blue-bg:var(--blue-bg);--blue-b:var(--blue-border);
+  --purple:var(--purple);--purple-l:var(--purple-light);--purple-bg:var(--purple-bg);--purple-b:var(--purple-border);
+  --teal:var(--teal);--teal-bg:var(--teal-bg);--teal-b:var(--teal-border);
+  --amber:var(--amber);--amber-bg:var(--amber-bg);--amber-b:var(--amber-border);
+  --red:var(--red);--red-bg:var(--red-bg);--red-b:var(--red-border);
+  --green:var(--green);--green-bg:var(--green-bg);--green-b:var(--green-border);
+  --r:var(--radius-lg);--rs:var(--radius-md);
 }
 
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:'Sora',system-ui,sans-serif;color:var(--text);-webkit-font-smoothing:antialiased}
+html,body{font-family:var(--font-body);width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:'Sora',system-ui,sans-serif;color:var(--text);-webkit-font-smoothing:antialiased}
 
 /* TOPBAR */
 .topbar{position:fixed;top:0;left:0;right:0;height:52px;background:rgba(6,8,15,0.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.05);display:flex;align-items:center;padding:0 14px;gap:10px;z-index:100}
-.back-btn{padding:5px 11px;border-radius:6px;border:1px solid rgba(255,255,255,0.12);background:transparent;color:var(--text2);font-size:11px;cursor:pointer;font-family:inherit}
+.back-btn{padding:5px 11px;border-radius:6px;border:1px solid rgba(255,255,255,0.12);background:transparent;color:var(--text2);font-size:11px;cursor:pointer;font-family:var(--font-body)}
 .tb-title{font-size:13px;font-weight:600;flex:1;text-align:center;letter-spacing:-.2px}
 .phase-btns{display:flex;gap:4px;background:rgba(255,255,255,0.04);border-radius:8px;padding:3px}
-.phase-btn{padding:4px 10px;border-radius:5px;font-size:10px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--text3);font-family:inherit;transition:all .2s;white-space:nowrap}
+.phase-btn{padding:4px 10px;border-radius:5px;font-size:10px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--text3);font-family:var(--font-body);transition:all .2s;white-space:nowrap}
 .phase-btn.active{background:var(--blue);color:#fff;box-shadow:0 0 12px var(--blue-glow)}
 
 /* CANVAS AREA */
@@ -72,7 +76,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
 
 /* BOTTOM BAR */
 .bottom-bar{position:fixed;bottom:0;left:0;right:0;height:56px;background:rgba(6,8,15,0.97);backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:space-around;padding:0 8px;z-index:100}
-.bb-btn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 10px;border-radius:8px;border:none;background:transparent;color:var(--text2);cursor:pointer;font-family:inherit;transition:all .15s;min-width:52px}
+.bb-btn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 10px;border-radius:8px;border:none;background:transparent;color:var(--text2);cursor:pointer;font-family:var(--font-body);transition:all .15s;min-width:52px}
 .bb-btn:hover{background:rgba(255,255,255,0.05);color:var(--text)}
 .bb-btn-icon{font-size:18px;line-height:1}
 .bb-btn-label{font-size:9px;font-weight:600;letter-spacing:.04em}
@@ -84,9 +88,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
 .modal{background:var(--bg2);border-top:1px solid rgba(255,255,255,.08);border-radius:20px 20px 0 0;padding:20px 16px 40px;width:100%;max-width:540px;max-height:80vh;overflow-y:auto}
 .modal-title{font-size:15px;font-weight:700;margin-bottom:14px;color:var(--text)}
 .modal-close{float:right;background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;margin-top:-3px}
-.modal-inp{width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;color:var(--text);font-size:13px;padding:10px 12px;outline:none;font-family:inherit;margin-bottom:10px}
+.modal-inp{width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;color:var(--text);font-size:13px;padding:10px 12px;outline:none;font-family:var(--font-body);margin-bottom:10px}
 .modal-inp:focus{border-color:rgba(77,158,255,0.4)}
-.modal-btn{width:100%;padding:12px;border-radius:10px;background:var(--blue);border:none;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+.modal-btn{width:100%;padding:12px;border-radius:10px;background:var(--blue);border:none;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font-body)}
 
 /* LOADING */
 .loading-overlay{position:fixed;inset:0;background:rgba(6,8,15,0.9);z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;backdrop-filter:blur(8px)}
@@ -119,7 +123,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
 <!-- TOPBAR -->
 <div class="topbar">
   <button class="back-btn" onclick="window.location.href='mediasante_fiche_patient.html'">&#8249; Fiche</button>
-  <div class="tb-title" id="tbTitle">Carte Mentale</div>
+  <button class="back-btn" onclick="window.location.href='parcours_sante_ai.html'" style="margin-left:4px">&#8962; Hub</button>
+  <div class="tb-title" id="tbTitle">Carte Mentale
+  <button class="ps-theme-btn" onclick="toggleTheme()" title="Changer le theme">🌓</button></div>
   <div class="phase-btns">
     <button class="phase-btn active" id="btn-phase1" onclick="setPhase(1)">Creusage</button>
     <button class="phase-btn" id="btn-phase2" onclick="setPhase(2)">Analyse</button>
@@ -191,15 +197,18 @@ let editingBranch=null;
 let mapData={phase1:{},phase2:{},phase3:{}};
 
 // ═══ BRANCHES CONFIG ═══
+// Distance adaptative selon l'écran
+const BRANCH_DIST = window.innerWidth < 500 ? 180 : 240;
+
 const BRANCHES=[
-  {id:"identite",   label:"Identité",          icon:"👤", color:"var(--gold)",   dim:"var(--gold-dim)",   glow:"var(--gold-glow)",   angle:-90,  dist:220, keys:["nom","prenom","age","adresse","sexe","naissance","tel"]},
-  {id:"signalant",  label:"Signalant",          icon:"📢", color:"var(--blue)",   dim:"var(--blue-dim)",   glow:"var(--blue-glow)",   angle:-30,  dist:240, keys:["demandeur","structure","date_appel"]},
-  {id:"entourage",  label:"Entourage",          icon:"👨‍👩‍👧", color:"var(--green)",  dim:"var(--green-dim)",  glow:"var(--green-glow)",  angle:30,   dist:240, keys:["famille","aidants","isolement"]},
-  {id:"sante",      label:"Santé",              icon:"🏥", color:"var(--red)",    dim:"var(--red-dim)",    glow:"var(--red-glow)",    angle:90,   dist:240, keys:["pathologies","traitements","allergies"]},
-  {id:"autonomie",  label:"Autonomie",          icon:"♿", color:"var(--amber)",  dim:"var(--amber-dim)",  glow:"var(--amber-glow)",  angle:150,  dist:240, keys:["gir","iadl","upgo","mobilite"]},
-  {id:"droits",     label:"Droits & Admin",     icon:"📋", color:"var(--purple)", dim:"var(--purple-dim)", glow:"var(--purple-glow)", angle:210,  dist:240, keys:["couverture","droits_ouverts","titre_sejour"]},
-  {id:"communication",label:"Communication",   icon:"💬", color:"var(--teal)",   dim:"var(--teal-dim)",   glow:"var(--teal-glow)",   angle:270,  dist:230, keys:["langue","barriere","tel"]},
-  {id:"demande",    label:"Demande",            icon:"🎯", color:"var(--pink)",   dim:"var(--pink-dim)",   glow:"var(--pink-glow)",   angle:330,  dist:240, keys:["motif","urgence","attentes"]},
+  {id:"identite",   label:"Identite",    icon:"👤", color:"var(--gold)",   dim:"var(--gold-dim)",   glow:"var(--gold-glow)",   angle:-90,  dist:BRANCH_DIST-20, keys:["nom","prenom","age","adresse","sexe","naissance","tel"]},
+  {id:"signalant",  label:"Signalant",   icon:"📢", color:"var(--blue)",   dim:"var(--blue-dim)",   glow:"var(--blue-glow)",   angle:-30,  dist:BRANCH_DIST, keys:["demandeur","structure","date_appel"]},
+  {id:"entourage",  label:"Entourage",   icon:"👪", color:"var(--green)",  dim:"var(--green-dim)",  glow:"var(--green-glow)",  angle:30,   dist:BRANCH_DIST, keys:["famille","aidants","isolement"]},
+  {id:"sante",      label:"Sante",       icon:"🏥", color:"var(--red)",    dim:"var(--red-dim)",    glow:"var(--red-glow)",    angle:90,   dist:BRANCH_DIST, keys:["pathologies","traitements","allergies"]},
+  {id:"autonomie",  label:"Autonomie",   icon:"♿", color:"var(--amber)",  dim:"var(--amber-dim)",  glow:"var(--amber-glow)",  angle:150,  dist:BRANCH_DIST, keys:["gir","iadl","upgo","mobilite"]},
+  {id:"droits",     label:"Droits",      icon:"📋", color:"var(--purple)", dim:"var(--purple-dim)", glow:"var(--purple-glow)", angle:210,  dist:BRANCH_DIST, keys:["couverture","droits_ouverts","titre_sejour"]},
+  {id:"communication",label:"Com.",      icon:"💬", color:"var(--teal)",   dim:"var(--teal-dim)",   glow:"var(--teal-glow)",   angle:270,  dist:BRANCH_DIST-10, keys:["langue","barriere","tel"]},
+  {id:"demande",    label:"Demande",     icon:"🎯", color:"var(--pink)",   dim:"var(--pink-dim)",   glow:"var(--pink-glow)",   angle:330,  dist:BRANCH_DIST, keys:["motif","urgence","attentes"]},
 ];
 
 const CENTER={x:1500,y:1500};
@@ -306,9 +315,10 @@ function renderMap(){
   const name=[p.prenom,p.nom].filter(Boolean).join(" ")||"Patient";
 
   // Centre
+  const cSize = window.innerWidth < 500 ? 100 : 140;
   const centerEl=document.createElement("div");
   centerEl.className="node node-center";
-  centerEl.style.cssText="left:"+(CENTER.x-70)+"px;top:"+(CENTER.y-70)+"px;width:140px;height:140px";
+  centerEl.style.cssText="left:"+(CENTER.x-cSize/2)+"px;top:"+(CENTER.y-cSize/2)+"px;width:"+cSize+"px;height:"+cSize+"px;border-radius:50%";
   centerEl.innerHTML='<div class="node-center-icon">&#127968;</div><div class="node-center-name">'+name+'</div><div class="node-center-age">'+(p.age||"")+(p.sexe?" · "+(p.sexe==="M"?"H":"F"):"")+"</div>";
   canvas.appendChild(centerEl);
 
@@ -326,7 +336,8 @@ function renderMap(){
     // Noeud branche
     const brEl=document.createElement("div");
     brEl.className="node node-branch";
-    brEl.style.cssText="left:"+(bx-75)+"px;top:"+(by-50)+"px;background:"+br.dim+";border:1.5px solid "+br.color+";box-shadow:0 0 20px "+br.glow+";";
+    const bSize = window.innerWidth < 500 ? 60 : 75;
+    brEl.style.cssText="left:"+(bx-bSize)+"px;top:"+(by-40)+"px;min-width:"+(bSize*2)+"px;max-width:"+(bSize*2+20)+"px;background:"+br.dim+";border:1.5px solid "+br.color+";box-shadow:0 0 20px "+br.glow+";";
     brEl.innerHTML='<div class="node-branch-icon">'+br.icon+'</div><div class="node-branch-label" style="color:'+br.color+'">'+br.label+'</div><div class="node-branch-count" style="color:'+br.color+'">'+(items.length?items.length+" éléments":"vide")+"</div>";
     brEl.onclick=()=>showBranchPanel(br,bx,by);
     canvas.appendChild(brEl);
@@ -336,7 +347,7 @@ function renderMap(){
     items.slice(0,maxSub).forEach((item,i)=>{
       const spread=items.slice(0,maxSub).length;
       const spreadRad=rad+(i-(spread-1)/2)*0.35;
-      const subDist=150+Math.floor(i/2)*30;
+      const subDist=(window.innerWidth<500?100:150)+Math.floor(i/2)*20;
       const sx=bx+Math.cos(spreadRad)*subDist;
       const sy=by+Math.sin(spreadRad)*subDist;
 
@@ -583,7 +594,19 @@ function applyTransform(){document.getElementById("canvas").style.transform="tra
 function zoomAt(delta,cx,cy){const ns=Math.max(0.3,Math.min(2.5,scale+delta));const f=ns/scale;panX=cx-(cx-panX)*f;panY=cy-(cy-panY)*f;scale=ns;applyTransform();}
 function zoomIn(){zoomAt(0.15,window.innerWidth/2,window.innerHeight/2);}
 function zoomOut(){zoomAt(-0.15,window.innerWidth/2,window.innerHeight/2);}
-function resetView(){scale=0.9;panX=(window.innerWidth-CENTER.x*scale)/2;panY=((window.innerHeight-52-56)-CENTER.y*scale)/2+52;applyTransform();}
+function resetView(){
+  // Adapter le scale selon la taille d'écran pour que la carte soit lisible
+  const availW = window.innerWidth;
+  const availH = window.innerHeight - 52 - 56; // topbar + bottombar
+  // La carte s'étend sur ~700px de large (dist 240 * 2 + noeud centre 140)
+  const carteLargeur = 700;
+  const carteHauteur = 700;
+  scale = Math.min(availW / carteLargeur, availH / carteHauteur, 1.0);
+  scale = Math.max(scale, 0.35); // minimum lisible
+  panX = (availW - CENTER.x * scale) / 2;
+  panY = (availH - CENTER.y * scale) / 2 + 52;
+  applyTransform();
+}
 
 // ═══ PARTICLES ═══
 function createParticles(){

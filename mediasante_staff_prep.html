@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="ps_design.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>ParcourSante AI — Preparation Staff / RESAD / RCP</title>
+<style>
+:root{
+  /* Remap vers ps_design.css */
+  --bg:var(--bg);--bg2:var(--bg-2);--bg3:var(--bg-3);--bg4:var(--bg-4);
+  --border:var(--border);--border2:var(--border-2);
+  --text:var(--text);--text2:var(--text-2);--text3:var(--text-3);
+  --blue:var(--blue);--blue-bg:var(--blue-bg);--blue-b:var(--blue-border);
+  --purple:var(--purple);--purple-l:var(--purple-light);--purple-bg:var(--purple-bg);--purple-b:var(--purple-border);
+  --teal:var(--teal);--teal-bg:var(--teal-bg);--teal-b:var(--teal-border);
+  --amber:var(--amber);--amber-bg:var(--amber-bg);--amber-b:var(--amber-border);
+  --red:var(--red);--red-bg:var(--red-bg);--red-b:var(--red-border);
+  --green:var(--green);--green-bg:var(--green-bg);--green-b:var(--green-border);
+  --r:var(--radius-lg);--rs:var(--radius-md);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+.topbar{position:sticky;top:0;z-index:100;background:rgba(10,12,18,0.97);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);height:52px;display:flex;align-items:center;padding:0 14px;gap:10px}
+.back-btn{padding:5px 11px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:11px;cursor:pointer;font-family:var(--font-body)}
+.tb-title{font-size:13px;font-weight:600;flex:1;text-align:center}
+
+/* PHASES */
+.phase-bar{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);overflow-x:auto}
+.phase-btn{flex:1;padding:10px 8px;text-align:center;font-size:11px;font-weight:600;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;min-width:80px;transition:all .15s}
+.phase-btn.active{color:var(--blue);border-bottom-color:var(--blue)}
+.phase-btn.done{color:var(--green)}
+
+/* CONTENT */
+.content{padding:14px 14px 100px;max-width:640px;margin:0 auto}
+
+/* SECTION */
+.section-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:12px;overflow:hidden}
+.section-header{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;border-bottom:1px solid var(--border)}
+.section-icon{font-size:18px;flex-shrink:0}
+.section-title-text{font-size:13px;font-weight:700;flex:1}
+.section-status{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px}
+.section-arrow{font-size:12px;color:var(--text3);transition:transform .2s}
+.section-arrow.open{transform:rotate(90deg)}
+.section-body{padding:12px 14px;display:none}
+.section-body.open{display:block}
+
+/* FIELDS */
+.field{margin-bottom:10px}
+.field-label{font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.field-label .ai-badge{font-size:9px;padding:1px 5px;border-radius:3px;background:var(--purple-bg);color:var(--purple-l);border:1px solid var(--purple-b)}
+.field-input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:13px;padding:9px 11px;outline:none;font-family:var(--font-body);line-height:1.5;-webkit-appearance:none}
+.field-input:focus{border-color:var(--blue-b)}
+textarea.field-input{resize:vertical;min-height:70px}
+.field-select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:13px;padding:9px 11px;outline:none;font-family:var(--font-body);-webkit-appearance:none}
+
+/* AI SUGGEST */
+.ai-suggest{padding:8px 10px;background:var(--purple-bg);border:1px solid var(--purple-b);border-radius:var(--rs);font-size:12px;color:var(--text2);line-height:1.5;cursor:pointer;transition:all .15s;margin-top:6px}
+.ai-suggest:hover{background:rgba(139,124,248,0.15)}
+.ai-suggest-label{font-size:10px;font-weight:700;color:var(--purple-l);margin-bottom:3px}
+
+/* SCORE BADGE */
+.score-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.score-badge{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid}
+
+/* QUESTIONS COLLÉGIALES */
+.question-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);margin-bottom:6px}
+.question-check{width:20px;height:20px;border-radius:4px;border:1.5px solid var(--border2);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:1px;transition:all .15s}
+.question-check.checked{background:var(--blue);border-color:var(--blue);color:#fff}
+.question-text{font-size:12px;color:var(--text);flex:1;line-height:1.5}
+
+/* VOTE */
+.vote-row{display:flex;gap:6px;margin-top:8px}
+.vote-btn{flex:1;padding:6px 4px;border-radius:6px;border:1px solid var(--border);background:transparent;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font-body);transition:all .15s;text-align:center}
+.vote-btn.accord{color:var(--green);border-color:var(--green-b)}
+.vote-btn.accord.active{background:var(--green-bg)}
+.vote-btn.reserve{color:var(--amber);border-color:var(--amber-b)}
+.vote-btn.reserve.active{background:var(--amber-bg)}
+.vote-btn.opposition{color:var(--red);border-color:var(--red-b)}
+.vote-btn.opposition.active{background:var(--red-bg)}
+
+/* DECISION */
+.decision-item{padding:10px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);margin-bottom:6px}
+.decision-add{width:100%;padding:10px;border-radius:var(--rs);border:1px dashed var(--border2);background:transparent;color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--font-body);margin-top:6px}
+
+/* TIMER */
+.timer-bar{position:fixed;bottom:60px;left:0;right:0;background:var(--bg2);border-top:1px solid var(--border);padding:8px 14px;display:flex;align-items:center;gap:12px;z-index:90}
+.timer-display{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:1px;color:var(--blue);flex:1}
+.timer-display.warning{color:var(--amber)}
+.timer-display.danger{color:var(--red);animation:pulse-red 1s infinite}
+@keyframes pulse-red{0%,100%{opacity:1}50%{opacity:.5}}
+.timer-btn{padding:6px 12px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font-body);transition:all .15s}
+.timer-btn:hover{background:var(--bg3)}
+.timer-label{font-size:10px;color:var(--text3)}
+
+/* BOTTOM BAR */
+.bottom-bar{position:fixed;bottom:0;left:0;right:0;padding:8px 14px;background:rgba(10,12,18,0.97);backdrop-filter:blur(16px);border-top:1px solid var(--border);display:flex;gap:8px;z-index:100}
+.btn-main{flex:1;padding:12px;border-radius:var(--r);background:var(--blue);border:none;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font-body);transition:opacity .15s}
+.btn-main:hover{opacity:.9}
+.btn-sec{padding:12px 16px;border-radius:var(--r);border:1px solid var(--border);background:transparent;color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--font-body)}
+
+/* PRÉSENTS */
+.present-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.present-chip{display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;background:var(--blue-bg);border:1px solid var(--blue-b);color:var(--blue);cursor:pointer}
+.present-chip .x{color:var(--text3);margin-left:2px}
+
+/* CR */
+.cr-content{font-size:13px;color:var(--text2);line-height:1.8;white-space:pre-wrap;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:10px}
+
+.hidden{display:none}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1e2230;border:1px solid rgba(255,255,255,.18);color:#f0f1f5;padding:9px 18px;border-radius:20px;font-size:12px;z-index:999;white-space:nowrap;pointer-events:none}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="back-btn" onclick="window.location.href='parcours_sante_ai.html'">&#8249; Accueil</button>
+  <div class="tb-title" id="tbTitle">Staff / RESAD / RCP
+  <button class="ps-theme-btn" onclick="toggleTheme()" title="Changer le theme">🌓</button></div>
+</div>
+
+<div class="phase-bar">
+  <div class="phase-btn active" id="ph-0" onclick="goPhase(0)">&#9312; Config</div>
+  <div class="phase-btn" id="ph-1" onclick="goPhase(1)">&#9313; Presentation</div>
+  <div class="phase-btn" id="ph-2" onclick="goPhase(2)">&#9314; Collegiale</div>
+  <div class="phase-btn" id="ph-3" onclick="goPhase(3)">&#9315; Compte-rendu</div>
+</div>
+
+<div class="content" id="mainContent"></div>
+
+<!-- TIMER (visible en phase 2) -->
+<div class="timer-bar hidden" id="timerBar">
+  <div>
+    <div class="timer-label" id="timerLabel">Temps ecoule</div>
+    <div class="timer-display" id="timerDisplay">00:00</div>
+  </div>
+  <button class="timer-btn" onclick="toggleTimer()" id="timerToggleBtn">Demarrer</button>
+  <button class="timer-btn" onclick="resetTimer()">Reset</button>
+  <div style="flex:1"></div>
+  <div style="font-size:11px;color:var(--text3);text-align:right">Cible : <span id="timerTarget">15 min</span></div>
+</div>
+
+<div class="bottom-bar" id="bottomBar"></div>
+
+<script>
+// ── DATA ──
+const getDossiers=()=>JSON.parse(localStorage.getItem("mediasante_dossiers")||"[]");
+const getApiKey=()=>localStorage.getItem("mediasante_api_key")||"";
+
+let currentPhase=0;
+let staffData={
+  type:"staff",
+  dossierId:"",
+  dossierName:"",
+  date:new Date().toISOString().split("T")[0],
+  heure:"09:00",
+  duree:15,
+  presents:[],
+  presentation:{
+    identite:"",demandeur:"",score:"",antecedents:"",autonomie:"",
+    aptitude_decisionnelle:"",cercle_soin:"",cercle_familial:"",
+    domicile:"",ressources:"",protection_juridique:"",situation_admin:"",
+    attente_immediate:"",attente_long_terme:""
+  },
+  difficultes:"",
+  questions:[],
+  decisions:[],
+  votes:{},
+  cr:""
+};
+
+let timerInterval=null;
+let timerSeconds=0;
+let timerRunning=false;
+
+// ── INIT ──
+window.addEventListener("load",function(){
+  const id=localStorage.getItem("fiche_patient_id");
+  if(id){
+    const d=getDossiers().find(function(x){return x.id===id;});
+    if(d) preFill(d);
+  }
+  renderPhase(0);
+});
+
+function preFill(d){
+  const p=d.data&&d.data.patient||{};
+  const dem=d.data&&d.data.demandeur||{};
+  const alerts=d.data&&d.data.alerts||{};
+  const cercle=d.cercle_soin||[];
+
+  staffData.dossierId=d.id;
+  staffData.dossierName=[p.prenom,p.nom].filter(Boolean).join(" ")||d.id;
+
+  // Identite
+  const parts=[];
+  if(p.prenom||p.nom) parts.push([p.prenom,p.nom].filter(Boolean).join(" "));
+  if(p.age) parts.push(p.age+" ans");
+  if(p.naissance) parts.push("ne(e) le "+p.naissance);
+  if(p.sexe) parts.push(p.sexe==="M"?"Homme":"Femme");
+  if(p.adresse) parts.push(p.adresse);
+  if(p.situation) parts.push("Situation : "+p.situation);
+  staffData.presentation.identite=parts.join("\n");
+
+  // Demandeur
+  const demParts=[];
+  if(dem.nom) demParts.push(dem.nom);
+  if(dem.structure) demParts.push(dem.structure);
+  if(dem.profil) demParts.push("Qualite : "+dem.profil);
+  if(d.data&&d.data.demande) demParts.push("Motif : "+d.data.demande);
+  staffData.presentation.demandeur=demParts.join("\n");
+
+  // Score
+  const motifs=d.motifs||[];
+  staffData.presentation.score="Score de complexite : "+(d.score||"??")+"/5\nMotifs : "+(motifs.join(", ")||"Non renseignes");
+
+  // Antecedents
+  const anteParts=[];
+  if(p.antecedents) anteParts.push(p.antecedents);
+  if(p.traitements) anteParts.push("Traitements : "+p.traitements);
+  const alSante=alerts.sante||[];
+  if(alSante.length) anteParts.push("Alertes sante : "+alSante.join(", "));
+  staffData.presentation.antecedents=anteParts.join("\n")||"A completer";
+
+  // Autonomie
+  if(d.evaluation){
+    const ev=d.evaluation;
+    const girLabel=ev.gir<=2?"Dependance totale":ev.gir<=4?"Dependance partielle":"Dependance faible";
+    const iadlLabel=ev.iadl<=2?"Deficit severe":ev.iadl<=5?"Deficit modere":"Autonomie conservee";
+    staffData.presentation.autonomie="GIR "+ev.gir+" - "+girLabel+"\nIADL "+ev.iadl+"/8 - "+iadlLabel+(ev.upgo?"\nUp & Go : "+ev.upgo+"s ("+(ev.upgo<12?"Normal":ev.upgo<20?"Risque modere":"Risque eleve")+")":" ");
+  } else {
+    const alAuto=alerts.autonomie||[];
+    staffData.presentation.autonomie=alAuto.length?"Alertes autonomie : "+alAuto.join(", "):"Evaluation non realisee - a completer";
+  }
+
+  // Aptitude decisionnelle
+  staffData.presentation.aptitude_decisionnelle="A evaluer lors de la presentation\n- Comprend-il sa situation ?\n- Peut-il consentir aux soins ?\n- A-t-il deja exprime des souhaits ?";
+
+  // Cercle de soin
+  const medicaux=cercle.filter(function(c){return["mt","spec","ide","kine","ergo","psy","pharma"].includes(c.role);});
+  const sociaux=cercle.filter(function(c){return["as","ssiad","saad"].includes(c.role);});
+  const parts2=[];
+  if(medicaux.length) parts2.push("Equipe medicale : "+medicaux.map(function(c){return c.nom+" ("+c.role+")";}).join(", "));
+  if(sociaux.length) parts2.push("Equipe sociale : "+sociaux.map(function(c){return c.nom+" ("+c.role+")";}).join(", "));
+  if(!cercle.length) parts2.push("Cercle de soin non constitue - a completer");
+  staffData.presentation.cercle_soin=parts2.join("\n");
+
+  // Cercle familial
+  const famille=cercle.filter(function(c){return c.role==="famille";});
+  const alEnv=alerts.env||[];
+  const famParts=[];
+  if(famille.length) famParts.push("Famille : "+famille.map(function(c){return c.nom+" - "+c.structure;}).join(", "));
+  if(alEnv.length) famParts.push("Alertes environnement : "+alEnv.join(", "));
+  staffData.presentation.cercle_familial=famParts.join("\n")||"A completer - isolement a evaluer";
+
+  // Domicile
+  const alHab=alerts.habitat||[];
+  staffData.presentation.domicile=alHab.length?"Alertes habitat : "+alHab.join(", "):"Conditions de domicile a preciser";
+  if(p.adresse) staffData.presentation.domicile="Adresse : "+p.adresse+"\n"+staffData.presentation.domicile;
+
+  // Ressources
+  const alAdmin=alerts.admin||[];
+  const droits=d.droits||[];
+  const resParts=[];
+  if(droits.length) resParts.push("Droits : "+droits.map(function(dr){return dr.type+" ("+dr.statut+")";}).join(", "));
+  if(alAdmin.length) resParts.push("Alertes admin : "+alAdmin.join(", "));
+  if(p.couverture) resParts.push("Couverture : "+p.couverture);
+  staffData.presentation.ressources=resParts.join("\n")||"A completer";
+
+  // Protection juridique
+  const pj=droits.filter(function(dr){return["Tutelle","Curatelle","Sauvegarde"].some(function(t){return dr.type.includes(t);});});
+  staffData.presentation.protection_juridique=pj.length?pj.map(function(dr){return dr.type+" : "+dr.statut;}).join(", "):"Aucune mesure en cours - a evaluer";
+
+  // Situation admin
+  const sitParts=[];
+  if(p.langue&&p.langue!=="Francais") sitParts.push("Langue : "+p.langue+" - interpreter a prevoir");
+  if(p.couverture) sitParts.push("Couverture : "+p.couverture);
+  staffData.presentation.situation_admin=sitParts.join("\n")||"Situation administrative a preciser";
+
+  // Attentes
+  staffData.presentation.attente_immediate=d.data&&d.data.demande?d.data.demande.slice(0,200):"A preciser par le demandeur";
+  staffData.presentation.attente_long_terme="A evaluer avec le patient et son entourage";
+
+  // Questions auto selon alertes
+  const questions=[];
+  if(alSante.length) questions.push({id:"q1",text:"Quelle prise en charge medicale prioritaire pour : "+alSante.slice(0,2).join(", ")+" ?",checked:false,vote:null});
+  if(alAdmin.some(function(a){return a.includes("AME")||a.includes("CSS");})) questions.push({id:"q2",text:"Quel referent pour l ouverture des droits urgents (AME/CSS) ?",checked:false,vote:null});
+  if(d.evaluation&&d.evaluation.gir<=4) questions.push({id:"q3",text:"APA eligible (GIR "+d.evaluation.gir+") - qui porte le dossier CD93 ?",checked:false,vote:null});
+  if(alEnv.some(function(a){return a.toLowerCase().includes("isol");})) questions.push({id:"q4",text:"Quel dispositif pour rompre l isolement social ?",checked:false,vote:null});
+  if(!pj.length) questions.push({id:"q5",text:"Une mesure de protection juridique est-elle a envisager ?",checked:false,vote:null});
+  if(!d.ppcs) questions.push({id:"q6",text:"PPCS a construire collectivement - quels objectifs prioritaires ?",checked:false,vote:null});
+  if(questions.length===0) questions.push({id:"q7",text:"Quelles sont les priorites d action pour ce dossier ?",checked:false,vote:null});
+  staffData.questions=questions;
+}
+
+// ── PHASES ──
+function goPhase(n){
+  currentPhase=n;
+  for(var i=0;i<4;i++){
+    var btn=document.getElementById("ph-"+i);
+    btn.classList.toggle("active",i===n);
+  }
+  var timer=document.getElementById("timerBar");
+  timer.classList.toggle("hidden",n!==2);
+  renderPhase(n);
+}
+
+function renderPhase(n){
+  if(n===0) renderConfig();
+  else if(n===1) renderPresentation();
+  else if(n===2) renderCollegiale();
+  else if(n===3) renderCR();
+}
+
+// ── PHASE 0 : CONFIG ──
+function renderConfig(){
+  var el=document.getElementById("mainContent");
+  var dossiersOpts=getDossiers().map(function(d){
+    var p=d.data&&d.data.patient||{};
+    var name=[p.prenom,p.nom].filter(Boolean).join(" ")||d.id;
+    return "<option value=\""+d.id+"\" "+(d.id===staffData.dossierId?"selected":"")+">"+name+" ("+d.id+")</option>";
+  }).join("");
+
+  el.innerHTML=""+
+    "<div class=\"section-card\" style=\"margin-top:8px\">"+
+    "<div class=\"section-header\" style=\"cursor:default\">"+
+    "<span class=\"section-icon\">⚙️</span>"+
+    "<div class=\"section-title-text\">Configuration de la reunion</div>"+
+    "</div>"+
+    "<div class=\"section-body open\">"+
+    "<div class=\"field\"><label class=\"field-label\">Type de reunion</label>"+
+    "<select class=\"field-select\" id=\"cfg-type\" onchange=\"staffData.type=this.value\">"+
+    "<option value=\"staff\" "+(staffData.type==="staff"?"selected":"")+">Staff DAC</option>"+
+    "<option value=\"resad\" "+(staffData.type==="resad"?"selected":"")+">RESAD</option>"+
+    "<option value=\"rcp\" "+(staffData.type==="rcp"?"selected":"")+">RCP (Reunion Concertation Pluridisciplinaire)</option>"+
+    "<option value=\"synthese\" "+(staffData.type==="synthese"?"selected":"")+">Synthese partenariale</option>"+
+    "<option value=\"crsa\" "+(staffData.type==="crsa"?"selected":"")+">CRSA</option>"+
+    "</select></div>"+
+    "<div class=\"field\"><label class=\"field-label\">Dossier patient</label>"+
+    "<select class=\"field-select\" id=\"cfg-dossier\" onchange=\"changerDossier(this.value)\">"+
+    "<option value=\"\">Selectionner un patient...</option>"+
+    dossiersOpts+
+    "</select></div>"+
+    "<div style=\"display:grid;grid-template-columns:1fr 1fr;gap:8px\">"+
+    "<div class=\"field\"><label class=\"field-label\">Date</label><input type=\"date\" class=\"field-input\" value=\""+staffData.date+"\" onchange=\"staffData.date=this.value\"/></div>"+
+    "<div class=\"field\"><label class=\"field-label\">Heure</label><input type=\"time\" class=\"field-input\" value=\""+staffData.heure+"\" onchange=\"staffData.heure=this.value\"/></div>"+
+    "</div>"+
+    "<div class=\"field\"><label class=\"field-label\">Duree par dossier (minutes)</label>"+
+    "<select class=\"field-select\" onchange=\"staffData.duree=parseInt(this.value)\">"+
+    "<option value=\"10\" "+(staffData.duree===10?"selected":"")+">10 minutes</option>"+
+    "<option value=\"15\" "+(staffData.duree===15?"selected":"")+">15 minutes</option>"+
+    "<option value=\"20\" "+(staffData.duree===20?"selected":"")+">20 minutes</option>"+
+    "<option value=\"30\" "+(staffData.duree===30?"selected":"")+">30 minutes</option>"+
+    "</select></div>"+
+    "<div class=\"field\"><label class=\"field-label\">Participants presents</label>"+
+    "<div style=\"display:flex;gap:6px\"><input type=\"text\" class=\"field-input\" id=\"presentInput\" placeholder=\"Nom du participant...\" style=\"flex:1\"/><button onclick=\"addPresent()\" style=\"padding:9px 12px;border-radius:var(--rs);background:var(--blue);border:none;color:#fff;font-size:12px;cursor:pointer;font-family:var(--font-body)\">+</button></div>"+
+    "<div class=\"present-chips\" id=\"presentChips\">"+staffData.presents.map(function(p){return renderChip(p);}).join("")+"</div>"+
+    "</div>"+
+    "</div></div>";
+
+  document.getElementById("bottomBar").innerHTML=
+    "<button class=\"btn-sec\" onclick=\"window.location.href='parcours_sante_ai.html'\">Annuler</button>"+
+    "<button class=\"btn-main\" onclick=\"goPhase(1)\">Preparer la presentation &#8594;</button>";
+
+  document.getElementById("presentInput").addEventListener("keydown",function(e){if(e.key==="Enter")addPresent();});
+}
+
+function renderChip(p){
+  return "<div class=\"present-chip\" onclick=\"removePresent('"+p+"')\">"+p+" <span class=\"x\">x</span></div>";
+}
+
+function addPresent(){
+  var val=document.getElementById("presentInput").value.trim();
+  if(!val)return;
+  if(!staffData.presents.includes(val)){
+    staffData.presents.push(val);
+    document.getElementById("presentChips").innerHTML=staffData.presents.map(renderChip).join("");
+    document.getElementById("presentInput").value="";
+  }
+}
+
+function removePresent(p){
+  staffData.presents=staffData.presents.filter(function(x){return x!==p;});
+  document.getElementById("presentChips").innerHTML=staffData.presents.map(renderChip).join("");
+}
+
+function changerDossier(id){
+  staffData.dossierId=id;
+  var d=getDossiers().find(function(x){return x.id===id;});
+  if(d) preFill(d);
+}
+
+// ── PHASE 1 : PRÉSENTATION ──
+var sections1=[
+  {id:"identite",icon:"👤",label:"Identite du patient",key:"identite"},
+  {id:"score",icon:"📊",label:"Score de complexite et motifs",key:"score"},
+  {id:"demandeur",icon:"📢",label:"Demandeur et motif de signalement",key:"demandeur"},
+  {id:"antecedents",icon:"🏥",label:"Antecedents medicaux et traitements",key:"antecedents"},
+  {id:"autonomie",icon:"♿",label:"Autonomie fonctionnelle (AGGIR / IADL)",key:"autonomie"},
+  {id:"aptitude",icon:"🧠",label:"Aptitude decisionnelle",key:"aptitude_decisionnelle"},
+  {id:"soin",icon:"👥",label:"Cercle de soin",key:"cercle_soin"},
+  {id:"famille",icon:"👨‍👩‍👧",label:"Cercle familial et aide principale",key:"cercle_familial"},
+  {id:"domicile",icon:"🏠",label:"Domicile et conditions de vie",key:"domicile"},
+  {id:"ressources",icon:"💶",label:"Ressources et droits",key:"ressources"},
+  {id:"pj",icon:"⚖️",label:"Protection juridique",key:"protection_juridique"},
+  {id:"admin",icon:"🗂",label:"Situation administrative",key:"situation_admin"},
+  {id:"attente_imm",icon:"🎯",label:"Attente immediate du demandeur",key:"attente_immediate"},
+  {id:"attente_lt",icon:"🔭",label:"Attente a long terme",key:"attente_long_terme"},
+];
+
+var openSections={};
+
+function renderPresentation(){
+  var el=document.getElementById("mainContent");
+  el.innerHTML="<div style=\"font-size:12px;color:var(--text3);margin-bottom:12px;line-height:1.5\">Verifiez et completez chaque rubrique. Les champs pre-remplis proviennent du dossier patient.</div>";
+
+  sections1.forEach(function(s){
+    var val=staffData.presentation[s.key]||"";
+    var filled=val&&val.length>5&&!val.includes("A completer")&&!val.includes("A preciser")&&!val.includes("A evaluer");
+    var card=document.createElement("div");
+    card.className="section-card";
+    card.innerHTML=
+      "<div class=\"section-header\" onclick=\"toggleSection('"+s.id+"')\">"+
+      "<span class=\"section-icon\">"+s.icon+"</span>"+
+      "<div class=\"section-title-text\">"+s.label+"</div>"+
+      "<span class=\"section-status\" style=\"background:"+(filled?"var(--green-bg)":"var(--amber-bg)")+";color:"+(filled?"var(--green)":"var(--amber)")+";border:1px solid "+(filled?"var(--green-b)":"var(--amber-b)")+"\">"+
+      (filled?"OK":"A verifier")+"</span>"+
+      "<span class=\"section-arrow\" id=\"arrow-"+s.id+"\">›</span>"+
+      "</div>"+
+      "<div class=\"section-body\" id=\"body-"+s.id+"\" "+(openSections[s.id]?"style=\"display:block\"":"")+">"+
+      "<div class=\"field\"><textarea class=\"field-input\" id=\"field-"+s.id+"\" rows=\"4\" onchange=\"staffData.presentation['"+s.key+"']=this.value\">"+val+"</textarea></div>"+
+      "<button onclick=\"genAI('"+s.id+"','"+s.key+"')\" style=\"padding:7px 12px;border-radius:var(--rs);background:var(--purple-bg);border:1px solid var(--purple-b);color:var(--purple-l);font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font-body);width:100%;margin-top:4px\">✨ Enrichir avec IA</button>"+
+      "</div>";
+    el.appendChild(card);
+    if(openSections[s.id]) card.querySelector(".section-arrow").classList.add("open");
+  });
+
+  document.getElementById("bottomBar").innerHTML=
+    "<button class=\"btn-sec\" onclick=\"goPhase(0)\">&#8592; Config</button>"+
+    "<button class=\"btn-main\" onclick=\"goPhase(2)\">Passer en collegiale &#8594;</button>";
+}
+
+function toggleSection(id){
+  openSections[id]=!openSections[id];
+  var body=document.getElementById("body-"+id);
+  var arrow=document.getElementById("arrow-"+id);
+  body.style.display=openSections[id]?"block":"none";
+  arrow.classList.toggle("open",openSections[id]);
+}
+
+async function genAI(sectionId,key){
+  var apiKey=getApiKey();
+  var field=document.getElementById("field-"+sectionId);
+  var current=field.value;
+  if(!apiKey.startsWith("sk-")){showToast("Cle API requise");return;}
+  field.style.opacity="0.5";
+  var sLabel=sections1.find(function(s){return s.id===sectionId;});
+  var prompt="Tu es coordinateur DAC. Pour le dossier suivant, redige la rubrique \""+
+    (sLabel?sLabel.label:key)+"\" pour un staff pluridisciplinaire. Sois concis (3-5 lignes max), factuel, professionnel.\n\nContexte disponible:\n"+current+
+    "\n\nDossier patient: "+staffData.dossierName+"\nType de reunion: "+staffData.type+"\n\nRedige directement le texte de la rubrique, sans introduction.";
+  try{
+    var resp=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+      body:JSON.stringify({model:"claude-sonnet-4-5",max_tokens:200,messages:[{role:"user",content:prompt}]})
+    });
+    var data=await resp.json();
+    var text=data.content&&data.content[0]&&data.content[0].text||"";
+    if(text){field.value=text;staffData.presentation[key]=text;showToast("Enrichi par IA");}
+  }catch(e){showToast("Erreur API");}
+  field.style.opacity="1";
+}
+
+// ── PHASE 2 : COLLÉGIALE ──
+function renderCollegiale(){
+  var el=document.getElementById("mainContent");
+
+  // Recap présentation
+  var recapHtml="<div style=\"background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:14px\">";
+  recapHtml+="<div style=\"font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px\">Resume de la presentation</div>";
+  recapHtml+="<div style=\"font-size:13px;font-weight:600;color:var(--blue);margin-bottom:6px\">"+staffData.dossierName+"</div>";
+  if(staffData.presentation.identite) recapHtml+="<div style=\"font-size:12px;color:var(--text2);margin-bottom:4px;white-space:pre-wrap\">"+staffData.presentation.identite.split("\n").slice(0,3).join("\n")+"</div>";
+  if(staffData.presentation.score) recapHtml+="<div style=\"font-size:12px;color:var(--amber);margin-bottom:4px\">"+staffData.presentation.score.split("\n")[0]+"</div>";
+  recapHtml+="</div>";
+
+  // Difficultes
+  var difficultesHtml="<div class=\"section-card\" style=\"margin-bottom:12px\">"+
+    "<div class=\"section-header\" style=\"cursor:default\"><span class=\"section-icon\">⚡</span><div class=\"section-title-text\">Difficultes rencontrees</div></div>"+
+    "<div class=\"section-body open\">"+
+    "<div class=\"field\"><textarea class=\"field-input\" id=\"difficultes-field\" rows=\"4\" placeholder=\"Decrivez les difficultes qui motivent la presentation en staff...\" onchange=\"staffData.difficultes=this.value\">"+staffData.difficultes+"</textarea></div>"+
+    "</div></div>";
+
+  // Questions collégiales
+  var questionsHtml="<div class=\"section-card\" style=\"margin-bottom:12px\">"+
+    "<div class=\"section-header\" style=\"cursor:default\"><span class=\"section-icon\">❓</span><div class=\"section-title-text\">Questions soumises au groupe</div></div>"+
+    "<div class=\"section-body open\" id=\"questionsBody\">";
+  staffData.questions.forEach(function(q,i){
+    questionsHtml+="<div class=\"question-item\">"+
+      "<div class=\"question-check "+(q.checked?"checked":"")+"\" onclick=\"toggleQuestion("+i+")\"> "+(q.checked?"✓":"")+"</div>"+
+      "<div class=\"question-text\">"+q.text+"</div>"+
+      "</div>";
+  });
+  questionsHtml+="<div style=\"margin-top:8px;display:flex;gap:6px\">"+
+    "<input type=\"text\" class=\"field-input\" id=\"newQuestion\" placeholder=\"Ajouter une question...\" style=\"flex:1\"/>"+
+    "<button onclick=\"addQuestion()\" style=\"padding:9px 12px;border-radius:var(--rs);background:var(--blue);border:none;color:#fff;font-size:12px;cursor:pointer;font-family:var(--font-body)\">+</button>"+
+    "</div>";
+  questionsHtml+="</div></div>";
+
+  // Decisions
+  var decisionsHtml="<div class=\"section-card\" style=\"margin-bottom:12px\">"+
+    "<div class=\"section-header\" style=\"cursor:default\"><span class=\"section-icon\">✅</span><div class=\"section-title-text\">Decisions collegiales</div></div>"+
+    "<div class=\"section-body open\" id=\"decisionsBody\">";
+  staffData.decisions.forEach(function(d,i){
+    decisionsHtml+="<div class=\"decision-item\">"+
+      "<input type=\"text\" class=\"field-input\" value=\""+d.action+"\" placeholder=\"Decision / action...\" style=\"margin-bottom:6px\" onchange=\"staffData.decisions["+i+"].action=this.value\"/>"+
+      "<div style=\"display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px\">"+
+      "<input type=\"text\" class=\"field-input\" value=\""+d.responsable+"\" placeholder=\"Responsable\" style=\"font-size:11px\" onchange=\"staffData.decisions["+i+"].responsable=this.value\"/>"+
+      "<input type=\"text\" class=\"field-input\" value=\""+d.delai+"\" placeholder=\"Delai (J+X)\" style=\"font-size:11px\" onchange=\"staffData.decisions["+i+"].delai=this.value\"/>"+
+      "<select class=\"field-select\" style=\"font-size:11px\" onchange=\"staffData.decisions["+i+"].statut=this.value\">"+
+      "<option value=\"acte\" "+(d.statut==="acte"?"selected":"")+">Acte</option>"+
+      "<option value=\"a_investiguer\" "+(d.statut==="a_investiguer"?"selected":"")+">A investiguer</option>"+
+      "<option value=\"prochain_staff\" "+(d.statut==="prochain_staff"?"selected":"")+">Prochain staff</option>"+
+      "</select></div></div>";
+  });
+  decisionsHtml+="<button class=\"decision-add\" onclick=\"addDecision()\">+ Ajouter une decision</button>";
+  decisionsHtml+="</div></div>";
+
+  el.innerHTML=recapHtml+difficultesHtml+questionsHtml+decisionsHtml;
+
+  document.getElementById("bottomBar").innerHTML=
+    "<button class=\"btn-sec\" onclick=\"goPhase(1)\">&#8592; Presentation</button>"+
+    "<button class=\"btn-main\" onclick=\"genCR()\">Generer le compte-rendu &#8594;</button>";
+}
+
+function toggleQuestion(i){
+  staffData.questions[i].checked=!staffData.questions[i].checked;
+  renderCollegiale();
+}
+
+function addQuestion(){
+  var val=document.getElementById("newQuestion").value.trim();
+  if(!val)return;
+  staffData.questions.push({id:"q"+Date.now(),text:val,checked:true,vote:null});
+  renderCollegiale();
+}
+
+function addDecision(){
+  staffData.decisions.push({action:"",responsable:"",delai:"J+7",statut:"acte"});
+  renderCollegiale();
+}
+
+// ── TIMER ──
+function toggleTimer(){
+  timerRunning=!timerRunning;
+  document.getElementById("timerToggleBtn").textContent=timerRunning?"Pause":"Reprendre";
+  if(timerRunning){
+    timerInterval=setInterval(function(){
+      timerSeconds++;
+      updateTimerDisplay();
+    },1000);
+  } else {
+    clearInterval(timerInterval);
+  }
+}
+
+function resetTimer(){
+  clearInterval(timerInterval);
+  timerRunning=false;
+  timerSeconds=0;
+  document.getElementById("timerToggleBtn").textContent="Demarrer";
+  updateTimerDisplay();
+}
+
+function updateTimerDisplay(){
+  var m=Math.floor(timerSeconds/60);
+  var s=timerSeconds%60;
+  var disp=document.getElementById("timerDisplay");
+  disp.textContent=(m<10?"0"+m:m)+":"+(s<10?"0"+s:s);
+  document.getElementById("timerTarget").textContent=staffData.duree+" min";
+  var pct=timerSeconds/(staffData.duree*60);
+  disp.className="timer-display"+(pct>1?" danger":pct>0.8?" warning":"");
+}
+
+// ── PHASE 3 : CR ──
+async function genCR(){
+  document.getElementById("mainContent").innerHTML=
+    "<div style=\"text-align:center;padding:40px;color:var(--text3)\">"+
+    "<div style=\"font-size:32px;margin-bottom:12px;animation:pulse-red 1s infinite\">📝</div>"+
+    "<div style=\"font-size:14px\">Generation du compte-rendu...</div></div>";
+  goPhase(3);
+
+  var apiKey=getApiKey();
+  var typeLabel={staff:"Staff DAC",resad:"RESAD",rcp:"RCP",synthese:"Synthese partenariale",crsa:"CRSA"}[staffData.type]||"Staff";
+
+  var context="TYPE : "+typeLabel+"\nDATE : "+staffData.date+" a "+staffData.heure+"\nPRESENTS : "+(staffData.presents.join(", ")||"Non renseigne")+"\nDOSSIER : "+staffData.dossierName+"\n\nPRESENTATION :\n";
+  sections1.forEach(function(s){
+    var val=staffData.presentation[s.key];
+    if(val&&val.length>5) context+=s.label+" : "+val+"\n";
+  });
+  context+="\nDIFFICULTES : "+staffData.difficultes+"\n";
+  context+="\nDECISIONS :\n";
+  staffData.decisions.forEach(function(d,i){
+    if(d.action) context+=(i+1)+". "+d.action+" | Responsable : "+(d.responsable||"A definir")+" | Delai : "+(d.delai||"A definir")+" | Statut : "+d.statut+"\n";
+  });
+
+  var crText="";
+
+  if(apiKey.startsWith("sk-")){
+    try{
+      var resp=await fetch("https://api.anthropic.com/v1/messages",{
+        method:"POST",
+        headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+        body:JSON.stringify({model:"claude-sonnet-4-5",max_tokens:800,messages:[{role:"user",content:
+          "Tu es coordinateur DAC. Redige le compte-rendu officiel de ce "+typeLabel+" selon le format professionnel.\n\n"+context+
+          "\n\nFormat du compte-rendu :\n"+
+          "COMPTE-RENDU DE "+typeLabel.toUpperCase()+"\n"+
+          "Date / Lieu / Participants\n"+
+          "1. PRESENTATION DE LA SITUATION\n"+
+          "2. PROBLEMATIQUES IDENTIFIEES\n"+
+          "3. RAISONNEMENT COLLEGIAL\n"+
+          "4. DECISIONS ACTEES (avec responsable et delai)\n"+
+          "5. POINTS A INVESTIGUER\n"+
+          "6. PROCHAINE ECHEANCE\n"+
+          "Signe par : [coordinateur]\n\nSois professionnel, concis, traçable."
+        }]})
+      });
+      var data=await resp.json();
+      crText=data.content&&data.content[0]&&data.content[0].text||"";
+    }catch(e){}
+  }
+
+  if(!crText){
+    crText="COMPTE-RENDU DE "+typeLabel.toUpperCase()+"\n";
+    crText+="Date : "+staffData.date+" a "+staffData.heure+"\n";
+    crText+="Presents : "+(staffData.presents.join(", ")||"A renseigner")+"\n";
+    crText+="-".repeat(50)+"\n\n";
+    crText+="1. PRESENTATION DE LA SITUATION\nPatient : "+staffData.dossierName+"\n";
+    if(staffData.presentation.identite) crText+=staffData.presentation.identite+"\n";
+    crText+="\n2. PROBLEMATIQUES IDENTIFIEES\n"+(staffData.difficultes||"A completer")+"\n";
+    crText+="\n3. DECISIONS ACTEES\n";
+    staffData.decisions.forEach(function(d,i){
+      if(d.action) crText+=(i+1)+". "+d.action+" — "+d.responsable+" — "+d.delai+"\n";
+    });
+    if(!staffData.decisions.length) crText+="A completer\n";
+    crText+="\n4. PROCHAINE ECHEANCE\nA definir\n";
+    crText+="\n"+"-".repeat(50)+"\nDocument genere par ParcourSante AI";
+  }
+
+  staffData.cr=crText;
+  renderCR();
+
+  // Sauvegarder dans les transmissions du dossier
+  if(staffData.dossierId){
+    var txKey="transmissions_"+staffData.dossierId;
+    var txs=JSON.parse(localStorage.getItem(txKey)||"[]");
+    txs.unshift({
+      id:"staff_"+Date.now(),
+      date:new Date().toISOString(),
+      type:"staff",
+      title:typeLabel+" - "+staffData.dossierName,
+      content:crText.slice(0,300)+"...",
+      interv:staffData.presents.join(", ")||"Coordinateur",
+      suite:"Voir decisions ci-dessus",
+      author:localStorage.getItem("mediasante_user")||"Coordinateur",
+      read:true
+    });
+    localStorage.setItem(txKey,JSON.stringify(txs));
+    showToast("CR sauvegarde dans les transmissions");
+  }
+}
+
+function renderCR(){
+  var el=document.getElementById("mainContent");
+  el.innerHTML=
+    "<div style=\"display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:var(--rs);background:var(--green-bg);border:1px solid var(--green-b);margin-bottom:14px\">"+
+    "<span>✅</span><div style=\"font-size:13px;font-weight:600;color:var(--green)\">Compte-rendu genere et sauvegarde dans les transmissions</div></div>"+
+    "<div class=\"cr-content\" id=\"crContent\" contenteditable=\"true\" onblur=\"staffData.cr=this.innerText\">"+staffData.cr+"</div>"+
+    "<button onclick=\"navigator.clipboard.writeText(staffData.cr).then(function(){showToast('CR copie');})\" style=\"width:100%;padding:12px;border-radius:var(--r);background:transparent;border:1px solid var(--border);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--font-body);margin-bottom:8px\">Copier le compte-rendu</button>"+
+    "<button onclick=\"imprimerCR()\" style=\"width:100%;padding:12px;border-radius:var(--r);background:var(--blue-bg);border:1px solid var(--blue-b);color:var(--blue);font-size:13px;cursor:pointer;font-family:var(--font-body)\">Imprimer / Exporter PDF</button>";
+
+  document.getElementById("bottomBar").innerHTML=
+    "<button class=\"btn-sec\" onclick=\"goPhase(2)\">&#8592; Modifier</button>"+
+    "<button class=\"btn-main\" onclick=\"window.location.href='parcours_sante_ai.html'\">Terminer ✓</button>";
+}
+
+function imprimerCR(){
+  var w=window.open("","_blank");
+  var name=staffData.dossierName||"Patient";
+  var type={staff:"Staff DAC",resad:"RESAD",rcp:"RCP",synthese:"Synthese",crsa:"CRSA"}[staffData.type]||"Staff";
+  w.document.write("<html><head><title>CR "+type+" - "+name+"</title><style>body{font-family:var(--font-body);padding:30px;max-width:700px;margin:0 auto;font-size:13px;line-height:1.7}pre{white-space:pre-wrap;font-family:monospace}</style></head><body><pre>"+staffData.cr+"</pre></body></html>");
+  w.document.close();
+  w.print();
+}
+
+function showToast(msg){
+  var t=document.createElement("div");t.className="toast";t.textContent=msg;
+  document.body.appendChild(t);setTimeout(function(){t.remove();},2400);
+}
+</script>
+</body>
+</html>

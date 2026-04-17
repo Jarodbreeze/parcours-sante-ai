@@ -2,25 +2,29 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+<link rel="stylesheet" href="ps_design.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>ParcourSanté AI — Agenda</title>
 <style>
 :root{
-  --bg:#0f1117;--bg2:#161820;--bg3:#1e2130;
-  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.15);
-  --text:#f0f1f5;--text2:#8b8fa8;--text3:#4a4e6a;
-  --blue:#5b9ef7;--blue-bg:rgba(91,158,247,0.12);--blue-b:rgba(91,158,247,0.28);
-  --purple:#7c6ff7;--purple-l:#a99ef9;--purple-bg:rgba(124,111,247,0.12);--purple-b:rgba(124,111,247,0.28);
-  --teal:#3ecfaa;--teal-bg:rgba(62,207,170,0.1);--teal-b:rgba(62,207,170,0.25);
-  --amber:#f0a43a;--amber-bg:rgba(240,164,58,0.1);--amber-b:rgba(240,164,58,0.25);
-  --red:#e05c6a;--red-bg:rgba(224,92,106,0.1);--red-b:rgba(224,92,106,0.25);
-  --green:#4cba82;--green-bg:rgba(76,186,130,0.1);--green-b:rgba(76,186,130,0.25);
-  --r:10px;--rs:7px;
+  /* Remap vers ps_design.css */
+  --bg:var(--bg);--bg2:var(--bg-2);--bg3:var(--bg-3);--bg4:var(--bg-4);
+  --border:var(--border);--border2:var(--border-2);
+  --text:var(--text);--text2:var(--text-2);--text3:var(--text-3);
+  --blue:var(--blue);--blue-bg:var(--blue-bg);--blue-b:var(--blue-border);
+  --purple:var(--purple);--purple-l:var(--purple-light);--purple-bg:var(--purple-bg);--purple-b:var(--purple-border);
+  --teal:var(--teal);--teal-bg:var(--teal-bg);--teal-b:var(--teal-border);
+  --amber:var(--amber);--amber-bg:var(--amber-bg);--amber-b:var(--amber-border);
+  --red:var(--red);--red-bg:var(--red-bg);--red-b:var(--red-border);
+  --green:var(--green);--green-bg:var(--green-bg);--green-b:var(--green-border);
+  --r:var(--radius-lg);--rs:var(--radius-md);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden;-webkit-font-smoothing:antialiased}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden;-webkit-font-smoothing:antialiased}
 .topbar{height:52px;background:rgba(15,17,23,0.97);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:10px;flex-shrink:0;z-index:50}
-.back-btn{padding:5px 10px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:11px;cursor:pointer;font-family:inherit}
+.back-btn{padding:5px 10px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:11px;cursor:pointer;font-family:var(--font-body)}
 .logo{display:flex;align-items:center;gap:6px}
 .logo-dot{width:7px;height:7px;border-radius:50%;background:var(--blue)}
 .logo-text{font-size:13px;font-weight:600}
@@ -28,14 +32,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
 .api-bar{background:var(--bg2);border-bottom:1px solid var(--border);padding:6px 14px;display:flex;align-items:center;gap:8px;flex-shrink:0}
 .api-bar span{font-size:11px;color:var(--text3)}
 .api-bar input{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:11px;padding:5px 8px;font-family:monospace;outline:none}
-.api-bar button{font-size:11px;padding:4px 10px;border-radius:5px;background:var(--purple-bg);color:var(--purple-l);border:1px solid var(--purple-b);cursor:pointer;font-family:inherit}
+.api-bar button{font-size:11px;padding:4px 10px;border-radius:5px;background:var(--purple-bg);color:var(--purple-l);border:1px solid var(--purple-b);cursor:pointer;font-family:var(--font-body)}
 .nav{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);padding:0 14px;overflow-x:auto;flex-shrink:0;gap:2px}
 .nav-tab{font-size:12px;padding:10px 12px;cursor:pointer;border-bottom:2px solid transparent;color:var(--text3);white-space:nowrap;margin-bottom:-1px;transition:all .15s;font-weight:500}
 .nav-tab.active{color:var(--blue);border-bottom-color:var(--blue)}
 .cal-header{display:flex;align-items:center;padding:10px 14px;gap:8px;flex-shrink:0;border-bottom:1px solid var(--border);background:var(--bg2)}
 .nav-btn{width:28px;height:28px;border-radius:50%;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .15s}
 .nav-btn:hover{border-color:var(--border2);color:var(--text)}
-.today-btn{padding:4px 12px;border-radius:14px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:11px;cursor:pointer;font-family:inherit}
+.today-btn{padding:4px 12px;border-radius:14px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:11px;cursor:pointer;font-family:var(--font-body)}
 .today-btn:hover{border-color:var(--blue-b);color:var(--blue)}
 .cal-title{font-size:14px;font-weight:600;flex:1;text-align:center;letter-spacing:-.3px}
 .add-btn{width:30px;height:30px;border-radius:50%;background:var(--blue);border:none;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -111,7 +115,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
 .ri-why{font-size:10px;color:var(--text3)}
 .ri-d{font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;flex-shrink:0}
 .ri-acts{display:flex;gap:4px;flex-shrink:0}
-.ri-btn{font-size:10px;padding:3px 7px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;font-family:inherit}
+.ri-btn{font-size:10px;padding:3px 7px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;font-family:var(--font-body)}
 .ri-btn.p{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-b)}
 
 /* MODAL */
@@ -122,17 +126,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
 .m-sub{font-size:12px;color:var(--text3);margin-bottom:14px}
 .m-close{float:right;background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;margin-top:-2px;line-height:1}
 .type-row{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px}
-.t-pill{padding:5px 10px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text3);font-family:inherit;transition:all .12s}
+.t-pill{padding:5px 10px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text3);font-family:var(--font-body);transition:all .12s}
 .f{margin-bottom:10px}
 .lbl{font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px;display:block}
-.inp,.sel,.txa{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:13px;padding:9px 11px;outline:none;font-family:inherit;-webkit-appearance:none}
+.inp,.sel,.txa{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:13px;padding:9px 11px;outline:none;font-family:var(--font-body);-webkit-appearance:none}
 .inp:focus,.sel:focus,.txa:focus{border-color:var(--blue-b)}
 .txa{resize:vertical;min-height:65px;line-height:1.5}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.btn-main{width:100%;padding:12px;border-radius:var(--r);background:var(--blue);border:none;color:#fff;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;margin-top:6px;transition:opacity .15s}
+.btn-main{width:100%;padding:12px;border-radius:var(--r);background:var(--blue);border:none;color:#fff;font-size:14px;font-weight:700;font-family:var(--font-body);cursor:pointer;margin-top:6px;transition:opacity .15s}
 .btn-main:hover{opacity:.9}
-.btn-del{width:100%;padding:10px;border-radius:var(--r);background:var(--red-bg);border:1px solid var(--red-b);color:var(--red);font-size:13px;font-family:inherit;cursor:pointer;margin-top:6px}
-.btn-cancel{width:100%;padding:10px;border-radius:var(--r);background:transparent;border:1px solid var(--border);color:var(--text2);font-size:13px;font-family:inherit;cursor:pointer;margin-top:6px}
+.btn-del{width:100%;padding:10px;border-radius:var(--r);background:var(--red-bg);border:1px solid var(--red-b);color:var(--red);font-size:13px;font-family:var(--font-body);cursor:pointer;margin-top:6px}
+.btn-cancel{width:100%;padding:10px;border-radius:var(--r);background:transparent;border:1px solid var(--border);color:var(--text2);font-size:13px;font-family:var(--font-body);cursor:pointer;margin-top:6px}
 .hidden{display:none!important}
 
 ::-webkit-scrollbar{width:4px;height:4px}
@@ -142,8 +146,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
 <body>
 
 <div class="topbar">
-  <button class="back-btn" onclick="window.location.href='index.html'">‹ Accueil</button>
-  <div class="logo"><div class="logo-dot"></div><span class="logo-text">ParcourSanté AI</span></div>
+  <button class="back-btn" onclick="window.location.href='parcours_sante_ai.html'">‹ Accueil</button>
+  <div class="logo"><div class="logo-dot">
+  <button class="ps-theme-btn" onclick="toggleTheme()" title="Changer le theme">🌓</button></div><span class="logo-text">ParcourSanté AI</span></div>
   <span class="badge">AGENDA</span>
 </div>
 
@@ -435,7 +440,7 @@ function renderDay(){
     <div class="day-view">
       <div class="day-hdr">
         <span>${title}</span>
-        <button onclick="openModal('${ds}')" style="margin-left:auto;padding:4px 12px;border-radius:14px;border:1px solid var(--blue-b);background:var(--blue-bg);color:var(--blue);font-size:11px;cursor:pointer;font-family:inherit">+ RDV</button>
+        <button onclick="openModal('${ds}')" style="margin-left:auto;padding:4px 12px;border-radius:14px;border:1px solid var(--blue-b);background:var(--blue-bg);color:var(--blue);font-size:11px;cursor:pointer;font-family:var(--font-body)">+ RDV</button>
       </div>
       ${items}
     </div>`;
@@ -501,7 +506,7 @@ function renderRelances(){
         <span class="rel-count" style="background:var(--green-bg);color:var(--green);border:1px solid var(--green-b)">${ok.length}</span></div>
         ${ok.length?grp(ok,'ok'):'<div style="font-size:12px;color:var(--text3);padding:6px 0">—</div>'}
       </div>
-      <button onclick="progTout()" style="width:100%;padding:12px;border-radius:var(--r);background:var(--amber);border:none;color:var(--bg);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">⚡ Programmer toutes les relances auto</button>
+      <button onclick="progTout()" style="width:100%;padding:12px;border-radius:var(--r);background:var(--amber);border:none;color:var(--bg);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font-body)">⚡ Programmer toutes les relances auto</button>
     </div>`;
 }
 

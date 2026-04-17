@@ -2,23 +2,27 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+<link rel="stylesheet" href="ps_design.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>ParcourSanté AI — Messagerie</title>
 <style>
 :root{
-  --bg:#0f1117;--bg2:#161820;--bg3:#1e2130;--bg4:#252840;
-  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.16);
-  --text:#f0f1f5;--text2:#8b8fa8;--text3:#565a72;
-  --purple:#7c6ff7;--purple-l:#a99ef9;--purple-bg:rgba(124,111,247,0.12);--purple-b:rgba(124,111,247,0.3);
-  --teal:#3ecfaa;--teal-bg:rgba(62,207,170,0.1);--teal-b:rgba(62,207,170,0.25);
-  --amber:#f0a43a;--amber-bg:rgba(240,164,58,0.1);
-  --red:#e05c6a;--red-bg:rgba(224,92,106,0.1);--red-b:rgba(224,92,106,0.25);
-  --green:#4cba82;--green-bg:rgba(76,186,130,0.1);--green-b:rgba(76,186,130,0.25);
-  --blue:#5b9ef7;--blue-bg:rgba(91,158,247,0.1);--blue-b:rgba(91,158,247,0.25);
-  --r:10px;--rs:7px;
+  /* Remap vers ps_design.css */
+  --bg:var(--bg);--bg2:var(--bg-2);--bg3:var(--bg-3);--bg4:var(--bg-4);
+  --border:var(--border);--border2:var(--border-2);
+  --text:var(--text);--text2:var(--text-2);--text3:var(--text-3);
+  --blue:var(--blue);--blue-bg:var(--blue-bg);--blue-b:var(--blue-border);
+  --purple:var(--purple);--purple-l:var(--purple-light);--purple-bg:var(--purple-bg);--purple-b:var(--purple-border);
+  --teal:var(--teal);--teal-bg:var(--teal-bg);--teal-b:var(--teal-border);
+  --amber:var(--amber);--amber-bg:var(--amber-bg);--amber-b:var(--amber-border);
+  --red:var(--red);--red-bg:var(--red-bg);--red-b:var(--red-border);
+  --green:var(--green);--green-bg:var(--green-bg);--green-b:var(--green-border);
+  --r:var(--radius-lg);--rs:var(--radius-md);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden;-webkit-font-smoothing:antialiased}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text);height:100vh;overflow:hidden;-webkit-font-smoothing:antialiased}
 
 /* TOPBAR */
 .topbar{height:52px;background:rgba(15,17,23,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:10px;flex-shrink:0;position:relative;z-index:10}
@@ -46,7 +50,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
 /* SIDEBAR */
 .sb-top{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
 .search-wrap{flex:1;position:relative}
-.search-input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:20px;color:var(--text);font-size:12px;padding:7px 12px 7px 30px;outline:none;font-family:inherit}
+.search-input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:20px;color:var(--text);font-size:12px;padding:7px 12px 7px 30px;outline:none;font-family:var(--font-body)}
 .search-input:focus{border-color:var(--purple-b)}
 .search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--text3);pointer-events:none}
 .new-chat-btn{width:30px;height:30px;border-radius:50%;background:var(--purple);border:none;color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:opacity .15s}
@@ -117,7 +121,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
 .attach-chip{display:flex;align-items:center;gap:5px;padding:3px 8px;border-radius:4px;background:var(--teal-bg);border:1px solid var(--teal-b);font-size:11px;color:var(--teal)}
 .attach-chip button{background:none;border:none;color:var(--teal);cursor:pointer;font-size:12px;padding:0;line-height:1}
 .input-row{display:flex;gap:8px;align-items:flex-end}
-.input-box{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:9px 14px;color:var(--text);font-size:13px;font-family:inherit;resize:none;outline:none;max-height:120px;line-height:1.5;overflow-y:auto}
+.input-box{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:9px 14px;color:var(--text);font-size:13px;font-family:var(--font-body);resize:none;outline:none;max-height:120px;line-height:1.5;overflow-y:auto}
 .input-box:focus{border-color:var(--purple-b)}
 .input-box[data-placeholder]:empty::before{content:attr(data-placeholder);color:var(--text3)}
 .input-actions{display:flex;gap:6px;align-items:flex-end}
@@ -150,7 +154,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
 .c-name{font-size:13px;font-weight:600}
 .c-role{font-size:11px;color:var(--text3)}
 .c-status{font-size:10px;padding:2px 6px;border-radius:4px}
-.btn-modal{width:100%;padding:11px;border-radius:var(--r);font-size:13px;font-weight:600;font-family:inherit;border:none;cursor:pointer;margin-top:8px;transition:opacity .15s}
+.btn-modal{width:100%;padding:11px;border-radius:var(--r);font-size:13px;font-weight:600;font-family:var(--font-body);border:none;cursor:pointer;margin-top:8px;transition:opacity .15s}
 .btn-modal.primary{background:var(--purple);color:#fff}
 .btn-modal.primary:hover{opacity:.85}
 .btn-modal.secondary{background:transparent;border:1px solid var(--border);color:var(--text2)}
@@ -160,7 +164,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
 .dossier-sel-item.sel{border-color:var(--teal-b);background:var(--teal-bg);color:var(--teal)}
 
 .section-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin:12px 0 6px}
-input.modal-input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:13px;padding:9px 11px;outline:none;font-family:inherit;margin-bottom:8px}
+input.modal-input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:13px;padding:9px 11px;outline:none;font-family:var(--font-body);margin-bottom:8px}
 input.modal-input:focus{border-color:var(--purple)}
 
 ::-webkit-scrollbar{width:4px;height:4px}
@@ -171,8 +175,9 @@ input.modal-input:focus{border-color:var(--purple)}
 
 <!-- TOPBAR -->
 <div class="topbar">
-  <button onclick="window.location.href='index.html'" style="padding:5px 10px;border-radius:6px;border:1px solid rgba(255,255,255,0.15);background:transparent;color:#8b8fa8;font-size:11px;cursor:pointer;font-family:inherit;white-space:nowrap">‹ Accueil</button>
-  <div class="logo"><div class="logo-dot"></div><span class="logo-text">ParcourSanté AI</span></div>
+  <button onclick="window.location.href='parcours_sante_ai.html'" style="padding:5px 10px;border-radius:6px;border:1px solid rgba(255,255,255,0.15);background:transparent;color:#8b8fa8;font-size:11px;cursor:pointer;font-family:var(--font-body);white-space:nowrap">‹ Accueil</button>
+  <div class="logo"><div class="logo-dot">
+  <button class="ps-theme-btn" onclick="toggleTheme()" title="Changer le theme">🌓</button></div><span class="logo-text">ParcourSanté AI</span></div>
   <span class="badge-mode">MESSAGERIE</span>
   <div class="user-pill" onclick="openProfileModal()">
     <div class="user-av" id="myAvatar">?</div>
@@ -686,16 +691,16 @@ function openDoctolib(contactName=''){
     <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:10px">
       <div style="font-size:12px;font-weight:600;margin-bottom:8px;color:var(--text)">🔗 Rechercher sur Doctolib</div>
       <div style="font-size:12px;color:var(--text2);margin-bottom:10px;line-height:1.5">Doctolib ne propose pas d'API publique pour les tiers. Vous pouvez ouvrir Doctolib directement pour rechercher un praticien.</div>
-      <button onclick="window.open('https://www.doctolib.fr','_blank')" style="width:100%;padding:10px;border-radius:var(--rs);background:#00B5BA;border:none;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Ouvrir Doctolib ↗</button>
-      <button onclick="window.open('https://www.doctolib.fr/recherche?query=generaliste&location=Epinay-sur-Seine+93800','_blank')" style="width:100%;padding:8px;border-radius:var(--rs);background:transparent;border:1px solid var(--border);color:var(--text2);font-size:11px;cursor:pointer;margin-top:6px;font-family:inherit">Médecins généralistes Épinay-sur-Seine →</button>
+      <button onclick="window.open('https://www.doctolib.fr','_blank')" style="width:100%;padding:10px;border-radius:var(--rs);background:#00B5BA;border:none;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font-body)">Ouvrir Doctolib ↗</button>
+      <button onclick="window.open('https://www.doctolib.fr/recherche?query=generaliste&location=Epinay-sur-Seine+93800','_blank')" style="width:100%;padding:8px;border-radius:var(--rs);background:transparent;border:1px solid var(--border);color:var(--text2);font-size:11px;cursor:pointer;margin-top:6px;font-family:var(--font-body)">Médecins généralistes Épinay-sur-Seine →</button>
     </div>
 
     <div style="font-size:12px;font-weight:600;margin-bottom:8px;color:var(--text)">📅 Saisir le RDV manuellement</div>
-    <input type="text" id="rdv_praticien" placeholder="Praticien (ex : Dr Martin)" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:13px;padding:9px 11px;outline:none;font-family:inherit;margin-bottom:7px" value="${escapeHtml(contactName)}" />
-    <input type="date" id="rdv_date" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:13px;padding:9px 11px;outline:none;font-family:inherit;margin-bottom:7px" />
-    <input type="time" id="rdv_heure" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:13px;padding:9px 11px;outline:none;font-family:inherit;margin-bottom:7px" value="09:00" />
-    <textarea id="rdv_notes" placeholder="Notes / motif..." style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:13px;padding:9px 11px;outline:none;font-family:inherit;resize:none;min-height:60px;line-height:1.5;margin-bottom:8px"></textarea>
-    <button onclick="saveRDV('${c?.dossier?.id||''}','${escapeHtml(patientName)}')" style="width:100%;padding:11px;border-radius:var(--r);background:var(--purple);border:none;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Enregistrer le RDV ✓</button>
+    <input type="text" id="rdv_praticien" placeholder="Praticien (ex : Dr Martin)" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:13px;padding:9px 11px;outline:none;font-family:var(--font-body);margin-bottom:7px" value="${escapeHtml(contactName)}" />
+    <input type="date" id="rdv_date" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:13px;padding:9px 11px;outline:none;font-family:var(--font-body);margin-bottom:7px" />
+    <input type="time" id="rdv_heure" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:13px;padding:9px 11px;outline:none;font-family:var(--font-body);margin-bottom:7px" value="09:00" />
+    <textarea id="rdv_notes" placeholder="Notes / motif..." style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:13px;padding:9px 11px;outline:none;font-family:var(--font-body);resize:none;min-height:60px;line-height:1.5;margin-bottom:8px"></textarea>
+    <button onclick="saveRDV('${c?.dossier?.id||''}','${escapeHtml(patientName)}')" style="width:100%;padding:11px;border-radius:var(--r);background:var(--purple);border:none;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font-body)">Enregistrer le RDV ✓</button>
   </div>`;
   document.body.appendChild(overlay);
 }

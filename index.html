@@ -156,6 +156,7 @@ footer{background:var(--ink);border-top:1px solid rgba(255,255,255,.06);padding:
   <div class="nav-actions">
     <button class="nav-demo" onclick="openDemo()">Voir la demo</button>
     <button class="nav-cta" onclick="window.location.href='parcours_sante_ai.html'">Acceder a l'outil</button>
+    <button onclick="toggleThemeLanding()" style="width:32px;height:32px;border-radius:50%;border:1px solid rgba(0,0,0,0.12);background:transparent;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center" title="Changer le theme">🌓</button>
   </div>
 </nav>
 
@@ -390,6 +391,16 @@ footer{background:var(--ink);border-top:1px solid rgba(255,255,255,.06);padding:
 function openDemo(){ document.getElementById("demoOverlay").classList.remove("hidden"); }
 function closeDemo(){ document.getElementById("demoOverlay").classList.add("hidden"); }
 document.getElementById("demoOverlay").addEventListener("click", function(e){ if(e.target===this) closeDemo(); });
+
+function toggleThemeLanding(){
+  var html = document.documentElement;
+  var isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  localStorage.setItem('ps_theme', isDark ? 'light' : 'dark');
+  // Adapter les couleurs de la landing
+  document.body.style.background = isDark ? 'var(--fog)' : '#0a0d16';
+  document.body.style.color = isDark ? 'var(--text)' : '#f4f3ef';
+}
 
 function lancerDemo(){
   try {
