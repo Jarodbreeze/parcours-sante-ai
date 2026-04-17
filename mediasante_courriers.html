@@ -175,7 +175,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
 <body>
 
 <div class="topbar">
-  <button onclick="window.location.href='index.html'" style="padding:5px 10px;border-radius:6px;border:1px solid rgba(255,255,255,0.15);background:transparent;color:#8b8fa8;font-size:11px;cursor:pointer;font-family:inherit;white-space:nowrap">‹ Accueil</button>
+  <button onclick="window.location.href='parcours_sante_ai.html'" style="padding:5px 10px;border-radius:6px;border:1px solid rgba(255,255,255,0.15);background:transparent;color:#8b8fa8;font-size:11px;cursor:pointer;font-family:inherit;white-space:nowrap">‹ Accueil</button>
   <div class="logo">
     <div class="logo-dot"></div>
     <span class="logo-text">ParcourSanté AI</span>
@@ -639,12 +639,14 @@ function toggleNotice() {
   const panel = document.getElementById('noticePanel');
   noticeOpen = !noticeOpen;
   panel.classList.toggle('open', noticeOpen);
-  if(noticeOpen && currentPatient && !noticeAnalysisDone) {
+  if(noticeOpen && currentPatient) {
+    // Toujours relancer l'analyse à chaque ouverture
     analyserDroits();
   } else if(noticeOpen && !currentPatient) {
-    document.getElementById('noticeContent').innerHTML = '<div class="notice-no-patient">Sélectionnez d\'abord un dossier patient pour analyser les droits potentiels.</div>';
+    document.getElementById('noticeContent').innerHTML = '<div class="notice-no-patient">Selectionnez un dossier patient pour analyser les droits potentiels.</div>';
   }
 }
+
 
 async function analyserDroits() {
   noticeAnalysisDone = false;

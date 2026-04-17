@@ -72,7 +72,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
 
 /* QUICK STATS */
 .quick-stats{display:flex;gap:8px;padding:0 16px 16px;overflow-x:auto}
-.qs-card{flex-shrink:0;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:10px 14px;min-width:110px}
+.qs-card{flex-shrink:0;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:10px 14px;min-width:110px;transition:all .15s}.qs-card:hover{border-color:var(--border2);background:var(--bg3);transform:translateY(-1px)}
 .qs-val{font-size:20px;font-weight:700;letter-spacing:-.5px}
 .qs-label{font-size:10px;color:var(--text3);margin-top:2px;text-transform:uppercase;letter-spacing:.04em}
 
@@ -283,10 +283,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
 
     <!-- QUICK STATS -->
     <div class="quick-stats" id="quickStats">
-      <div class="qs-card"><div class="qs-val" id="qs-dossiers" style="color:var(--purple-l)">—</div><div class="qs-label">Dossiers</div></div>
-      <div class="qs-card"><div class="qs-val" id="qs-alertes" style="color:var(--red)">—</div><div class="qs-label">Alertes</div></div>
-      <div class="qs-card"><div class="qs-val" id="qs-orient" style="color:var(--amber)">—</div><div class="qs-label">Orientations</div></div>
-      <div class="qs-card"><div class="qs-val" id="qs-droits" style="color:var(--green)">—</div><div class="qs-label">Droits ouverts</div></div>
+      <div class="qs-card" onclick="showDossiersList()" style="cursor:pointer" title="Voir tous les dossiers"><div class="qs-val" id="qs-dossiers" style="color:var(--purple-l)">—</div><div class="qs-label">Dossiers</div></div>
+      <div class="qs-card" onclick="openModule('dashboard')" style="cursor:pointer" title="Voir le tableau de bord"><div class="qs-val" id="qs-alertes" style="color:var(--red)">—</div><div class="qs-label">Alertes</div></div>
+      <div class="qs-card" onclick="openModule('orientation')" style="cursor:pointer" title="Voir les orientations"><div class="qs-val" id="qs-orient" style="color:var(--amber)">—</div><div class="qs-label">Orientations</div></div>
+      <div class="qs-card" onclick="showDossiersList()" style="cursor:pointer" title="Voir les dossiers"><div class="qs-val" id="qs-droits" style="color:var(--green)">—</div><div class="qs-label">Droits ouverts</div></div>
     </div>
 
     <!-- URGENT BANNER -->
