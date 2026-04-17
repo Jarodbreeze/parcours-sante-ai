@@ -265,6 +265,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
     </div>
   </div>
 
+  <!-- BARRE MODE DÉMO -->
+  <div id="demoBar" style="display:none;background:rgba(245,166,35,0.12);border-bottom:1px solid rgba(245,166,35,0.3);padding:7px 14px;align-items:center;gap:8px;font-size:11px;color:var(--amber);font-weight:600">
+    <span>🎬</span>
+    <span style="flex:1">Mode démonstration — Données fictives de M. Jean-Pierre MBEKI</span>
+    <button onclick="resetDemo()" style="padding:3px 10px;border-radius:4px;border:1px solid rgba(245,166,35,0.4);background:transparent;color:var(--amber);font-size:10px;cursor:pointer;font-family:inherit">Quitter la démo</button>
+  </div>
+
   <div class="home-content">
 
     <!-- GREETING -->
@@ -372,6 +379,7 @@ const MODULES = [
   {id:'dashboard',name:'Dashboard',           desc:'Activité · Ruptures · Rapport ARS', icon:'📊', color:'var(--teal)',   bg:'var(--teal-bg)',  file:'mediasante_dashboard.html',       badge:null,    featured:false},
   {id:'agenda',   name:'Agenda & Coordination',desc:'RDV · Relances · Volet médical · Multi-structures', icon:'📅', color:'var(--blue)', bg:'var(--blue-bg)', file:'mediasante_agenda.html', badge:'NEW', featured:true},
   {id:'dossiers', name:'Mes Dossiers',           desc:'Fiches patients · Cercle de soin · Documents', icon:'👤', color:'var(--purple)', bg:'var(--purple-bg)', file:'mediasante_fiche_patient.html', badge:null, featured:false},
+  {id:'carte_patients', name:'Carte Patients', desc:'Visualiser · Filtrer urgences · Optimiser tournees', icon:'🗺️', color:'var(--teal)', bg:'var(--teal-bg)', file:'mediasante_carte_patients.html', badge:'NEW', featured:true},
   {id:'carte',    name:'Carte Mentale',          desc:'Creusage · Analyse · Plan d\'action staff',    icon:'🗺️', color:'var(--gold)',   bg:'var(--gold-bg)',   file:'mediasante_carte_mentale.html',  badge:'NEW', featured:true},
 ];
 
@@ -382,6 +390,14 @@ let userProfile = {};
 
 // ═══ INIT ═══
 window.addEventListener('load', () => {
+  // Onboarding première connexion
+  const hasProfile = localStorage.getItem('ps_user_profile');
+  const hasDossiers = getDossiers().length > 0;
+  const isDemo = getDossiers().some(d => d.id === 'DEMO-0001');
+  if(!hasProfile && !hasDossiers && !isDemo) {
+    setTimeout(showOnboarding, 800);
+  }
+
   const profile = JSON.parse(localStorage.getItem('ps_user_profile') || 'null');
   if (profile && profile.nom) {
     userProfile = profile;
@@ -442,6 +458,7 @@ function openModule(id) {
   if (!mod) return;
   // Module dossiers : afficher la liste avant d'ouvrir
   if(id === 'dossiers') { showDossiersList(); return; }
+  if(id === 'carte_patients') { window.location.href = 'mediasante_carte_patients.html'; return; }
   if(id === 'carte') {
     const dossiers = getDossiers();
     if(!dossiers.length){ openModule('famo'); return; }
@@ -473,7 +490,29 @@ function showDossiersList(target) {
     const ini = ((p.prenom||'?')[0]+(p.nom||'?')[0]).toUpperCase();
     const item = document.createElement('div');
     item.style.cssText = 'display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.07);background:#1e2130;margin-bottom:6px;cursor:pointer';
-    item.innerHTML = '<div style="width:36px;height:36px;border-radius:50%;background:rgba(139,124,248,.12);border:1px solid rgba(139,124,248,.25);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#b3a9fc;flex-shrink:0">'+ini+'</div><div style="flex:1"><div style="font-size:13px;font-weight:600">'+name+'</div><div style="font-size:11px;color:#4a4e6a;margin-top:1px">'+d.id+(d.evaluation?' · GIR '+d.evaluation.gir:'')+'</div></div><span style="font-size:11px;color:#4d9ef6">Ouvrir →</span>';
+    // Calculer complétion
+    let comp=20;
+    if(d.evaluation)comp+=25;
+    if(d.ppcs)comp+=25;
+    if(d.ppcs_valide)comp+=15;
+    if((d.droits||[]).some(function(dr){return dr.statut==='ouvert';}))comp+=15;
+    const compColor=comp>=80?'#3db87a':comp>=50?'#f0a43a':'#e05c6a';
+    const statut=d.statut_manuel||'actif';
+    const statutLabels={actif:'Actif',attente:'En attente',suspendu:'Suspendu',cloture:'Cloture'};
+
+    item.innerHTML = '<div style="width:36px;height:36px;border-radius:50%;background:rgba(139,124,248,.12);border:1px solid rgba(139,124,248,.25);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#b3a9fc;flex-shrink:0">'+ini+'</div>'+
+      '<div style="flex:1;min-width:0">'+
+        '<div style="font-size:13px;font-weight:600">'+name+'</div>'+
+        '<div style="font-size:11px;color:#4a4e6a;margin-top:1px">'+d.id+(d.evaluation?' · GIR '+d.evaluation.gir:'')+'</div>'+
+        '<div style="margin-top:6px;display:flex;align-items:center;gap:6px">'+
+          '<div style="flex:1;height:3px;background:rgba(255,255,255,.06);border-radius:2px"><div style="height:100%;width:'+comp+'%;background:'+compColor+';border-radius:2px;transition:width .3s"></div></div>'+
+          '<span style="font-size:10px;font-weight:700;color:'+compColor+'">'+comp+'%</span>'+
+        '</div>'+
+      '</div>'+
+      '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">'+
+        '<span style="font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;background:rgba(255,255,255,.05);color:#4a4e6a">'+statutLabels[statut]+'</span>'+
+        '<span style="font-size:11px;color:#4d9ef6">Ouvrir →</span>'+
+      '</div>';
     item.onclick = (function(did){ return function(){ overlay.remove(); if(target==='carte'){localStorage.setItem('fiche_patient_id',did);window.location.href='mediasante_carte_mentale.html?id='+did;}else{openFichePatient(did);} }; })(d.id);
     modal.appendChild(item);
   });
@@ -587,7 +626,63 @@ function showBanner(color, title, desc, action) {
   if(descEl) descEl.textContent = desc;
 }
 
+function showOnboarding() {
+  const overlay = document.createElement('div');
+  overlay.id = 'onboardingOverlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:300;display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(8px)';
+
+  const steps = [
+    { icon:"👋", title:"Bienvenue sur ParcourSante AI", desc:"Votre assistant de coordination de parcours. Concu pour les mediateurs et coordinateurs DAC. 14 modules, tout en local, aucune donnee envoyee sur internet.", btn:"Commencer" },
+    { icon:"👤", title:"Creez votre profil", desc:"Renseignez votre nom, votre fonction et votre structure. Cela personnalisera l outil et sera utilise dans vos courriers et transmissions.", btn:"Creer mon profil", action:"profile" },
+    { icon:"🔑", title:"Cle API Claude (optionnel)", desc:"Pour activer l IA sur tous les modules (PPCS, Staff, Courriers...), ajoutez votre cle API Anthropic dans votre profil. Sans cle, l outil fonctionne en mode template.", btn:"Compris", action:"key" },
+    { icon:"📋", title:"Creez votre premier dossier", desc:"Commencez par le formulaire FAMO - il vous guide etape par etape pour recueillir toutes les informations essentielles en 5 minutes.", btn:"Demarrer l admission", action:"famo" },
+  ];
+
+  let currentStep = 0;
+
+  function renderStep() {
+    const s = steps[currentStep];
+    const progress = (currentStep / (steps.length-1)) * 100;
+
+    overlay.innerHTML = `
+      <div style="background:#161820;border-top:1px solid rgba(255,255,255,.08);border-radius:20px 20px 0 0;padding:28px 20px 40px;width:100%;max-width:520px">
+        <div style="display:flex;justify-content:center;gap:6px;margin-bottom:24px">
+          ${steps.map((_,i) => `<div style="width:${i===currentStep?24:6}px;height:6px;border-radius:3px;background:${i<=currentStep?'var(--blue)':'rgba(255,255,255,.1)'};transition:all .3s"></div>`).join('')}
+        </div>
+        <div style="text-align:center;margin-bottom:20px">
+          <div style="font-size:48px;margin-bottom:16px">${s.icon}</div>
+          <div style="font-size:20px;font-weight:700;letter-spacing:-.5px;margin-bottom:10px">${s.title}</div>
+          <div style="font-size:14px;color:var(--text2);line-height:1.6;max-width:360px;margin:0 auto">${s.desc}</div>
+        </div>
+        <button id="onboardingBtn" style="width:100%;padding:14px;border-radius:12px;background:var(--blue);border:none;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:10px">${s.btn}</button>
+        ${currentStep > 0 ? `<button onclick="skipOnboarding()" style="width:100%;padding:10px;border-radius:12px;background:transparent;border:1px solid rgba(255,255,255,.08);color:var(--text3);font-size:13px;cursor:pointer;font-family:inherit">Passer cette étape</button>` : ''}
+      </div>`;
+
+    document.getElementById('onboardingBtn').onclick = function() {
+      if(s.action === 'profile') { overlay.remove(); showProfile(); return; }
+      if(s.action === 'famo') { overlay.remove(); openModule('famo'); return; }
+      if(s.action === 'key') { currentStep++; renderStep(); return; }
+      currentStep++;
+      if(currentStep >= steps.length) { overlay.remove(); localStorage.setItem('ps_user_profile', '{"onboarded":true}'); return; }
+      renderStep();
+    };
+  }
+
+  renderStep();
+  document.body.appendChild(overlay);
+}
+
+function skipOnboarding() {
+  document.getElementById('onboardingOverlay')?.remove();
+  localStorage.setItem('ps_user_profile', '{"onboarded":true}');
+}
+
 function renderGreeting() {
+  // Indicateur mode démo
+  const isDemo = getDossiers().some(d => d.id === 'DEMO-0001');
+  const demoBar = document.getElementById('demoBar');
+  if(demoBar) demoBar.style.display = isDemo ? 'flex' : 'none';
+
   const h = new Date().getHours();
   const greet = h < 12 ? 'Bonjour' : h < 18 ? 'Bon après-midi' : 'Bonsoir';
   const days = ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
@@ -611,6 +706,21 @@ function renderQuickStats() {
   const alertes = computeAlerts(dossiers).length;
 
   document.getElementById('qs-dossiers').textContent = dossiers.length || '0';
+
+  // Indicateur complétion moyen
+  if(dossiers.length > 0){
+    const scores = dossiers.map(d => {
+      let s = 20; // admission = 20%
+      if(d.evaluation) s += 25;
+      if(d.ppcs) s += 25;
+      if(d.ppcs_valide) s += 15;
+      if((d.droits||[]).some(dr=>dr.statut==='ouvert')) s += 15;
+      return Math.min(s, 100);
+    });
+    const avg = Math.round(scores.reduce((a,b)=>a+b,0)/scores.length);
+    const completionEl = document.getElementById('qs-completion');
+    if(completionEl) completionEl.textContent = avg+'%';
+  }
   document.getElementById('qs-alertes').textContent = alertes;
   document.getElementById('qs-orient').textContent = orientations.length || '0';
   document.getElementById('qs-droits').textContent = droits || '0';
@@ -624,8 +734,34 @@ function computeAlerts(dossiers) {
   dossiers.forEach(d => {
     const txs = getTransmissions(d.id);
     const last = txs[0];
+    const p = d.data&&d.data.patient||{};
+
+    // Sans contact depuis 15j
     if (last && (now - new Date(last.date)) > 15 * 86400000) {
-      alerts.push({ type: 'warn', dossier: d });
+      alerts.push({ type: 'warn', dossier: d, msg: 'Sans contact depuis +15j' });
+    }
+
+    // Droits expirés
+    (d.droits||[]).forEach(dr => {
+      if(dr.statut === 'expire') alerts.push({ type: 'urgent', dossier: d, msg: dr.type+' expiré — à renouveler' });
+    });
+
+    // PPCS non validé depuis +7j
+    if(d.ppcs && !d.ppcs_valide) {
+      const daysPPCS = Math.floor((now - new Date(d.ppcs.date))/86400000);
+      if(daysPPCS > 7) alerts.push({ type: 'info', dossier: d, msg: 'PPCS en attente de validation depuis '+daysPPCS+'j' });
+    }
+
+    // GIR 5-6 : alerter sur les aides alternatives à l'APA
+    if(d.evaluation && (d.evaluation.gir === 5 || d.evaluation.gir === 6)) {
+      const hasAide = (d.droits||[]).some(dr => ['CSS / C2S','RSA','CAF'].some(a => dr.type.includes(a)));
+      if(!hasAide) alerts.push({ type: 'info', dossier: d, msg: 'GIR '+d.evaluation.gir+' — vérifier aides alternatives (CSS, RSA, CAF, aide ménagère)' });
+    }
+
+    // Dossier incomplet (pas d'évaluation depuis +30j)
+    if(!d.evaluation) {
+      const daysSince = Math.floor((now - new Date(d.date))/86400000);
+      if(daysSince > 30) alerts.push({ type: 'warn', dossier: d, msg: 'Dossier ouvert depuis '+daysSince+'j sans évaluation' });
     }
   });
   return alerts;
@@ -894,6 +1030,16 @@ function updateAvatar() {
 
 
 function getDossiers() { return JSON.parse(localStorage.getItem('mediasante_dossiers') || '[]'); }
+function saveDossiers(l) { localStorage.setItem('mediasante_dossiers', JSON.stringify(l)); }
+
+function resetDemo(){
+  const dossiers = getDossiers().filter(d => d.id !== 'DEMO-0001');
+  saveDossiers(dossiers);
+  localStorage.removeItem('transmissions_DEMO-0001');
+  if(localStorage.getItem('fiche_patient_id')==='DEMO-0001') localStorage.removeItem('fiche_patient_id');
+  showToast('Mode demo desactive');
+  setTimeout(()=>window.location.reload(), 800);
+}
 function getTransmissions(id) { return JSON.parse(localStorage.getItem('transmissions_' + id) || '[]'); }
 
 function initials(name = '') {

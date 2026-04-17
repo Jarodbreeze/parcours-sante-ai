@@ -485,20 +485,59 @@ function sendMsg(){
   // Les réponses viennent des vrais professionnels
 }
 
-function simulateReply(c){
-  const replies=[
-    `Bien reçu, je prends note.`,
-    `Merci pour l'information. Je reviens vers vous rapidement.`,
-    `D'accord. Pouvez-vous me transmettre les documents nécessaires ?`,
-    `Je vais regarder le dossier et vous rappelle.`,
-    `Compris. Je fais le nécessaire de mon côté.`,
-    `Message reçu. On fait le point lors du prochain staff ?`,
-    `OK. Le dossier est bien enregistré de notre côté.`,
-  ];
-  const text=replies[Math.floor(Math.random()*replies.length)];
-  c.messages.push({id:Date.now().toString(),from:'other',text,date:new Date().toISOString(),read:currentConvId===c.id,type:'text'});
+async function simulateReply(conv){
+  const apiKey = localStorage.getItem('mediasante_api_key')||'';
+  const contact = conv.contact || {};
+  const role = contact.role || 'partenaire';
+  const lastMsg = conv.messages.filter(m=>m.from==='me').slice(-1)[0];
+  const msgText = lastMsg ? lastMsg.text : '';
+
+  // Réponses contextuelles par rôle (mode sans API)
+  const roleReplies = {
+    cpam: ["Bonjour, j'ai bien reçu votre message. Concernant ce dossier, il faudrait nous transmettre les pièces justificatives sous 15 jours. Vous pouvez les déposer au guichet ou via amelipro.","Je vérifie le dossier dans notre système. Pour le renouvellement, le délai habituel est de 3 semaines. N'hésitez pas à rappeler si urgence médicale."],
+    mdph: ["Bonjour, pour le dossier que vous mentionnez, nous avons besoin du certificat médical de moins de 6 mois et des justificatifs de ressources. Le délai d'instruction est de 4 mois maximum.","Message reçu. Je transmets à l'équipe d'évaluation. Nous reviendrons vers vous pour planifier la visite à domicile si nécessaire."],
+    mt: ["Bonjour, je prends note. Je ferai le nécessaire lors de la prochaine consultation. Pouvez-vous m'envoyer le compte-rendu du bilan ?","Merci pour le suivi. Je vais prescrire les examens complémentaires. Je vous transmets le courrier ce soir."],
+    as: ["Bonjour, j'ai pris connaissance de la situation. Je peux intervenir pour le volet social. Quelles sont les disponibilités du patient pour un rendez-vous ?","Bien reçu. Pour le FSL, il faut constituer le dossier avec les 3 dernières quittances. Je peux accompagner la famille si besoin."],
+    ide: ["Bonjour, je note les informations de soin. Pour la coordination SSIAD, je contacte le responsable dès ce soir.","Message reçu. Les soins sont programmés. Je signale tout changement d'état."],
+    pharma: ["Bonjour, je vérifie les interactions médicamenteuses mentionnées. Il y a effectivement un point de vigilance avec l'association que vous signalez.","D'accord. Je prépare le pilulier et surveille l'observance lors des passages."],
+  };
+
+  // Délai réaliste avant réponse (1-3 secondes)
+  await new Promise(r => setTimeout(r, 1000 + Math.random()*2000));
+
+  let text = '';
+
+  // Si clé API disponible, générer une vraie réponse IA
+  if(apiKey.startsWith('sk-')) {
+    try {
+      const rolePersonas = {
+        cpam: "Tu es un agent CPAM 93 expert en droits maladie CSS AME ALD. Réponds de façon professionnelle et concise à ce message d'un coordinateur DAC.",
+        mdph: "Tu es un référent MDPH 93 expert en AAH PCH RQTH. Réponds de façon professionnelle à ce coordinateur DAC.",
+        mt: "Tu es un médecin traitant. Réponds brièvement à ce message d'un coordinateur DAC concernant un de tes patients.",
+        as: "Tu es une assistante sociale. Réponds professionnellement à ce coordinateur DAC.",
+        ide: "Tu es une infirmière coordinatrice. Réponds à ce message de coordination.",
+        pharma: "Tu es un pharmacien. Réponds à cette question de coordination médicale.",
+      };
+      const persona = rolePersonas[role] || "Tu es un professionnel de santé partenaire d'un DAC. Réponds professionnellement en 2-3 phrases maximum.";
+      const resp = await fetch("https://api.anthropic.com/v1/messages",{
+        method:"POST",
+        headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+        body:JSON.stringify({model:"claude-sonnet-4-5",max_tokens:150,messages:[{role:"user",content:persona+" Message recu : "+msgText}]})
+      });
+      const data = await resp.json();
+      text = data.content&&data.content[0]&&data.content[0].text||'';
+    } catch(e) { text = ''; }
+  }
+
+  // Fallback vers réponses prédéfinies
+  if(!text) {
+    const pool = roleReplies[role] || ["Bien reçu, je prends note.","Merci pour l'information. Je reviens vers vous rapidement.","D'accord. Je fais le nécessaire de mon côté.","Message reçu. On fait le point lors du prochain staff ?"];
+    text = pool[Math.floor(Math.random()*pool.length)];
+  }
+
+  conv.messages.push({id:Date.now().toString(),from:'other',text,date:new Date().toISOString(),read:currentConvId===conv.id,type:'text'});
   saveAll();
-  if(currentConvId===c.id){renderMessages();}
+  if(currentConvId===conv.id){renderMessages();}
   renderConvList();
 }
 

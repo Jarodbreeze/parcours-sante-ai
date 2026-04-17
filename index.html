@@ -506,7 +506,19 @@ function lancerDemo(){
 
   localStorage.setItem("fiche_patient_id", demoId);
   localStorage.setItem("mediasante_user", "Coordinateur DAC (Demo)");
+  localStorage.setItem("mediasante_api_key", ""); // Clé vide pour la démo
+
+  // Vérification que les données sont bien sauvegardées
+  const check = JSON.parse(localStorage.getItem("mediasante_dossiers")||"[]");
+  if(!check.find(function(d){return d.id===demoId;})){
+    alert("Erreur : impossible de créer les données de démo. Vérifiez que votre navigateur autorise les cookies/localStorage.");
+    return;
+  }
+
   closeDemo();
-  window.location.href = "parcours_sante_ai.html";
+  // Petit délai pour s'assurer que le localStorage est bien écrit
+  setTimeout(function(){
+    window.location.href = "parcours_sante_ai.html";
+  }, 100);
 }
 >
