@@ -8,18 +8,60 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>ParcourSanté AI — Orientation</title>
 <style>
-:root,[data-theme="light"],[data-theme="dark"]{
-  /* Alias pour compatibilite legacy */
-  --bg2:var(--bg-2);--bg3:var(--bg-3);--bg4:var(--bg-4);
-  --border2:var(--border-2);
-  --text2:var(--text-2);--text3:var(--text-3);
-  --blue-bg:var(--blue-bg);--blue-b:var(--blue-border);
-  --purple-l:var(--purple-light);--purple-bg:var(--purple-bg);--purple-b:var(--purple-border);
-  --teal-bg:var(--teal-bg);--teal-b:var(--teal-border);
-  --amber-bg:var(--amber-bg);--amber-b:var(--amber-border);
-  --red-bg:var(--red-bg);--red-b:var(--red-border);
-  --green-bg:var(--green-bg);--green-b:var(--green-border);
-  --r:var(--radius-lg);--rs:var(--radius-md);
+:root, [data-theme="dark"] {
+  /* Variables principales */
+  --bg: #0F1117; --bg-2: #161B26; --bg-3: #1E2535; --bg-4: #252D40;
+  --border: rgba(255,255,255,0.07); --border-2: rgba(255,255,255,0.14);
+  --text: #E8EDF5; --text-2: #7C8FA6; --text-3: #3D4E63;
+  --blue: #4D9EF6; --blue-light: #60AAFF;
+  --blue-bg: rgba(77,158,246,0.1); --blue-border: rgba(77,158,246,0.25);
+  --green: #34D399; --green-bg: rgba(52,211,153,0.1); --green-border: rgba(52,211,153,0.22);
+  --amber: #FBBF24; --amber-bg: rgba(251,191,36,0.1); --amber-border: rgba(251,191,36,0.22);
+  --red: #F87171; --red-bg: rgba(248,113,113,0.1); --red-border: rgba(248,113,113,0.22);
+  --purple: #A78BFA; --purple-light: #C4B5FD;
+  --purple-bg: rgba(167,139,250,0.1); --purple-border: rgba(167,139,250,0.25);
+  --teal: #22D3EE; --teal-bg: rgba(34,211,238,0.1); --teal-border: rgba(34,211,238,0.22);
+  --topbar-bg: rgba(15,17,23,0.97); --card-shadow: none;
+  --radius-lg: 12px; --radius-md: 10px; --radius-sm: 6px;
+  --font-body: 'Inter', -apple-system, sans-serif;
+  /* Alias legacy */
+  --bg2: var(--bg-2); --bg3: var(--bg-3); --bg4: var(--bg-4);
+  --border2: var(--border-2);
+  --text2: var(--text-2); --text3: var(--text-3);
+  --blue-b: var(--blue-border);
+  --purple-l: var(--purple-light); --purple-b: var(--purple-border);
+  --teal-b: var(--teal-border);
+  --amber-b: var(--amber-border);
+  --red-b: var(--red-border); --red-bg: var(--red-bg);
+  --green-b: var(--green-border);
+  --r: var(--radius-lg); --rs: var(--radius-md);
+}
+[data-theme="light"] {
+  --bg: #F8F9FB; --bg-2: #FFFFFF; --bg-3: #F1F3F7; --bg-4: #E8ECF2;
+  --border: rgba(0,0,0,0.08); --border-2: rgba(0,0,0,0.15);
+  --text: #0F1923; --text-2: #4A5568; --text-3: #94A3B8;
+  --blue: #1B6FE8; --blue-light: #3B82F6;
+  --blue-bg: rgba(27,111,232,0.08); --blue-border: rgba(27,111,232,0.2);
+  --green: #0E9F6E; --green-bg: rgba(14,159,110,0.08); --green-border: rgba(14,159,110,0.2);
+  --amber: #D97706; --amber-bg: rgba(217,119,6,0.08); --amber-border: rgba(217,119,6,0.2);
+  --red: #DC2626; --red-bg: rgba(220,38,38,0.08); --red-border: rgba(220,38,38,0.2);
+  --purple: #7C3AED; --purple-light: #8B5CF6;
+  --purple-bg: rgba(124,58,237,0.08); --purple-border: rgba(124,58,237,0.2);
+  --teal: #0891B2; --teal-bg: rgba(8,145,178,0.08); --teal-border: rgba(8,145,178,0.2);
+  --topbar-bg: rgba(248,249,251,0.95); --card-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  --radius-lg: 12px; --radius-md: 10px; --radius-sm: 6px;
+  --font-body: 'Inter', -apple-system, sans-serif;
+  /* Alias legacy */
+  --bg2: var(--bg-2); --bg3: var(--bg-3); --bg4: var(--bg-4);
+  --border2: var(--border-2);
+  --text2: var(--text-2); --text3: var(--text-3);
+  --blue-b: var(--blue-border);
+  --purple-l: var(--purple-light); --purple-b: var(--purple-border);
+  --teal-b: var(--teal-border);
+  --amber-b: var(--amber-border);
+  --red-b: var(--red-border);
+  --green-b: var(--green-border);
+  --r: var(--radius-lg); --rs: var(--radius-md);
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
@@ -387,36 +429,36 @@ const COMMUNES_ALL = [...COMMUNES_NORD,...COMMUNES_SUD,'Aulnay-sous-Bois','Le Bl
 
 const STRUCTURES = [
   // EHPAD
-  {id:'e1',type:'ehpad',name:'EHPAD Les Lumières d\'Automne',ville:'Saint-Ouen',adresse:'12 rue du Général Leclerc, 93400',tel:'01 49 45 XX XX',public:'Personnes âgées dépendantes GIR 1-4',capacite:'80 lits',desc:'Établissement public, spécialisé Alzheimer, unité protégée disponible.',tags:['Alzheimer','Unité protégée','Public'],dispo:true,featured:false},
-  {id:'e2',type:'ehpad',name:'EHPAD DomusVi Épinay',ville:'Épinay-sur-Seine',adresse:'28 av. de la République, 93800',tel:'01 48 26 XX XX',public:'Personnes âgées 60+',capacite:'90 lits',desc:'Établissement privé, accueil permanent et temporaire. Tarif social accessible.',tags:['Accueil temporaire','Privé','APA acceptée'],dispo:true,featured:true},
-  {id:'e3',type:'ehpad',name:'EHPAD emeis Les Lilas',ville:'Les Lilas',adresse:'5 rue Pasteur, 93260',tel:'01 43 62 XX XX',public:'Personnes âgées GIR 1-5',capacite:'72 lits',desc:'Ancien groupe Korian. Activités thérapeutiques, psychologue sur site.',tags:['Alzheimer','Psychologue','Privé'],dispo:false,featured:false},
-  {id:'e4',type:'ehpad',name:'EHPAD Hôpital Casanova',ville:'Saint-Denis',adresse:'5 rue Madeleine Vionnet, 93200',tel:'01 42 35 XX XX',public:'Personnes âgées en perte d\'autonomie',capacite:'120 lits',desc:'EHPAD public hospitalier adossé au centre gériatrique Casanova. Filière gériatrique complète.',tags:['Public hospitalier','Gériatrie','Soins palliatifs'],dispo:true,featured:false},
+  {id:'e1',type:'ehpad',name:'EHPAD Les Lumières d\'Automne',ville:'Saint-Ouen',adresse:'12 rue du Général Leclerc, 93400',tel:'À confirmer',public:'Personnes âgées dépendantes GIR 1-4',capacite:'80 lits',desc:'Établissement public, spécialisé Alzheimer, unité protégée disponible.',tags:['Alzheimer','Unité protégée','Public'],dispo:true,featured:false},
+  {id:'e2',type:'ehpad',name:'EHPAD DomusVi Épinay',ville:'Épinay-sur-Seine',adresse:'28 av. de la République, 93800',tel:'À confirmer',public:'Personnes âgées 60+',capacite:'90 lits',desc:'Établissement privé, accueil permanent et temporaire. Tarif social accessible.',tags:['Accueil temporaire','Privé','APA acceptée'],dispo:true,featured:true},
+  {id:'e3',type:'ehpad',name:'EHPAD emeis Les Lilas',ville:'Les Lilas',adresse:'5 rue Pasteur, 93260',tel:'À confirmer',public:'Personnes âgées GIR 1-5',capacite:'72 lits',desc:'Ancien groupe Korian. Activités thérapeutiques, psychologue sur site.',tags:['Alzheimer','Psychologue','Privé'],dispo:false,featured:false},
+  {id:'e4',type:'ehpad',name:'EHPAD Hôpital Casanova',ville:'Saint-Denis',adresse:'5 rue Madeleine Vionnet, 93200',tel:'À confirmer',public:'Personnes âgées en perte d\'autonomie',capacite:'120 lits',desc:'EHPAD public hospitalier adossé au centre gériatrique Casanova. Filière gériatrique complète.',tags:['Public hospitalier','Gériatrie','Soins palliatifs'],dispo:true,featured:false},
 
   // SSIAD / SAAD
-  {id:'s1',type:'ssiad',name:'SSIAD CCAS Épinay-sur-Seine',ville:'Épinay-sur-Seine',adresse:'Place Jean Grandel, 93800',tel:'01 48 26 XX XX',public:'Personnes âgées et handicapées à domicile',capacite:'60 places',desc:'Service de soins infirmiers à domicile du CCAS. Toilettes, pansements, injections. GIR 1-4.',tags:['GIR 1-4','Toilettes','Pansements','Public'],dispo:true,featured:true},
-  {id:'s2',type:'ssiad',name:'SSIAD Villetaneuse',ville:'Villetaneuse',adresse:'2 allée des Roses, 93430',tel:'01 49 98 XX XX',public:'60 ans et plus, handicap',capacite:'40 places',desc:'Rattaché au CCAS. Secteur Nord 93.',tags:['Nord 93','CCAS'],dispo:true,featured:false},
-  {id:'s3',type:'saad',name:'SAAD Aide & Présence 93',ville:'Saint-Denis',adresse:'15 rue de la Légion d\'Honneur, 93200',tel:'01 48 09 XX XX',public:'Personnes âgées et en situation de handicap',capacite:'Illimité',desc:'Service d\'aide à domicile agréé. Ménage, courses, repas, garde de nuit. Tarif horaire conventionné.',tags:['Ménage','Courses','Garde nuit','Agréé'],dispo:true,featured:false},
-  {id:'s4',type:'had',name:'HAD Seine-Saint-Denis',ville:'Bobigny',adresse:'178 rue Garibaldi, 93000',tel:'01 41 60 XX XX',public:'Patients nécessitant soins complexes à domicile',capacite:'Variable',desc:'Hospitalisation à domicile. Soins palliatifs, chimiothérapie, post-op. Sur prescription médicale.',tags:['Soins palliatifs','Chimio','Post-op','Sur prescription'],dispo:true,featured:false},
+  {id:'s1',type:'ssiad',name:'SSIAD CCAS Épinay-sur-Seine',ville:'Épinay-sur-Seine',adresse:'Place Jean Grandel, 93800',tel:'À confirmer',public:'Personnes âgées et handicapées à domicile',capacite:'60 places',desc:'Service de soins infirmiers à domicile du CCAS. Toilettes, pansements, injections. GIR 1-4.',tags:['GIR 1-4','Toilettes','Pansements','Public'],dispo:true,featured:true},
+  {id:'s2',type:'ssiad',name:'SSIAD Villetaneuse',ville:'Villetaneuse',adresse:'2 allée des Roses, 93430',tel:'À confirmer',public:'60 ans et plus, handicap',capacite:'40 places',desc:'Rattaché au CCAS. Secteur Nord 93.',tags:['Nord 93','CCAS'],dispo:true,featured:false},
+  {id:'s3',type:'saad',name:'SAAD Aide & Présence 93',ville:'Saint-Denis',adresse:'15 rue de la Légion d\'Honneur, 93200',tel:'À confirmer',public:'Personnes âgées et en situation de handicap',capacite:'Illimité',desc:'Service d\'aide à domicile agréé. Ménage, courses, repas, garde de nuit. Tarif horaire conventionné.',tags:['Ménage','Courses','Garde nuit','Agréé'],dispo:true,featured:false},
+  {id:'s4',type:'had',name:'HAD Seine-Saint-Denis',ville:'Bobigny',adresse:'178 rue Garibaldi, 93000',tel:'À confirmer',public:'Patients nécessitant soins complexes à domicile',capacite:'Variable',desc:'Hospitalisation à domicile. Soins palliatifs, chimiothérapie, post-op. Sur prescription médicale.',tags:['Soins palliatifs','Chimio','Post-op','Sur prescription'],dispo:true,featured:false},
 
   // SAMSAH / SAVS (Handicap)
-  {id:'h1',type:'samsah',name:'SAMSAH TSA 93',ville:'Pantin',adresse:'3 rue du Pré-Saint-Gervais, 93500',tel:'01 41 71 XX XX',public:'Adultes TSA (Troubles du Spectre Autistique)',capacite:'25 places',desc:'Accompagnement médico-social pour adultes autistes. Équipe pluridisciplinaire, projet de vie individualisé.',tags:['TSA','Autisme','Adultes','Pluri-pro'],dispo:false,featured:false},
-  {id:'h2',type:'samsah',name:'SAMSAH Agora 93',ville:'Bobigny',adresse:'12 rue du Chemin Vert, 93000',tel:'01 48 30 XX XX',public:'Adultes handicap psychique',capacite:'30 places',desc:'Partenaire historique DAC 93. Accompagnement domicile, soutien psychiatrique, insertion sociale.',tags:['Handicap psychique','Partenaire DAC','Insertion'],dispo:true,featured:true},
-  {id:'h3',type:'savs',name:'SAVS APF France Handicap 93',ville:'Montreuil',adresse:'8 av. de Rosny, 93100',tel:'01 42 87 XX XX',public:'Adultes handicap moteur et polyhandicap',capacite:'50 places',desc:'Service d\'accompagnement dans la vie sociale. Aide administrative, loisirs, emploi.',tags:['Handicap moteur','Administratif','Emploi'],dispo:true,featured:false},
+  {id:'h1',type:'samsah',name:'SAMSAH TSA 93',ville:'Pantin',adresse:'3 rue du Pré-Saint-Gervais, 93500',tel:'À confirmer',public:'Adultes TSA (Troubles du Spectre Autistique)',capacite:'25 places',desc:'Accompagnement médico-social pour adultes autistes. Équipe pluridisciplinaire, projet de vie individualisé.',tags:['TSA','Autisme','Adultes','Pluri-pro'],dispo:false,featured:false},
+  {id:'h2',type:'samsah',name:'SAMSAH Agora 93',ville:'Bobigny',adresse:'12 rue du Chemin Vert, 93000',tel:'À confirmer',public:'Adultes handicap psychique',capacite:'30 places',desc:'Partenaire historique DAC 93. Accompagnement domicile, soutien psychiatrique, insertion sociale.',tags:['Handicap psychique','Partenaire DAC','Insertion'],dispo:true,featured:true},
+  {id:'h3',type:'savs',name:'SAVS APF France Handicap 93',ville:'Montreuil',adresse:'8 av. de Rosny, 93100',tel:'À confirmer',public:'Adultes handicap moteur et polyhandicap',capacite:'50 places',desc:'Service d\'accompagnement dans la vie sociale. Aide administrative, loisirs, emploi.',tags:['Handicap moteur','Administratif','Emploi'],dispo:true,featured:false},
 
   // CHRS / Hébergement
-  {id:'c1',type:'chrs',name:'CHRS Emmaüs Alternatives Épinay',ville:'Épinay-sur-Seine',adresse:'14 rue des Fusillés, 93800',tel:'01 48 26 XX XX',public:'Personnes en situation de grande précarité',capacite:'45 places',desc:'Centre d\'hébergement et réinsertion sociale. Accompagnement vers le logement autonome.',tags:['Précarité','Réinsertion','Logement','Femmes acceptées'],dispo:true,featured:false},
-  {id:'c2',type:'siao',name:'SIAO 93 — Insertion',ville:'Bobigny',adresse:'Hôtel du Département, 93000',tel:'01 43 93 XX XX',public:'Personnes sans domicile ou en risque',capacite:'Régulation',desc:'Service Intégré d\'Accueil et d\'Orientation. Régule toutes les demandes d\'hébergement du 93. Saisine via fiche SIAO.',tags:['Urgence','Hébergement','Régulation 93','Fiche SIAO'],dispo:true,featured:true},
-  {id:'c3',type:'chrs',name:'CHRS Groupe SOS Solidarités',ville:'Aubervilliers',adresse:'2 rue du Landy, 93300',tel:'01 48 34 XX XX',public:'Hommes et femmes 18+',capacite:'60 places',desc:'Hébergement stabilisation + accompagnement social intensif. Partenaire SIAO 93.',tags:['Stabilisation','Mixte','SIAO'],dispo:true,featured:false},
+  {id:'c1',type:'chrs',name:'CHRS Emmaüs Alternatives Épinay',ville:'Épinay-sur-Seine',adresse:'14 rue des Fusillés, 93800',tel:'À confirmer',public:'Personnes en situation de grande précarité',capacite:'45 places',desc:'Centre d\'hébergement et réinsertion sociale. Accompagnement vers le logement autonome.',tags:['Précarité','Réinsertion','Logement','Femmes acceptées'],dispo:true,featured:false},
+  {id:'c2',type:'siao',name:'SIAO 93 — Insertion',ville:'Bobigny',adresse:'Hôtel du Département, 93000',tel:'À confirmer',public:'Personnes sans domicile ou en risque',capacite:'Régulation',desc:'Service Intégré d\'Accueil et d\'Orientation. Régule toutes les demandes d\'hébergement du 93. Saisine via fiche SIAO.',tags:['Urgence','Hébergement','Régulation 93','Fiche SIAO'],dispo:true,featured:true},
+  {id:'c3',type:'chrs',name:'CHRS Groupe SOS Solidarités',ville:'Aubervilliers',adresse:'2 rue du Landy, 93300',tel:'À confirmer',public:'Hommes et femmes 18+',capacite:'60 places',desc:'Hébergement stabilisation + accompagnement social intensif. Partenaire SIAO 93.',tags:['Stabilisation','Mixte','SIAO'],dispo:true,featured:false},
 
   // CMP / Psychiatrie
-  {id:'p1',type:'cmp',name:'CMP Adultes Épinay-sur-Seine',ville:'Épinay-sur-Seine',adresse:'6 rue de la Paix, 93800',tel:'01 48 26 XX XX',public:'Adultes troubles psychiques',capacite:'Consultation',desc:'Centre médico-psychologique. Psychiatres, psychologues, infirmiers. Sans rendez-vous urgent le matin.',tags:['Psychiatrie','Psychologie','Sans RDV matin'],dispo:true,featured:true},
-  {id:'p2',type:'cmp',name:'CMP Saint-Denis Centre',ville:'Saint-Denis',adresse:'22 rue du Bois, 93200',tel:'01 42 43 XX XX',public:'Adultes et adolescents',capacite:'Consultation',desc:'Sectorisé. File active importante — délai 3-6 semaines sauf urgence. Équipe mobile à domicile possible.',tags:['Sectorisé','Équipe mobile','Ados+Adultes'],dispo:true,featured:false},
-  {id:'p3',type:'cmp',name:'CMP Bondy',ville:'Bondy',adresse:'8 av. de la République, 93140',tel:'01 48 02 XX XX',public:'Adultes',capacite:'Consultation',desc:'Rattaché au CH de Ville-Évrard. Spécialités : addictions, trauma, précarité.',tags:['Addictions','Trauma','Précarité'],dispo:true,featured:false},
+  {id:'p1',type:'cmp',name:'CMP Adultes Épinay-sur-Seine',ville:'Épinay-sur-Seine',adresse:'6 rue de la Paix, 93800',tel:'À confirmer',public:'Adultes troubles psychiques',capacite:'Consultation',desc:'Centre médico-psychologique. Psychiatres, psychologues, infirmiers. Sans rendez-vous urgent le matin.',tags:['Psychiatrie','Psychologie','Sans RDV matin'],dispo:true,featured:true},
+  {id:'p2',type:'cmp',name:'CMP Saint-Denis Centre',ville:'Saint-Denis',adresse:'22 rue du Bois, 93200',tel:'À confirmer',public:'Adultes et adolescents',capacite:'Consultation',desc:'Sectorisé. File active importante — délai 3-6 semaines sauf urgence. Équipe mobile à domicile possible.',tags:['Sectorisé','Équipe mobile','Ados+Adultes'],dispo:true,featured:false},
+  {id:'p3',type:'cmp',name:'CMP Bondy',ville:'Bondy',adresse:'8 av. de la République, 93140',tel:'À confirmer',public:'Adultes',capacite:'Consultation',desc:'Rattaché au CH de Ville-Évrard. Spécialités : addictions, trauma, précarité.',tags:['Addictions','Trauma','Précarité'],dispo:true,featured:false},
 
   // Hôpitaux
   {id:'ho1',type:'hopital',name:'Hôpital Avicenne — Bobigny',ville:'Bobigny',adresse:'125 route de Stalingrad, 93000',tel:'01 48 95 55 55',public:'Tous publics — MCO + gériatrie',capacite:'500+ lits',desc:'CHU de référence Nord 93. Gériatrie, urgences, psychiatrie, soins palliatifs. Partenaire DAC 93.',tags:['CHU','Gériatrie','Urgences','Partenaire DAC'],dispo:true,featured:false},
   {id:'ho2',type:'hopital',name:'Hôpital Casanova — Saint-Denis',ville:'Saint-Denis',adresse:'5 rue Madeleine Vionnet, 93200',tel:'01 42 35 61 00',public:'Gériatrie / SSR',capacite:'200 lits',desc:'Hôpital gériatrique de référence. SSR, soins palliatifs, EHPAD adossé, consultation mémoire.',tags:['Gériatrie','SSR','Soins palliatifs','Mémoire'],dispo:true,featured:false},
-  {id:'ho3',type:'ssr',name:'SSR La Roseraie — Aubervilliers',ville:'Aubervilliers',adresse:'7 av. de la Division Leclerc, 93300',tel:'01 48 36 XX XX',public:'Post-hospitalisation, rééducation',capacite:'80 lits',desc:'Soins de suite et réadaptation. Rééducation orthopédique, neurologique, gériatrique.',tags:['Rééducation','Post-op','Ortho','Neuro'],dispo:true,featured:false},
+  {id:'ho3',type:'ssr',name:'SSR La Roseraie — Aubervilliers',ville:'Aubervilliers',adresse:'7 av. de la Division Leclerc, 93300',tel:'À confirmer',public:'Post-hospitalisation, rééducation',capacite:'80 lits',desc:'Soins de suite et réadaptation. Rééducation orthopédique, neurologique, gériatrique.',tags:['Rééducation','Post-op','Ortho','Neuro'],dispo:true,featured:false},
 
   // CCAS
   {id:'cc1',type:'ccas',name:'CCAS Épinay-sur-Seine',ville:'Épinay-sur-Seine',adresse:'Place Jean Grandel, 93800',tel:'01 48 26 06 06',public:'Habitants d\'Épinay',capacite:'Services',desc:'Aide alimentaire, aide financière d\'urgence, accompagnement administratif, accès aux droits.',tags:['Aide alimentaire','Urgence financière','Droits','RSA'],dispo:true,featured:true},
@@ -425,56 +467,56 @@ const STRUCTURES = [
 
   // Institutions
   {id:'i1',type:'cpam',name:'CPAM Seine-Saint-Denis',ville:'Bobigny',adresse:'2 rue des Archives, 93000',tel:'3646',public:'Tous assurés du 93',capacite:'Guichet',desc:'Droits maladie, CSS, AME, ALD. Service social CPAM pour situations complexes. Partenaire DAC.',tags:['CSS','AME','ALD','Service social'],dispo:true,featured:false},
-  {id:'i2',type:'mdph',name:'MDPH Seine-Saint-Denis',ville:'Bobigny',adresse:'225 av. Paul Vaillant-Couturier, 93000',tel:'01 43 93 XX XX',public:'Personnes en situation de handicap',capacite:'Guichet',desc:'AAH, RQTH, PCH, AEEH, orientations. Délai traitement : 4-6 mois. Dépôt dossier en ligne possible.',tags:['AAH','RQTH','PCH','AEEH'],dispo:true,featured:false},
+  {id:'i2',type:'mdph',name:'MDPH Seine-Saint-Denis',ville:'Bobigny',adresse:'225 av. Paul Vaillant-Couturier, 93000',tel:'À confirmer',public:'Personnes en situation de handicap',capacite:'Guichet',desc:'AAH, RQTH, PCH, AEEH, orientations. Délai traitement : 4-6 mois. Dépôt dossier en ligne possible.',tags:['AAH','RQTH','PCH','AEEH'],dispo:true,featured:false},
 
   // Accueil de jour
-  {id:'aj1',type:'ej',name:'Accueil de jour Alzheimer Pantin',ville:'Pantin',adresse:'12 rue Watt, 93500',tel:'01 41 71 XX XX',public:'Personnes atteintes d\'Alzheimer ou pathologies apparentées',capacite:'15 places/jour',desc:'Accueil de jour thérapeutique. Ateliers mémoire, activités adaptées, soutien aux aidants.',tags:['Alzheimer','Aidants','Thérapeutique','Jour uniquement'],dispo:true,featured:false},
-  {id:'aj2',type:'ej',name:'Centre d\'Accueil de Jour Le Bourget',ville:'Le Bourget',adresse:'3 rue des Marronniers, 93350',tel:'01 48 35 XX XX',public:'Personnes âgées GIR 1-3',capacite:'12 places/jour',desc:'Répit aidants. Transport assuré. Repas, animations, bain thérapeutique.',tags:['Répit aidants','Transport','GIR 1-3'],dispo:true,featured:false},
+  {id:'aj1',type:'ej',name:'Accueil de jour Alzheimer Pantin',ville:'Pantin',adresse:'12 rue Watt, 93500',tel:'À confirmer',public:'Personnes atteintes d\'Alzheimer ou pathologies apparentées',capacite:'15 places/jour',desc:'Accueil de jour thérapeutique. Ateliers mémoire, activités adaptées, soutien aux aidants.',tags:['Alzheimer','Aidants','Thérapeutique','Jour uniquement'],dispo:true,featured:false},
+  {id:'aj2',type:'ej',name:'Centre d\'Accueil de Jour Le Bourget',ville:'Le Bourget',adresse:'3 rue des Marronniers, 93350',tel:'À confirmer',public:'Personnes âgées GIR 1-3',capacite:'12 places/jour',desc:'Répit aidants. Transport assuré. Repas, animations, bain thérapeutique.',tags:['Répit aidants','Transport','GIR 1-3'],dispo:true,featured:false},
 
   // ESAT
-  {id:'es1',type:'esat',name:'ESAT Horizon 93',ville:'Bondy',adresse:'1 rue des Chantiers, 93140',tel:'01 48 48 XX XX',public:'Adultes en situation de handicap (RQTH)',capacite:'80 places travail',desc:'Établissement et service d\'aide par le travail. Espaces verts, sous-traitance industrielle légère.',tags:['RQTH requis','Espaces verts','Insertion pro'],dispo:true,featured:false},
+  {id:'es1',type:'esat',name:'ESAT Horizon 93',ville:'Bondy',adresse:'1 rue des Chantiers, 93140',tel:'À confirmer',public:'Adultes en situation de handicap (RQTH)',capacite:'80 places travail',desc:'Établissement et service d\'aide par le travail. Espaces verts, sous-traitance industrielle légère.',tags:['RQTH requis','Espaces verts','Insertion pro'],dispo:true,featured:false},
 
 
   // MAILLAGE TERRITORIAL MULTI-DEPARTEMENTS
-  {id:"dac92",type:"dac",name:"DAC 92 Hauts-de-Seine",ville:"Nanterre",adresse:"2 rue des Canibouts, 92000 Nanterre",tel:"01 55 87 XX XX",public:"Situations complexes 92",capacite:null,desc:"Dispositif Appui Coordination Hauts-de-Seine. Couvre les communes du 92.",tags:["DAC","92","Coordination"],dispo:true,featured:false},
-  {id:"dac95",type:"dac",name:"DAC 95 Val-d Oise",ville:"Cergy",adresse:"5 rue de la Paix, 95000 Cergy",tel:"01 30 XX XX XX",public:"Situations complexes 95",capacite:null,desc:"Dispositif Appui Coordination Val-d Oise. Contact pour transfert ou coordination inter-DAC.",tags:["DAC","95","Coordination"],dispo:true,featured:false},
-  {id:"dac94",type:"dac",name:"DAC 94 Val-de-Marne",ville:"Creteil",adresse:"40 av. de Verdun, 94000 Creteil",tel:"01 43 XX XX XX",public:"Situations complexes 94",capacite:null,desc:"Dispositif Appui Coordination Val-de-Marne.",tags:["DAC","94","Coordination"],dispo:true,featured:false},
-  {id:"dac75",type:"dac",name:"DAC Paris",ville:"Paris",adresse:"44 rue Cambronne, 75015 Paris",tel:"01 XX XX XX XX",public:"Situations complexes Paris",capacite:null,desc:"Coordination des parcours complexes sur Paris intra-muros.",tags:["DAC","75","Paris"],dispo:true,featured:false},
+  {id:"dac92",type:"dac",name:"DAC 92 Hauts-de-Seine",ville:"Nanterre",adresse:"2 rue des Canibouts, 92000 Nanterre",tel:"À confirmer",public:"Situations complexes 92",capacite:null,desc:"Dispositif Appui Coordination Hauts-de-Seine. Couvre les communes du 92.",tags:["DAC","92","Coordination"],dispo:true,featured:false},
+  {id:"dac95",type:"dac",name:"DAC 95 Val-d Oise",ville:"Cergy",adresse:"5 rue de la Paix, 95000 Cergy",tel:"À confirmer",public:"Situations complexes 95",capacite:null,desc:"Dispositif Appui Coordination Val-d Oise. Contact pour transfert ou coordination inter-DAC.",tags:["DAC","95","Coordination"],dispo:true,featured:false},
+  {id:"dac94",type:"dac",name:"DAC 94 Val-de-Marne",ville:"Creteil",adresse:"40 av. de Verdun, 94000 Creteil",tel:"À confirmer",public:"Situations complexes 94",capacite:null,desc:"Dispositif Appui Coordination Val-de-Marne.",tags:["DAC","94","Coordination"],dispo:true,featured:false},
+  {id:"dac75",type:"dac",name:"DAC Paris",ville:"Paris",adresse:"44 rue Cambronne, 75015 Paris",tel:"À confirmer",public:"Situations complexes Paris",capacite:null,desc:"Coordination des parcours complexes sur Paris intra-muros.",tags:["DAC","75","Paris"],dispo:true,featured:false},
 
   {id:"mdph92",type:"mdph",name:"MDPH 92 Hauts-de-Seine",ville:"Nanterre",adresse:"64 av. de la Republique, 92015 Nanterre",tel:"0800 00 92 92",public:"Personnes en situation de handicap 92",capacite:null,desc:"Maison Departementale Personnes Handicapees. AAH, PCH, RQTH, carte CMI. Lun-Ven 9h-17h.",tags:["MDPH","92","AAH","PCH","RQTH"],dispo:true,featured:false},
   {id:"mdph94",type:"mdph",name:"MDPH 94 Val-de-Marne",ville:"Creteil",adresse:"1 pl. Salvador Allende, 94011 Creteil",tel:"01 43 77 35 35",public:"Personnes en situation de handicap 94",capacite:null,desc:"MDPH Val-de-Marne. Dossiers AAH, PCH, AEEH, RQTH, carte mobilite inclusion.",tags:["MDPH","94","AAH","PCH"],dispo:true,featured:false},
-  {id:"mdph95",type:"mdph",name:"MDPH 95 Val-d Oise",ville:"Cergy",adresse:"3 av. de la Palette, 95032 Cergy",tel:"01 34 XX XX XX",public:"Personnes en situation de handicap 95",capacite:null,desc:"MDPH Val-d Oise.",tags:["MDPH","95","AAH","PCH"],dispo:true,featured:false},
+  {id:"mdph95",type:"mdph",name:"MDPH 95 Val-d Oise",ville:"Cergy",adresse:"3 av. de la Palette, 95032 Cergy",tel:"À confirmer",public:"Personnes en situation de handicap 95",capacite:null,desc:"MDPH Val-d Oise.",tags:["MDPH","95","AAH","PCH"],dispo:true,featured:false},
 
   {id:"cpam92",type:"cpam",name:"CPAM 92 Hauts-de-Seine",ville:"Nanterre",adresse:"10 rue des Trois Fontanot, 92000 Nanterre",tel:"3646",public:"Tous assures 92",capacite:null,desc:"CPAM Hauts-de-Seine. Droits maladie, CSS, AME, indemnites journalieres, ALD.",tags:["CPAM","92","CSS","AME"],dispo:true,featured:false},
   {id:"cpam94",type:"cpam",name:"CPAM 94 Val-de-Marne",ville:"Creteil",adresse:"45 av. Raspail, 94107 Saint-Maur",tel:"3646",public:"Tous assures 94",capacite:null,desc:"CPAM Val-de-Marne.",tags:["CPAM","94","CSS","AME"],dispo:true,featured:false},
 
-  {id:"ssiad92",type:"ssiad",name:"SSIAD Croix-Rouge 92",ville:"Levallois-Perret",adresse:"12 rue Victor Hugo, 92300 Levallois",tel:"01 47 57 XX XX",public:"GIR 1-4, 60+",capacite:"40 places",desc:"Service Soins Infirmiers A Domicile Croix-Rouge. Soins techniques, nursing, coordination.",tags:["SSIAD","92","Soins domicile"],dispo:true,featured:false},
-  {id:"ssiad94",type:"ssiad",name:"SSIAD ADOMA 94",ville:"Ivry-sur-Seine",adresse:"5 rue Voltaire, 94200 Ivry",tel:"01 46 71 XX XX",public:"GIR 1-4, personnes handicapees",capacite:"35 places",desc:"SSIAD couvrant le Val-de-Marne sud.",tags:["SSIAD","94","Soins domicile"],dispo:true,featured:false},
+  {id:"ssiad92",type:"ssiad",name:"SSIAD Croix-Rouge 92",ville:"Levallois-Perret",adresse:"12 rue Victor Hugo, 92300 Levallois",tel:"À confirmer",public:"GIR 1-4, 60+",capacite:"40 places",desc:"Service Soins Infirmiers A Domicile Croix-Rouge. Soins techniques, nursing, coordination.",tags:["SSIAD","92","Soins domicile"],dispo:true,featured:false},
+  {id:"ssiad94",type:"ssiad",name:"SSIAD ADOMA 94",ville:"Ivry-sur-Seine",adresse:"5 rue Voltaire, 94200 Ivry",tel:"À confirmer",public:"GIR 1-4, personnes handicapees",capacite:"35 places",desc:"SSIAD couvrant le Val-de-Marne sud.",tags:["SSIAD","94","Soins domicile"],dispo:true,featured:false},
 
   // PROTECTION JURIDIQUE
-  {id:"pj1",type:"protection_juridique",name:"Service Tutelles UDAF 93",ville:"Bobigny",adresse:"15 rue Marceau, 93000 Bobigny",tel:"01 48 95 XX XX",public:"Majeurs proteges",capacite:null,desc:"Union Departementale Associations Familiales. Mesures de tutelle, curatelle, sauvegarde de justice. Mandataire judiciaire protection majeurs (MJPM).",tags:["Tutelle","Curatelle","MJPM","Protection juridique"],dispo:true,featured:false},
-  {id:"pj2",type:"protection_juridique",name:"ATMP 93 Association Tutelaire",ville:"Saint-Denis",adresse:"8 bd Carnot, 93200 Saint-Denis",tel:"01 48 09 XX XX",public:"Majeurs proteges toute situation",capacite:null,desc:"Association Tutelaire des Majeurs Proteges. Habilitation familiale, mandat de protection future, curatelle renforcee.",tags:["Tutelle","Curatelle","MJPM","Habilitation familiale"],dispo:true,featured:false},
-  {id:"pj3",type:"protection_juridique",name:"Juge des tutelles TJ Bobigny",ville:"Bobigny",adresse:"173 av. Paul Vaillant-Couturier, 93000 Bobigny",tel:"01 41 83 XX XX",public:"Toute demande de mesure de protection",capacite:null,desc:"Tribunal judiciaire de Bobigny. Depot des requetes en ouverture de tutelle et curatelle. Formulaire CERFA 15891.",tags:["Tribunal","Tutelle","Curatelle"],dispo:true,featured:false},
+  {id:"pj1",type:"protection_juridique",name:"Service Tutelles UDAF 93",ville:"Bobigny",adresse:"15 rue Marceau, 93000 Bobigny",tel:"À confirmer",public:"Majeurs proteges",capacite:null,desc:"Union Departementale Associations Familiales. Mesures de tutelle, curatelle, sauvegarde de justice. Mandataire judiciaire protection majeurs (MJPM).",tags:["Tutelle","Curatelle","MJPM","Protection juridique"],dispo:true,featured:false},
+  {id:"pj2",type:"protection_juridique",name:"ATMP 93 Association Tutelaire",ville:"Saint-Denis",adresse:"8 bd Carnot, 93200 Saint-Denis",tel:"À confirmer",public:"Majeurs proteges toute situation",capacite:null,desc:"Association Tutelaire des Majeurs Proteges. Habilitation familiale, mandat de protection future, curatelle renforcee.",tags:["Tutelle","Curatelle","MJPM","Habilitation familiale"],dispo:true,featured:false},
+  {id:"pj3",type:"protection_juridique",name:"Juge des tutelles TJ Bobigny",ville:"Bobigny",adresse:"173 av. Paul Vaillant-Couturier, 93000 Bobigny",tel:"À confirmer",public:"Toute demande de mesure de protection",capacite:null,desc:"Tribunal judiciaire de Bobigny. Depot des requetes en ouverture de tutelle et curatelle. Formulaire CERFA 15891.",tags:["Tribunal","Tutelle","Curatelle"],dispo:true,featured:false},
 
   // TITRES DE SEJOUR
   {id:"ts1",type:"titre_sejour",name:"Prefecture Seine-Saint-Denis",ville:"Bobigny",adresse:"1 esplanade Jean Moulin, 93007 Bobigny",tel:"Plateforme en ligne",public:"Etrangers residant en 93",capacite:null,desc:"Administration du prefet 93. Demandes de titre de sejour uniquement en ligne via Administration+. Delai moyen: 3-6 mois.",tags:["Titre de sejour","Prefecture","93","AME","Etranger"],dispo:true,featured:false},
-  {id:"ts2",type:"titre_sejour",name:"France Services Epinay-sur-Seine",ville:"Epinay-sur-Seine",adresse:"2 pl. de la Republique, 93800 Epinay",tel:"01 48 26 XX XX",public:"Tous publics aide demarches",capacite:null,desc:"Accompagnement administratif gratuit. Aide pour constituer les dossiers prefecture, CPAM, CAF. Rendez-vous sur place.",tags:["France Services","Titre de sejour","Aide administrative"],dispo:true,featured:false},
+  {id:"ts2",type:"titre_sejour",name:"France Services Epinay-sur-Seine",ville:"Epinay-sur-Seine",adresse:"2 pl. de la Republique, 93800 Epinay",tel:"À confirmer",public:"Tous publics aide demarches",capacite:null,desc:"Accompagnement administratif gratuit. Aide pour constituer les dossiers prefecture, CPAM, CAF. Rendez-vous sur place.",tags:["France Services","Titre de sejour","Aide administrative"],dispo:true,featured:false},
   {id:"ts3",type:"titre_sejour",name:"GISTI Groupe Info Soutien Immigres",ville:"Paris",adresse:"3 villa Marces, 75011 Paris",tel:"01 43 14 84 84",public:"Personnes etrangeres",capacite:null,desc:"Association de defense des droits des etrangers. Consultations juridiques, accompagnement titre de sejour, AME, droits sociaux.",tags:["GISTI","Etranger","Titre de sejour","Juridique"],dispo:true,featured:false},
 
   // DROITS EXCEPTIONNELS
   {id:"de1",type:"droits_excep",name:"Fonds Action Sociale CAF 93",ville:"Bobigny",adresse:"CAF de Bobigny 19 av. du President Wilson",tel:"0810 25 93 00",public:"Allocataires CAF en difficulte",capacite:null,desc:"Aide exceptionnelle CAF. Dossier via TS referent. Aide logement FSL, aide alimentaire, aide equipement. Traitement 15-30 jours.",tags:["CAF","Aide exceptionnelle","FSL","Logement"],dispo:true,featured:false},
-  {id:"de2",type:"droits_excep",name:"Fonds de Solidarite Logement 93",ville:"Bobigny",adresse:"CD93 2 rue Simone de Beauvoir",tel:"01 43 93 XX XX",public:"Personnes en difficulte de logement",capacite:null,desc:"FSL pour impayes loyer, impayes charges, depot de garantie, aide demenagement. Dossier via AS referent.",tags:["FSL","Logement","Aide exceptionnelle","93"],dispo:true,featured:false},
+  {id:"de2",type:"droits_excep",name:"Fonds de Solidarite Logement 93",ville:"Bobigny",adresse:"CD93 2 rue Simone de Beauvoir",tel:"À confirmer",public:"Personnes en difficulte de logement",capacite:null,desc:"FSL pour impayes loyer, impayes charges, depot de garantie, aide demenagement. Dossier via AS referent.",tags:["FSL","Logement","Aide exceptionnelle","93"],dispo:true,featured:false},
   {id:"de3",type:"droits_excep",name:"AME Urgente CPAM 93",ville:"Bobigny",adresse:"CPAM Bobigny",tel:"3646",public:"Personnes sans AME en urgence medicale",capacite:null,desc:"AME urgente pour soins ne pouvant attendre. Delivrance immediate sous 24h sur attestation medicale. A demander directement au guichet CPAM.",tags:["AME","Urgence","CPAM","Sans papiers"],dispo:true,featured:false},
-  {id:"de4",type:"droits_excep",name:"Secours Urgence CCAS Saint-Denis",ville:"Saint-Denis",adresse:"2 rue Jacques Prevert, 93200 Saint-Denis",tel:"01 49 33 XX XX",public:"Personnes en grande precarite Saint-Denis",capacite:null,desc:"Aide alimentaire urgence, colis alimentaires, epicerie sociale. Bon de pharmacie. Aide vestimentaire. Sur rendez-vous CCAS.",tags:["CCAS","Urgence","Alimentaire","Saint-Denis"],dispo:true,featured:false},
+  {id:"de4",type:"droits_excep",name:"Secours Urgence CCAS Saint-Denis",ville:"Saint-Denis",adresse:"2 rue Jacques Prevert, 93200 Saint-Denis",tel:"À confirmer",public:"Personnes en grande precarite Saint-Denis",capacite:null,desc:"Aide alimentaire urgence, colis alimentaires, epicerie sociale. Bon de pharmacie. Aide vestimentaire. Sur rendez-vous CCAS.",tags:["CCAS","Urgence","Alimentaire","Saint-Denis"],dispo:true,featured:false},
 
   // AIDANTS FAMILIAUX
-  {id:"af1",type:"aidants",name:"Relayons-Nous 93 Plateforme Repit",ville:"Aubervilliers",adresse:"12 rue Henri Barbusse, 93300 Aubervilliers",tel:"01 48 33 XX XX",public:"Aidants familiaux du 93",capacite:null,desc:"Plateforme accompagnement et repit pour aidants. Sejours de repit, accueil de jour, formation aidants, soutien psychologique. Financement via CNSA.",tags:["Aidants","Repit","Formation","CNSA"],dispo:true,featured:false},
-  {id:"af2",type:"aidants",name:"ADMR IDF Soutien Aidants",ville:"Paris",adresse:"184 rue du Faubourg Saint-Antoine, 75012 Paris",tel:"01 43 XX XX XX",public:"Aidants familiaux IDF",capacite:null,desc:"Accompagnement des aidants familiaux. Droit au repit, remplacement temporaire, formations. Conge proche aidant possible.",tags:["Aidants","Repit","Conge proche aidant","AJPA"],dispo:true,featured:false},
-  {id:"af3",type:"aidants",name:"Cafe des Aidants Saint-Denis",ville:"Saint-Denis",adresse:"CCAS Saint-Denis",tel:"01 49 33 XX XX",public:"Aidants familiaux",capacite:null,desc:"Groupe de parole et echange pour aidants. 1er jeudi du mois 14h-16h. Gratuit, sans inscription. Anime par psychologue et AS.",tags:["Aidants","Groupe de parole","Gratuit","Saint-Denis"],dispo:true,featured:false},
+  {id:"af1",type:"aidants",name:"Relayons-Nous 93 Plateforme Repit",ville:"Aubervilliers",adresse:"12 rue Henri Barbusse, 93300 Aubervilliers",tel:"À confirmer",public:"Aidants familiaux du 93",capacite:null,desc:"Plateforme accompagnement et repit pour aidants. Sejours de repit, accueil de jour, formation aidants, soutien psychologique. Financement via CNSA.",tags:["Aidants","Repit","Formation","CNSA"],dispo:true,featured:false},
+  {id:"af2",type:"aidants",name:"ADMR IDF Soutien Aidants",ville:"Paris",adresse:"184 rue du Faubourg Saint-Antoine, 75012 Paris",tel:"À confirmer",public:"Aidants familiaux IDF",capacite:null,desc:"Accompagnement des aidants familiaux. Droit au repit, remplacement temporaire, formations. Conge proche aidant possible.",tags:["Aidants","Repit","Conge proche aidant","AJPA"],dispo:true,featured:false},
+  {id:"af3",type:"aidants",name:"Cafe des Aidants Saint-Denis",ville:"Saint-Denis",adresse:"CCAS Saint-Denis",tel:"À confirmer",public:"Aidants familiaux",capacite:null,desc:"Groupe de parole et echange pour aidants. 1er jeudi du mois 14h-16h. Gratuit, sans inscription. Anime par psychologue et AS.",tags:["Aidants","Groupe de parole","Gratuit","Saint-Denis"],dispo:true,featured:false},
 
   // SORTIE HOSPITALISATION
-  {id:"sh1",type:"sortie_hospit",name:"Service Social CH Robert Ballanger",ville:"Aulnay-sous-Bois",adresse:"Bd Robert Ballanger, 93600 Aulnay",tel:"01 49 36 XX XX",public:"Patients hospitalises necessitant coordination sortie",capacite:null,desc:"Service social hospitalier. Coordination sortie complexe, lien DAC, mise en place aides domicile avant retour. Contacter 48h avant sortie prevue.",tags:["Sortie hospitalisation","Service social","CH Ballanger","Coordination"],dispo:true,featured:false},
-  {id:"sh2",type:"sortie_hospit",name:"MAIA 93 Maison Autonomie Integration",ville:"Saint-Denis",adresse:"DAC 93 Nord",tel:"01 48 09 XX XX",public:"Personnes agees situation complexe sortie hospit",capacite:null,desc:"Coordination MAIA pour sorties hospitalieres complexes personnes agees. Lien ville-hopital, gestionnaire de cas si besoin.",tags:["MAIA","Sortie hospitalisation","Personnes agees","Coordination"],dispo:true,featured:false},
+  {id:"sh1",type:"sortie_hospit",name:"Service Social CH Robert Ballanger",ville:"Aulnay-sous-Bois",adresse:"Bd Robert Ballanger, 93600 Aulnay",tel:"À confirmer",public:"Patients hospitalises necessitant coordination sortie",capacite:null,desc:"Service social hospitalier. Coordination sortie complexe, lien DAC, mise en place aides domicile avant retour. Contacter 48h avant sortie prevue.",tags:["Sortie hospitalisation","Service social","CH Ballanger","Coordination"],dispo:true,featured:false},
+  {id:"sh2",type:"sortie_hospit",name:"MAIA 93 Maison Autonomie Integration",ville:"Saint-Denis",adresse:"DAC 93 Nord",tel:"À confirmer",public:"Personnes agees situation complexe sortie hospit",capacite:null,desc:"Coordination MAIA pour sorties hospitalieres complexes personnes agees. Lien ville-hopital, gestionnaire de cas si besoin.",tags:["MAIA","Sortie hospitalisation","Personnes agees","Coordination"],dispo:true,featured:false},
 
   // URGENCES NUIT ET WEEK-END
   {id:"urg1",type:"urgence_nuit",name:"SAMU Social 93 - 115",ville:"Seine-Saint-Denis",adresse:"Disponible 24h/24",tel:"115",public:"Personnes sans abri, urgence sociale",capacite:null,desc:"Numero national urgence sociale. Disponible 24h/24, 7j/7. Orientation hebergement urgence, maraudes, CHRS. GRATUIT.",tags:["115","Urgence","SDF","Nuit","Week-end"],dispo:true,featured:false},
@@ -838,7 +880,7 @@ async function runIAOrientation(){
     const resp=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
       headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:800,messages:[{role:'user',content:`Tu es un coordinateur de parcours expert en orientation médico-sociale en Seine-Saint-Denis (93).
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,messages:[{role:'user',content:`Tu es un coordinateur de parcours expert en orientation médico-sociale en Seine-Saint-Denis (93).
 
 SITUATION SOUMISE :
 ${situation}

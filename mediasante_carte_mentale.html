@@ -10,18 +10,60 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&display=swap');
 
-:root,[data-theme="light"],[data-theme="dark"]{
-  /* Alias pour compatibilite legacy */
-  --bg2:var(--bg-2);--bg3:var(--bg-3);--bg4:var(--bg-4);
-  --border2:var(--border-2);
-  --text2:var(--text-2);--text3:var(--text-3);
-  --blue-bg:var(--blue-bg);--blue-b:var(--blue-border);
-  --purple-l:var(--purple-light);--purple-bg:var(--purple-bg);--purple-b:var(--purple-border);
-  --teal-bg:var(--teal-bg);--teal-b:var(--teal-border);
-  --amber-bg:var(--amber-bg);--amber-b:var(--amber-border);
-  --red-bg:var(--red-bg);--red-b:var(--red-border);
-  --green-bg:var(--green-bg);--green-b:var(--green-border);
-  --r:var(--radius-lg);--rs:var(--radius-md);
+:root, [data-theme="dark"] {
+  /* Variables principales */
+  --bg: #0F1117; --bg-2: #161B26; --bg-3: #1E2535; --bg-4: #252D40;
+  --border: rgba(255,255,255,0.07); --border-2: rgba(255,255,255,0.14);
+  --text: #E8EDF5; --text-2: #7C8FA6; --text-3: #3D4E63;
+  --blue: #4D9EF6; --blue-light: #60AAFF;
+  --blue-bg: rgba(77,158,246,0.1); --blue-border: rgba(77,158,246,0.25);
+  --green: #34D399; --green-bg: rgba(52,211,153,0.1); --green-border: rgba(52,211,153,0.22);
+  --amber: #FBBF24; --amber-bg: rgba(251,191,36,0.1); --amber-border: rgba(251,191,36,0.22);
+  --red: #F87171; --red-bg: rgba(248,113,113,0.1); --red-border: rgba(248,113,113,0.22);
+  --purple: #A78BFA; --purple-light: #C4B5FD;
+  --purple-bg: rgba(167,139,250,0.1); --purple-border: rgba(167,139,250,0.25);
+  --teal: #22D3EE; --teal-bg: rgba(34,211,238,0.1); --teal-border: rgba(34,211,238,0.22);
+  --topbar-bg: rgba(15,17,23,0.97); --card-shadow: none;
+  --radius-lg: 12px; --radius-md: 10px; --radius-sm: 6px;
+  --font-body: 'Inter', -apple-system, sans-serif;
+  /* Alias legacy */
+  --bg2: var(--bg-2); --bg3: var(--bg-3); --bg4: var(--bg-4);
+  --border2: var(--border-2);
+  --text2: var(--text-2); --text3: var(--text-3);
+  --blue-b: var(--blue-border);
+  --purple-l: var(--purple-light); --purple-b: var(--purple-border);
+  --teal-b: var(--teal-border);
+  --amber-b: var(--amber-border);
+  --red-b: var(--red-border); --red-bg: var(--red-bg);
+  --green-b: var(--green-border);
+  --r: var(--radius-lg); --rs: var(--radius-md);
+}
+[data-theme="light"] {
+  --bg: #F8F9FB; --bg-2: #FFFFFF; --bg-3: #F1F3F7; --bg-4: #E8ECF2;
+  --border: rgba(0,0,0,0.08); --border-2: rgba(0,0,0,0.15);
+  --text: #0F1923; --text-2: #4A5568; --text-3: #94A3B8;
+  --blue: #1B6FE8; --blue-light: #3B82F6;
+  --blue-bg: rgba(27,111,232,0.08); --blue-border: rgba(27,111,232,0.2);
+  --green: #0E9F6E; --green-bg: rgba(14,159,110,0.08); --green-border: rgba(14,159,110,0.2);
+  --amber: #D97706; --amber-bg: rgba(217,119,6,0.08); --amber-border: rgba(217,119,6,0.2);
+  --red: #DC2626; --red-bg: rgba(220,38,38,0.08); --red-border: rgba(220,38,38,0.2);
+  --purple: #7C3AED; --purple-light: #8B5CF6;
+  --purple-bg: rgba(124,58,237,0.08); --purple-border: rgba(124,58,237,0.2);
+  --teal: #0891B2; --teal-bg: rgba(8,145,178,0.08); --teal-border: rgba(8,145,178,0.2);
+  --topbar-bg: rgba(248,249,251,0.95); --card-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  --radius-lg: 12px; --radius-md: 10px; --radius-sm: 6px;
+  --font-body: 'Inter', -apple-system, sans-serif;
+  /* Alias legacy */
+  --bg2: var(--bg-2); --bg3: var(--bg-3); --bg4: var(--bg-4);
+  --border2: var(--border-2);
+  --text2: var(--text-2); --text3: var(--text-3);
+  --blue-b: var(--blue-border);
+  --purple-l: var(--purple-light); --purple-b: var(--purple-border);
+  --teal-b: var(--teal-border);
+  --amber-b: var(--amber-border);
+  --red-b: var(--red-border);
+  --green-b: var(--green-border);
+  --r: var(--radius-lg); --rs: var(--radius-md);
 }
 
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -33,12 +75,12 @@ html,body{font-family:var(--font-body);width:100%;height:100%;overflow:hidden;ba
 .tb-title{font-size:13px;font-weight:600;flex:1;text-align:center;letter-spacing:-.2px}
 .phase-btns{display:flex;gap:4px;background:rgba(255,255,255,0.04);border-radius:8px;padding:3px}
 .phase-btn{padding:4px 10px;border-radius:5px;font-size:10px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--text3);font-family:var(--font-body);transition:all .2s;white-space:nowrap}
-.phase-btn.active{background:var(--blue);color:#fff;box-shadow:0 0 12px var(--blue-glow)}
+.phase-btn.active{background:var(--blue);color:#fff;box-shadow:0 0 12px rgba(77,158,246,0.3)}
 
 /* CANVAS AREA */
-.canvas-wrap{position:fixed;top:52px;left:0;right:0;bottom:56px;overflow:hidden;cursor:grab}
+.canvas-wrap{position:fixed;top:52px;left:0;right:0;bottom:56px;overflow:hidden;cursor:grab;background:#0F1117}
 .canvas-wrap.grabbing{cursor:grabbing}
-.canvas{position:absolute;width:1600px;height:1600px;top:0;left:0;transform-origin:0 0}
+.canvas{position:absolute;width:2000px;height:2000px;top:0;left:0;transform-origin:0 0}
 
 /* SVG LINES */
 .lines-svg{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1}
@@ -48,9 +90,9 @@ html,body{font-family:var(--font-body);width:100%;height:100%;overflow:hidden;ba
 .node:hover{filter:brightness(1.15)}
 
 /* CENTRE */
-.node-center{width:140px;height:140px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:radial-gradient(circle at 40% 35%,rgba(255,215,0,0.25),rgba(255,215,0,0.05));border:2px solid var(--gold);box-shadow:0 0 40px var(--gold-glow),inset 0 0 30px rgba(255,215,0,0.05);padding:10px;animation:breathe 3s ease-in-out infinite}
-@keyframes breathe{0%,100%{box-shadow:0 0 40px var(--gold-glow),inset 0 0 30px rgba(255,215,0,0.05)}50%{box-shadow:0 0 60px var(--gold-glow),0 0 80px rgba(255,215,0,0.1),inset 0 0 30px rgba(255,215,0,0.08)}}
-.node-center-name{font-size:13px;font-weight:700;color:var(--gold);line-height:1.2;margin-bottom:2px}
+.node-center{width:140px;height:140px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:radial-gradient(circle at 40% 35%,rgba(255,215,0,0.25),rgba(255,215,0,0.05));border:2px solid #FFB347;box-shadow:0 0 40px rgba(255,179,71,0.3),inset 0 0 30px rgba(255,215,0,0.05);padding:10px;animation:breathe 3s ease-in-out infinite}
+@keyframes breathe{0%,100%{box-shadow:0 0 40px rgba(255,179,71,0.3),inset 0 0 30px rgba(255,215,0,0.05)}50%{box-shadow:0 0 60px rgba(255,179,71,0.3),0 0 80px rgba(255,215,0,0.1),inset 0 0 30px rgba(255,215,0,0.08)}}
+.node-center-name{font-size:13px;font-weight:700;color:#FFB347;line-height:1.2;margin-bottom:2px}
 .node-center-age{font-size:10px;color:rgba(255,215,0,0.6)}
 .node-center-icon{font-size:22px;margin-bottom:4px}
 
@@ -95,7 +137,7 @@ html,body{font-family:var(--font-body);width:100%;height:100%;overflow:hidden;ba
 /* LOADING */
 .loading-overlay{position:fixed;inset:0;background:rgba(6,8,15,0.9);z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;backdrop-filter:blur(8px)}
 .loading-overlay.hidden{display:none}
-.loading-orb{width:60px;height:60px;border-radius:50%;background:radial-gradient(circle,var(--blue),transparent);animation:pulse-orb 1.5s ease-in-out infinite;box-shadow:0 0 40px var(--blue-glow)}
+.loading-orb{width:60px;height:60px;border-radius:50%;background:radial-gradient(circle,var(--blue),transparent);animation:pulse-orb 1.5s ease-in-out infinite;box-shadow:0 0 40px rgba(77,158,246,0.3)}
 @keyframes pulse-orb{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.3);opacity:.7}}
 .loading-text{font-size:14px;font-weight:600;color:var(--text2);letter-spacing:.04em}
 
@@ -201,17 +243,17 @@ let mapData={phase1:{},phase2:{},phase3:{}};
 const BRANCH_DIST = window.innerWidth < 500 ? 160 : 220;
 
 const BRANCHES=[
-  {id:"identite",   label:"Identite",    icon:"👤", color:"var(--gold)",   dim:"var(--gold-dim)",   glow:"var(--gold-glow)",   angle:-90,  dist:BRANCH_DIST-20, keys:["nom","prenom","age","adresse","sexe","naissance","tel"]},
-  {id:"signalant",  label:"Signalant",   icon:"📢", color:"var(--blue)",   dim:"var(--blue-dim)",   glow:"var(--blue-glow)",   angle:-30,  dist:BRANCH_DIST, keys:["demandeur","structure","date_appel"]},
-  {id:"entourage",  label:"Entourage",   icon:"👪", color:"var(--green)",  dim:"var(--green-dim)",  glow:"var(--green-glow)",  angle:30,   dist:BRANCH_DIST, keys:["famille","aidants","isolement"]},
-  {id:"sante",      label:"Sante",       icon:"🏥", color:"var(--red)",    dim:"var(--red-dim)",    glow:"var(--red-glow)",    angle:90,   dist:BRANCH_DIST, keys:["pathologies","traitements","allergies"]},
-  {id:"autonomie",  label:"Autonomie",   icon:"♿", color:"var(--amber)",  dim:"var(--amber-dim)",  glow:"var(--amber-glow)",  angle:150,  dist:BRANCH_DIST, keys:["gir","iadl","upgo","mobilite"]},
-  {id:"droits",     label:"Droits",      icon:"📋", color:"var(--purple)", dim:"var(--purple-dim)", glow:"var(--purple-glow)", angle:210,  dist:BRANCH_DIST, keys:["couverture","droits_ouverts","titre_sejour"]},
-  {id:"communication",label:"Com.",      icon:"💬", color:"var(--teal)",   dim:"var(--teal-dim)",   glow:"var(--teal-glow)",   angle:270,  dist:BRANCH_DIST-10, keys:["langue","barriere","tel"]},
-  {id:"demande",    label:"Demande",     icon:"🎯", color:"var(--pink)",   dim:"var(--pink-dim)",   glow:"var(--pink-glow)",   angle:330,  dist:BRANCH_DIST, keys:["motif","urgence","attentes"]},
+  {id:"identite",   label:"Identite",    icon:"👤", color:"#FFB347", dim:"rgba(255,179,71,0.12)",  glow:"rgba(255,179,71,0.3)",  angle:-90,  dist:BRANCH_DIST-20, keys:["nom","prenom","age","adresse","sexe","naissance","tel"]},
+  {id:"signalant",  label:"Signalant",   icon:"📢", color:"#4D9EF6", dim:"rgba(77,158,246,0.12)", glow:"rgba(77,158,246,0.3)",  angle:-30,  dist:BRANCH_DIST, keys:["demandeur","structure","date_appel"]},
+  {id:"entourage",  label:"Entourage",   icon:"👪", color:"#34D399", dim:"rgba(52,211,153,0.12)", glow:"rgba(52,211,153,0.3)",  angle:30,   dist:BRANCH_DIST, keys:["famille","aidants","isolement"]},
+  {id:"sante",      label:"Sante",       icon:"🏥", color:"#F87171", dim:"rgba(248,113,113,0.12)",glow:"rgba(248,113,113,0.3)", angle:90,   dist:BRANCH_DIST, keys:["pathologies","traitements","allergies"]},
+  {id:"autonomie",  label:"Autonomie",   icon:"♿", color:"#FBBF24", dim:"rgba(251,191,36,0.12)", glow:"rgba(251,191,36,0.3)",  angle:150,  dist:BRANCH_DIST, keys:["gir","iadl","upgo","mobilite"]},
+  {id:"droits",     label:"Droits",      icon:"📋", color:"#A78BFA", dim:"rgba(167,139,250,0.12)",glow:"rgba(167,139,250,0.3)", angle:210,  dist:BRANCH_DIST, keys:["couverture","droits_ouverts","titre_sejour"]},
+  {id:"communication",label:"Com.",      icon:"💬", color:"#22D3EE", dim:"rgba(34,211,238,0.12)", glow:"rgba(34,211,238,0.3)",  angle:270,  dist:BRANCH_DIST-10, keys:["langue","barriere","tel"]},
+  {id:"demande",    label:"Demande",     icon:"🎯", color:"#F472B6", dim:"rgba(244,114,182,0.12)",glow:"rgba(244,114,182,0.3)", angle:330,  dist:BRANCH_DIST, keys:["motif","urgence","attentes"]},
 ];
 
-const CENTER={x:800,y:800};
+const CENTER={x:1000,y:1000};
 
 // ═══ INIT ═══
 window.addEventListener("load",()=>{
@@ -484,7 +526,7 @@ async function genererIA(){
     const resp=await fetch("https://api.anthropic.com/v1/messages",{
       method:"POST",
       headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
-      body:JSON.stringify({model:"claude-sonnet-4-5",max_tokens:800,messages:[{role:"user",content:"Tu es coordinateur DAC 93 Nord. Analyse cette situation patient et génère les phases 2 et 3 de la carte mentale.\n\nPATIENT: "+name+"\nDONNÉES:\n"+context+"\n\nGénère un JSON valide UNIQUEMENT:\n{\n  \"phase2\": {\n    \"identite\": [],\n    \"signalant\": [],\n    \"entourage\": [\"problématiques entourage\"],\n    \"sante\": [\"problématiques santé prioritaires\"],\n    \"autonomie\": [\"problématiques autonomie\"],\n    \"droits\": [\"droits manquants urgents\"],\n    \"communication\": [],\n    \"demande\": [\"analyse de la demande\"]\n  },\n  \"phase3\": {\n    \"identite\": [],\n    \"signalant\": [],\n    \"entourage\": [\"action entourage J+X\"],\n    \"sante\": [\"action santé J+X\"],\n    \"autonomie\": [\"action autonomie J+X\"],\n    \"droits\": [\"action droit J+X\"],\n    \"communication\": [\"action com J+X\"],\n    \"demande\": [\"objectif final\"]\n  }\n}\nMax 4 items par branche. Actions courtes et concrètes."}]})
+      body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:800,messages:[{role:"user",content:"Tu es coordinateur DAC 93 Nord. Analyse cette situation patient et génère les phases 2 et 3 de la carte mentale.\n\nPATIENT: "+name+"\nDONNÉES:\n"+context+"\n\nGénère un JSON valide UNIQUEMENT:\n{\n  \"phase2\": {\n    \"identite\": [],\n    \"signalant\": [],\n    \"entourage\": [\"problématiques entourage\"],\n    \"sante\": [\"problématiques santé prioritaires\"],\n    \"autonomie\": [\"problématiques autonomie\"],\n    \"droits\": [\"droits manquants urgents\"],\n    \"communication\": [],\n    \"demande\": [\"analyse de la demande\"]\n  },\n  \"phase3\": {\n    \"identite\": [],\n    \"signalant\": [],\n    \"entourage\": [\"action entourage J+X\"],\n    \"sante\": [\"action santé J+X\"],\n    \"autonomie\": [\"action autonomie J+X\"],\n    \"droits\": [\"action droit J+X\"],\n    \"communication\": [\"action com J+X\"],\n    \"demande\": [\"objectif final\"]\n  }\n}\nMax 4 items par branche. Actions courtes et concrètes."}]})
     });
     const data=await resp.json();
     let text=data.content&&data.content[0]&&data.content[0].text||"{}";
@@ -595,14 +637,14 @@ function zoomIn(){zoomAt(0.15,window.innerWidth/2,window.innerHeight/2);}
 function zoomOut(){zoomAt(-0.15,window.innerWidth/2,window.innerHeight/2);}
 function resetView(){
   const availW = window.innerWidth;
-  const availH = window.innerHeight - 108; // topbar + bottombar
-  // La carte occupe environ 800px (dist max 300 * 2 + centre 200)
-  const carteW = 800;
-  const carteH = 800;
-  scale = Math.min(availW / carteW, availH / carteH, 1.0);
-  scale = Math.max(scale, 0.4);
-  panX = (availW - CENTER.x * scale) / 2;
-  panY = (availH - CENTER.y * scale) / 2 + 54;
+  const availH = window.innerHeight - 108;
+  // La carte occupe 2*dist + centre = 2*220 + 140 + marges = ~800px
+  const carteSpan = 800;
+  scale = Math.min(availW / carteSpan, availH / carteSpan, 1.0);
+  scale = Math.max(scale, 0.35);
+  // Centrer le CENTER (1000,1000) dans la fenêtre
+  panX = (availW / 2) - (CENTER.x * scale);
+  panY = (availH / 2) - (CENTER.y * scale) + 54;
   applyTransform();
 }
 

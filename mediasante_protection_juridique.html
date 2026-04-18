@@ -181,11 +181,11 @@ var MESURES = [
 ];
 
 var CONTACTS_PJ = [
-  {nom:"Service Tutelles UDAF 93", role:"Mandataire judiciaire — tutelle et curatelle", tel:"01 48 95 XX XX", adresse:"15 rue Marceau, 93000 Bobigny", info:"Prendre RDV apres decision du juge. Bilan patrimonial annuel."},
-  {nom:"ATMP 93 — Association Tutelaire", role:"Mandataire judiciaire — toutes mesures", tel:"01 48 09 XX XX", adresse:"8 bd Carnot, 93200 Saint-Denis", info:"Association habilitee pour tutelle, curatelle, sauvegarde."},
-  {nom:"Tribunal Judiciaire de Bobigny — greffe tutelles", role:"Depot des requetes en protection", tel:"01 41 83 XX XX", adresse:"173 av. Paul Vaillant-Couturier, 93000 Bobigny", info:"Depot requete CERFA 15891 avec certificat medical. Horaires : Lun-Ven 8h30-12h."},
-  {nom:"Procureur de la Republique — TJ Bobigny", role:"Demande de sauvegarde de justice (urgence)", tel:"01 41 83 XX XX", adresse:"TJ Bobigny", info:"Signalement situations urgentes. Certificat medical suffit pour sauvegarde d urgence."},
-  {nom:"France Services Epinay", role:"Aide constitution dossier", tel:"01 48 26 XX XX", adresse:"2 pl. de la Republique, 93800 Epinay", info:"Accompagnement gratuit pour remplir les CERFA et constituer le dossier."},
+  {nom:"Service Tutelles UDAF 93", role:"Mandataire judiciaire — tutelle et curatelle", tel:"À confirmer", adresse:"15 rue Marceau, 93000 Bobigny", info:"Prendre RDV apres decision du juge. Bilan patrimonial annuel."},
+  {nom:"ATMP 93 — Association Tutelaire", role:"Mandataire judiciaire — toutes mesures", tel:"À confirmer", adresse:"8 bd Carnot, 93200 Saint-Denis", info:"Association habilitee pour tutelle, curatelle, sauvegarde."},
+  {nom:"Tribunal Judiciaire de Bobigny — greffe tutelles", role:"Depot des requetes en protection", tel:"À confirmer", adresse:"173 av. Paul Vaillant-Couturier, 93000 Bobigny", info:"Depot requete CERFA 15891 avec certificat medical. Horaires : Lun-Ven 8h30-12h."},
+  {nom:"Procureur de la Republique — TJ Bobigny", role:"Demande de sauvegarde de justice (urgence)", tel:"À confirmer", adresse:"TJ Bobigny", info:"Signalement situations urgentes. Certificat medical suffit pour sauvegarde d urgence."},
+  {nom:"France Services Epinay", role:"Aide constitution dossier", tel:"À confirmer", adresse:"2 pl. de la Republique, 93800 Epinay", info:"Accompagnement gratuit pour remplir les CERFA et constituer le dossier."},
 ];
 
 // ── SUIVI MESURES ──
@@ -581,7 +581,7 @@ async function enrichirIA(){
     " pour le patient "+patient+". Situation : "+situation+
     ". Format : lettre officielle au juge des tutelles du TJ Bobigny. Sois factuel, professionnel, concis (max 250 mots).";
   try{
-    var resp = await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-5",max_tokens:400,messages:[{role:"user",content:prompt}]})});
+    var resp = await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:400,messages:[{role:"user",content:prompt}]})});
     var data = await resp.json();
     var text = data.content&&data.content[0]&&data.content[0].text||"";
     res.innerHTML = "<div class='result-box'>"+text+"</div>";

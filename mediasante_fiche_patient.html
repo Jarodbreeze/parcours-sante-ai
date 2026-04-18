@@ -8,18 +8,60 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>ParcourSanté AI — Fiche Patient</title>
 <style>
-:root,[data-theme="light"],[data-theme="dark"]{
-  /* Alias pour compatibilite legacy */
-  --bg2:var(--bg-2);--bg3:var(--bg-3);--bg4:var(--bg-4);
-  --border2:var(--border-2);
-  --text2:var(--text-2);--text3:var(--text-3);
-  --blue-bg:var(--blue-bg);--blue-b:var(--blue-border);
-  --purple-l:var(--purple-light);--purple-bg:var(--purple-bg);--purple-b:var(--purple-border);
-  --teal-bg:var(--teal-bg);--teal-b:var(--teal-border);
-  --amber-bg:var(--amber-bg);--amber-b:var(--amber-border);
-  --red-bg:var(--red-bg);--red-b:var(--red-border);
-  --green-bg:var(--green-bg);--green-b:var(--green-border);
-  --r:var(--radius-lg);--rs:var(--radius-md);
+:root, [data-theme="dark"] {
+  /* Variables principales */
+  --bg: #0F1117; --bg-2: #161B26; --bg-3: #1E2535; --bg-4: #252D40;
+  --border: rgba(255,255,255,0.07); --border-2: rgba(255,255,255,0.14);
+  --text: #E8EDF5; --text-2: #7C8FA6; --text-3: #3D4E63;
+  --blue: #4D9EF6; --blue-light: #60AAFF;
+  --blue-bg: rgba(77,158,246,0.1); --blue-border: rgba(77,158,246,0.25);
+  --green: #34D399; --green-bg: rgba(52,211,153,0.1); --green-border: rgba(52,211,153,0.22);
+  --amber: #FBBF24; --amber-bg: rgba(251,191,36,0.1); --amber-border: rgba(251,191,36,0.22);
+  --red: #F87171; --red-bg: rgba(248,113,113,0.1); --red-border: rgba(248,113,113,0.22);
+  --purple: #A78BFA; --purple-light: #C4B5FD;
+  --purple-bg: rgba(167,139,250,0.1); --purple-border: rgba(167,139,250,0.25);
+  --teal: #22D3EE; --teal-bg: rgba(34,211,238,0.1); --teal-border: rgba(34,211,238,0.22);
+  --topbar-bg: rgba(15,17,23,0.97); --card-shadow: none;
+  --radius-lg: 12px; --radius-md: 10px; --radius-sm: 6px;
+  --font-body: 'Inter', -apple-system, sans-serif;
+  /* Alias legacy */
+  --bg2: var(--bg-2); --bg3: var(--bg-3); --bg4: var(--bg-4);
+  --border2: var(--border-2);
+  --text2: var(--text-2); --text3: var(--text-3);
+  --blue-b: var(--blue-border);
+  --purple-l: var(--purple-light); --purple-b: var(--purple-border);
+  --teal-b: var(--teal-border);
+  --amber-b: var(--amber-border);
+  --red-b: var(--red-border); --red-bg: var(--red-bg);
+  --green-b: var(--green-border);
+  --r: var(--radius-lg); --rs: var(--radius-md);
+}
+[data-theme="light"] {
+  --bg: #F8F9FB; --bg-2: #FFFFFF; --bg-3: #F1F3F7; --bg-4: #E8ECF2;
+  --border: rgba(0,0,0,0.08); --border-2: rgba(0,0,0,0.15);
+  --text: #0F1923; --text-2: #4A5568; --text-3: #94A3B8;
+  --blue: #1B6FE8; --blue-light: #3B82F6;
+  --blue-bg: rgba(27,111,232,0.08); --blue-border: rgba(27,111,232,0.2);
+  --green: #0E9F6E; --green-bg: rgba(14,159,110,0.08); --green-border: rgba(14,159,110,0.2);
+  --amber: #D97706; --amber-bg: rgba(217,119,6,0.08); --amber-border: rgba(217,119,6,0.2);
+  --red: #DC2626; --red-bg: rgba(220,38,38,0.08); --red-border: rgba(220,38,38,0.2);
+  --purple: #7C3AED; --purple-light: #8B5CF6;
+  --purple-bg: rgba(124,58,237,0.08); --purple-border: rgba(124,58,237,0.2);
+  --teal: #0891B2; --teal-bg: rgba(8,145,178,0.08); --teal-border: rgba(8,145,178,0.2);
+  --topbar-bg: rgba(248,249,251,0.95); --card-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  --radius-lg: 12px; --radius-md: 10px; --radius-sm: 6px;
+  --font-body: 'Inter', -apple-system, sans-serif;
+  /* Alias legacy */
+  --bg2: var(--bg-2); --bg3: var(--bg-3); --bg4: var(--bg-4);
+  --border2: var(--border-2);
+  --text2: var(--text-2); --text3: var(--text-3);
+  --blue-b: var(--blue-border);
+  --purple-l: var(--purple-light); --purple-b: var(--purple-border);
+  --teal-b: var(--teal-border);
+  --amber-b: var(--amber-border);
+  --red-b: var(--red-border);
+  --green-b: var(--green-border);
+  --r: var(--radius-lg); --rs: var(--radius-md);
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
@@ -700,7 +742,7 @@ async function genererPrevision(){
   if(!apiKey.startsWith("sk-")){updateDossier({prevision_ia:{date:new Date().toISOString(),content:tmpl}});renderTab("prevision");return;}
   try{
     const resp=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
-    body:JSON.stringify({model:"claude-sonnet-4-5",max_tokens:800,messages:[{role:"user",content:"Tu es coordinateur DAC 93 Nord. Genere un plan accompagnement 3-6 mois pour: "+name+", "+p.age+". Situation: "+(d.data&&d.data.demande||"")+". Alertes: "+alerts.join(", ")+". GIR "+(d.evaluation&&d.evaluation.gir||"non fait")+". Droits: "+droits+". Cercle soin: "+cercle+". Structure: 1.PRIORITES IMMEDIATES J+7-J+30, 2.ACTIONS MOIS SUIVANT, 3.SUIVI 3 MOIS, 4.OBJECTIFS 6 MOIS, 5.INDICATEURS SUCCES. Concret, structures et dispositifs du 93."}]})});
+    body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:800,messages:[{role:"user",content:"Tu es coordinateur DAC 93 Nord. Genere un plan accompagnement 3-6 mois pour: "+name+", "+p.age+". Situation: "+(d.data&&d.data.demande||"")+". Alertes: "+alerts.join(", ")+". GIR "+(d.evaluation&&d.evaluation.gir||"non fait")+". Droits: "+droits+". Cercle soin: "+cercle+". Structure: 1.PRIORITES IMMEDIATES J+7-J+30, 2.ACTIONS MOIS SUIVANT, 3.SUIVI 3 MOIS, 4.OBJECTIFS 6 MOIS, 5.INDICATEURS SUCCES. Concret, structures et dispositifs du 93."}]})});
     const data=await resp.json();const text=data.content&&data.content[0]&&data.content[0].text||tmpl;
     updateDossier({prevision_ia:{date:new Date().toISOString(),content:text}});renderTab("prevision");showToast("Plan genere");
   }catch(e){updateDossier({prevision_ia:{date:new Date().toISOString(),content:tmpl}});renderTab("prevision");}
@@ -1092,7 +1134,7 @@ async function genMsgIA(){
   const persona=activeChatContact&&activeChatContact.role?getRolePersona(activeChatContact.role,activeChatContact.nom):"Tu es un professionnel de sante expert.";
   try{
     const resp=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
-    body:JSON.stringify({model:"claude-sonnet-4-5",max_tokens:500,messages:[{role:"user",content:persona+"\n\nContexte patient: "+name+", "+p.age+". "+((d&&d.data&&d.data.demande)||"")+"\n\nQuestion du coordinateur DAC: "+question+"\n\nReponds comme un vrai specialiste, de facon concrete et pratique. Cite les dispositifs, delais et procedures reelles."}]})});
+    body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:500,messages:[{role:"user",content:persona+"\n\nContexte patient: "+name+", "+p.age+". "+((d&&d.data&&d.data.demande)||"")+"\n\nQuestion du coordinateur DAC: "+question+"\n\nReponds comme un vrai specialiste, de facon concrete et pratique. Cite les dispositifs, delais et procedures reelles."}]})});
     const data=await resp.json();const text=data.content&&data.content[0]&&data.content[0].text||"";
     if(respEl)respEl.textContent=text||"Pas de reponse";
     showToast("Reponse obtenue");

@@ -12,6 +12,20 @@
 
   /* Spacing */
   --space-1: 4px; --space-2: 8px; --space-3: 12px;
+
+  /* Couleurs dark par défaut (écrasées par [data-theme="light"]) */
+  --bg: #0F1117; --bg-2: #161B26; --bg-3: #1E2535; --bg-4: #252D40;
+  --border: rgba(255,255,255,0.07); --border-2: rgba(255,255,255,0.14);
+  --text: #E8EDF5; --text-2: #7C8FA6; --text-3: #3D4E63;
+  --blue: #4D9EF6; --blue-light: #60AAFF;
+  --blue-bg: rgba(77,158,246,0.1); --blue-border: rgba(77,158,246,0.25);
+  --green: #34D399; --green-bg: rgba(52,211,153,0.1); --green-border: rgba(52,211,153,0.22);
+  --amber: #FBBF24; --amber-bg: rgba(251,191,36,0.1); --amber-border: rgba(251,191,36,0.22);
+  --red: #F87171; --red-bg: rgba(248,113,113,0.1); --red-border: rgba(248,113,113,0.22);
+  --purple: #A78BFA; --purple-light: #C4B5FD;
+  --purple-bg: rgba(167,139,250,0.1); --purple-border: rgba(167,139,250,0.25);
+  --teal: #22D3EE; --teal-bg: rgba(34,211,238,0.1); --teal-border: rgba(34,211,238,0.22);
+  --topbar-bg: rgba(15,17,23,0.97); --card-shadow: none;
   --space-4: 16px; --space-5: 20px; --space-6: 24px;
 
   /* Radius */
@@ -114,24 +128,7 @@
   --card-shadow: none;
 }
 
-/* ── ALIAS LEGACY (compatibilité anciens modules) ── */
-:root, [data-theme="light"], [data-theme="dark"] {
-  --bg2: var(--bg-2);
-  --bg3: var(--bg-3);
-  --bg4: var(--bg-4);
-  --border2: var(--border-2);
-  --text2: var(--text-2);
-  --text3: var(--text-3);
-  --blue-b: var(--blue-border);
-  --purple-l: var(--purple-light);
-  --purple-b: var(--purple-border);
-  --teal-b: var(--teal-border);
-  --amber-b: var(--amber-border);
-  --red-b: var(--red-border);
-  --green-b: var(--green-border);
-  --r: var(--radius-lg);
-  --rs: var(--radius-md);
-}
+/* Alias legacy définis directement dans chaque fichier */
 
 /* ── BASE ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
