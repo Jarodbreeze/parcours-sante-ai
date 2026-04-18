@@ -8,17 +8,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>ParcourSanté AI — Fiche Patient</title>
 <style>
-:root{
-  /* Remap vers ps_design.css */
-  --bg:var(--bg);--bg2:var(--bg-2);--bg3:var(--bg-3);--bg4:var(--bg-4);
-  --border:var(--border);--border2:var(--border-2);
-  --text:var(--text);--text2:var(--text-2);--text3:var(--text-3);
-  --blue:var(--blue);--blue-bg:var(--blue-bg);--blue-b:var(--blue-border);
-  --purple:var(--purple);--purple-l:var(--purple-light);--purple-bg:var(--purple-bg);--purple-b:var(--purple-border);
-  --teal:var(--teal);--teal-bg:var(--teal-bg);--teal-b:var(--teal-border);
-  --amber:var(--amber);--amber-bg:var(--amber-bg);--amber-b:var(--amber-border);
-  --red:var(--red);--red-bg:var(--red-bg);--red-b:var(--red-border);
-  --green:var(--green);--green-bg:var(--green-bg);--green-b:var(--green-border);
+:root,[data-theme="light"],[data-theme="dark"]{
+  /* Alias pour compatibilite legacy */
+  --bg2:var(--bg-2);--bg3:var(--bg-3);--bg4:var(--bg-4);
+  --border2:var(--border-2);
+  --text2:var(--text-2);--text3:var(--text-3);
+  --blue-bg:var(--blue-bg);--blue-b:var(--blue-border);
+  --purple-l:var(--purple-light);--purple-bg:var(--purple-bg);--purple-b:var(--purple-border);
+  --teal-bg:var(--teal-bg);--teal-b:var(--teal-border);
+  --amber-bg:var(--amber-bg);--amber-b:var(--amber-border);
+  --red-bg:var(--red-bg);--red-b:var(--red-border);
+  --green-bg:var(--green-bg);--green-b:var(--green-border);
   --r:var(--radius-lg);--rs:var(--radius-md);
 }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -135,6 +135,7 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
   <button class="ps-theme-btn" onclick="toggleTheme()" title="Changer le theme">🌓</button></div>
   <button class="tb-edit" onclick="openEditPatient()">Modifier</button>
 <button class="tb-edit" onclick="exportFicheComplete()" style="background:var(--blue-bg);border-color:var(--blue-b);color:var(--blue)">Export</button>
+<button class="tb-edit" onclick="ficheVisite()" style="background:var(--green-bg);border-color:var(--green-b);color:var(--green)" title="Fiche terrain imprimable">🖨</button>
 </div>
 
 <div class="alerts-bar empty" id="alertsBar"></div>
@@ -923,6 +924,81 @@ function ouvrirCarte(){
   window.location.href="mediasante_carte_mentale.html?id="+id;
 }
 
+function ficheVisite(){
+  const d=getDossier();if(!d)return;
+  const p=d.data&&d.data.patient||{};
+  const name=[p.prenom,p.nom].filter(Boolean).join(" ")||"Patient";
+  const cercle=d.cercle_soin||[];
+  const txs=JSON.parse(localStorage.getItem("transmissions_"+d.id)||"[]");
+  const rdvs=JSON.parse(localStorage.getItem("ps_rdvs")||"[]").filter(r=>r.dossierId===d.id&&r.date>=new Date().toISOString().split("T")[0]).slice(0,3);
+  const gir=d.evaluation&&d.evaluation.gir;
+  const date=new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Visite — ${name}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Helvetica Neue',Arial,sans-serif;font-size:12px;color:#111;padding:20px;max-width:700px;margin:0 auto}
+h1{font-size:20px;font-weight:700;margin-bottom:2px}
+.sub{font-size:12px;color:#666;margin-bottom:16px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.section{background:#f8f8f8;border-radius:6px;padding:10px 12px;break-inside:avoid}
+.section h3{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#888;margin-bottom:6px}
+.row{display:flex;gap:6px;margin-bottom:3px;font-size:11px}
+.label{color:#666;width:90px;flex-shrink:0}
+.val{font-weight:500}
+.alert-badge{display:inline-block;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;margin-right:4px;margin-bottom:3px}
+.tx-item{padding:5px 0;border-bottom:1px solid #eee;font-size:11px}
+.notes-box{border:1px dashed #ccc;border-radius:6px;padding:10px;min-height:80px;margin-top:8px}
+.notes-label{font-size:10px;color:#999;margin-bottom:4px}
+footer{margin-top:16px;font-size:10px;color:#aaa;text-align:center;border-top:1px solid #eee;padding-top:8px}
+@media print{body{padding:10px}}
+</style></head><body>
+<h1>${name}</h1>
+<div class="sub">Fiche de visite — ${date} · Dossier ${d.id}${gir?' · GIR '+gir:''}</div>
+<div class="grid">
+<div class="section">
+  <h3>Identité</h3>
+  ${p.age?`<div class="row"><span class="label">Âge</span><span class="val">${p.age} ans</span></div>`:''}
+  ${p.adresse?`<div class="row"><span class="label">Adresse</span><span class="val">${p.adresse}</span></div>`:''}
+  ${p.tel?`<div class="row"><span class="label">Téléphone</span><span class="val">${p.tel}</span></div>`:''}
+  ${p.couverture?`<div class="row"><span class="label">Couverture</span><span class="val">${p.couverture}</span></div>`:''}
+  ${p.langue&&p.langue!=='Francais'?`<div class="row"><span class="label">Langue</span><span class="val">${p.langue}</span></div>`:''}
+</div>
+<div class="section">
+  <h3>Évaluation</h3>
+  ${d.evaluation?`<div class="row"><span class="label">GIR</span><span class="val">${d.evaluation.gir} — ${d.evaluation.gir<=2?'Dépendance totale':d.evaluation.gir<=4?'Dépendance partielle':'Faible'}</span></div>
+  <div class="row"><span class="label">IADL</span><span class="val">${d.evaluation.iadl}/8</span></div>
+  ${d.evaluation.upgo?`<div class="row"><span class="label">Up & Go</span><span class="val">${d.evaluation.upgo}s</span></div>`:''}
+  `:'<div style="color:#999;font-size:11px">Non réalisée</div>'}
+</div>
+</div>
+<div class="grid">
+<div class="section">
+  <h3>Cercle de soin</h3>
+  ${cercle.length?cercle.map(c=>`<div class="row"><span class="label">${c.role}</span><span class="val">${c.nom}${c.tel?' · '+c.tel:''}</span></div>`).join(''):'<div style="color:#999;font-size:11px">À constituer</div>'}
+</div>
+<div class="section">
+  <h3>Prochains RDV</h3>
+  ${rdvs.length?rdvs.map(r=>`<div class="row"><span class="label">${r.date}</span><span class="val">${r.heure} — ${r.titre}</span></div>`).join(''):'<div style="color:#999;font-size:11px">Aucun planifié</div>'}
+</div>
+</div>
+<div class="section" style="margin-bottom:12px">
+  <h3>Dernières transmissions</h3>
+  ${txs.slice(0,3).map(t=>`<div class="tx-item"><strong>${new Date(t.date).toLocaleDateString("fr-FR",{day:"numeric",month:"short"})}</strong> — ${t.title}${t.content?' : '+t.content.slice(0,80):''}${t.content&&t.content.length>80?'...':''}</div>`).join('')||'<div style="color:#999;font-size:11px">Aucune transmission</div>'}
+</div>
+<div class="notes-box">
+  <div class="notes-label">Notes de la visite</div>
+</div>
+<footer>ParcourSanté AI — Document à usage professionnel · Données confidentielles · RGPD</footer>
+
+</body></html>`;
+
+  const w=window.open("","_blank");
+  w.document.write(html);
+  w.document.close();
+  setTimeout(function(){w.print();},500);
+}
+
 function exportFicheComplete(){
   const d=getDossier();if(!d)return;
   const p=d.data&&d.data.patient||{};
@@ -1024,6 +1100,27 @@ async function genMsgIA(){
   // Ancienne version supprimée
   return;
 }
+</script>
+
+<script>
+(function(){
+  var dossiers = JSON.parse(localStorage.getItem("mediasante_dossiers")||"[]");
+  var isDemo = dossiers.some(function(d){return d.id==="DEMO-0001";});
+  if(!isDemo) return;
+  var bar = document.createElement("div");
+  bar.style.cssText = "position:fixed;bottom:0;left:0;right:0;z-index:9999;background:rgba(245,166,35,0.95);backdrop-filter:blur(8px);padding:8px 16px;display:flex;align-items:center;gap:10px;font-size:12px;font-weight:600;color:#92400e;border-top:1px solid rgba(245,166,35,0.5)";
+  bar.innerHTML = "<span style=\"font-size:14px\">🎬</span><span style=\"flex:1\">Mode demo — Donnees fictives (M. MBEKI)</span>"+
+    "<button onclick=\"quitterDemo()\" style=\"padding:5px 12px;border-radius:6px;background:#92400e;border:none;color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit\">Quitter la demo</button>";
+  document.body.appendChild(bar);
+  document.body.style.paddingBottom = "50px";
+  window.quitterDemo = function(){
+    var d = JSON.parse(localStorage.getItem("mediasante_dossiers")||"[]").filter(function(x){return x.id!=="DEMO-0001";});
+    localStorage.setItem("mediasante_dossiers", JSON.stringify(d));
+    localStorage.removeItem("transmissions_DEMO-0001");
+    if(localStorage.getItem("fiche_patient_id")==="DEMO-0001") localStorage.removeItem("fiche_patient_id");
+    window.location.href = "parcours_sante_ai.html";
+  };
+})();
 </script>
 </body>
 </html>

@@ -1,0 +1,368 @@
+/* ═══════════════════════════════════════════════════
+   ParcourSanté AI — Design System v2
+   Médical sobre · Adaptatif clair/sombre
+   ═══════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ── TOKENS ── */
+:root {
+  --font-display: 'Instrument Serif', Georgia, serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* Spacing */
+  --space-1: 4px; --space-2: 8px; --space-3: 12px;
+  --space-4: 16px; --space-5: 20px; --space-6: 24px;
+
+  /* Radius */
+  --radius-sm: 6px; --radius-md: 10px; --radius-lg: 14px; --radius-xl: 20px;
+
+  /* Shadow */
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.1), 0 4px 8px rgba(0,0,0,0.04);
+
+  /* Transition */
+  --transition: all 0.15s ease;
+}
+
+/* ── LIGHT MODE ── */
+:root, [data-theme="light"] {
+  --bg: #F8F9FB;
+  --bg-2: #FFFFFF;
+  --bg-3: #F1F3F7;
+  --bg-4: #E8ECF2;
+
+  --border: rgba(0,0,0,0.08);
+  --border-2: rgba(0,0,0,0.15);
+
+  --text: #0F1923;
+  --text-2: #4A5568;
+  --text-3: #94A3B8;
+
+  --blue: #1B6FE8;
+  --blue-light: #3B82F6;
+  --blue-bg: rgba(27,111,232,0.08);
+  --blue-border: rgba(27,111,232,0.2);
+
+  --green: #0E9F6E;
+  --green-bg: rgba(14,159,110,0.08);
+  --green-border: rgba(14,159,110,0.2);
+
+  --amber: #D97706;
+  --amber-bg: rgba(217,119,6,0.08);
+  --amber-border: rgba(217,119,6,0.2);
+
+  --red: #DC2626;
+  --red-bg: rgba(220,38,38,0.08);
+  --red-border: rgba(220,38,38,0.2);
+
+  --purple: #7C3AED;
+  --purple-light: #8B5CF6;
+  --purple-bg: rgba(124,58,237,0.08);
+  --purple-border: rgba(124,58,237,0.2);
+
+  --teal: #0891B2;
+  --teal-bg: rgba(8,145,178,0.08);
+  --teal-border: rgba(8,145,178,0.2);
+
+  --topbar-bg: rgba(248,249,251,0.95);
+  --card-shadow: var(--shadow-sm);
+}
+
+/* ── DARK MODE ── */
+[data-theme="dark"], .dark {
+  --bg: #0F1117;
+  --bg-2: #161B26;
+  --bg-3: #1E2535;
+  --bg-4: #252D40;
+
+  --border: rgba(255,255,255,0.07);
+  --border-2: rgba(255,255,255,0.14);
+
+  --text: #E8EDF5;
+  --text-2: #7C8FA6;
+  --text-3: #3D4E63;
+
+  --blue: #4D9EF6;
+  --blue-light: #60AAFF;
+  --blue-bg: rgba(77,158,246,0.1);
+  --blue-border: rgba(77,158,246,0.25);
+
+  --green: #34D399;
+  --green-bg: rgba(52,211,153,0.1);
+  --green-border: rgba(52,211,153,0.22);
+
+  --amber: #FBBF24;
+  --amber-bg: rgba(251,191,36,0.1);
+  --amber-border: rgba(251,191,36,0.22);
+
+  --red: #F87171;
+  --red-bg: rgba(248,113,113,0.1);
+  --red-border: rgba(248,113,113,0.22);
+
+  --purple: #A78BFA;
+  --purple-light: #C4B5FD;
+  --purple-bg: rgba(167,139,250,0.1);
+  --purple-border: rgba(167,139,250,0.25);
+
+  --teal: #22D3EE;
+  --teal-bg: rgba(34,211,238,0.1);
+  --teal-border: rgba(34,211,238,0.22);
+
+  --topbar-bg: rgba(15,17,23,0.97);
+  --card-shadow: none;
+}
+
+/* ── ALIAS LEGACY (compatibilité anciens modules) ── */
+:root, [data-theme="light"], [data-theme="dark"] {
+  --bg2: var(--bg-2);
+  --bg3: var(--bg-3);
+  --bg4: var(--bg-4);
+  --border2: var(--border-2);
+  --text2: var(--text-2);
+  --text3: var(--text-3);
+  --blue-b: var(--blue-border);
+  --purple-l: var(--purple-light);
+  --purple-b: var(--purple-border);
+  --teal-b: var(--teal-border);
+  --amber-b: var(--amber-border);
+  --red-b: var(--red-border);
+  --green-b: var(--green-border);
+  --r: var(--radius-lg);
+  --rs: var(--radius-md);
+}
+
+/* ── BASE ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-font-smoothing: antialiased; }
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* ── TOPBAR ── */
+.ps-topbar {
+  position: sticky; top: 0; z-index: 100;
+  height: 54px;
+  background: var(--topbar-bg);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  padding: 0 16px; gap: 12px;
+}
+.ps-back-btn {
+  display: flex; align-items: center; gap: 4px;
+  padding: 6px 12px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border-2);
+  background: transparent; color: var(--text-2);
+  font-size: 12px; font-weight: 500;
+  cursor: pointer; font-family: var(--font-body);
+  transition: var(--transition);
+}
+.ps-back-btn:hover { background: var(--bg-3); color: var(--text); }
+.ps-title {
+  font-size: 14px; font-weight: 600;
+  flex: 1; text-align: center; letter-spacing: -0.2px;
+}
+.ps-badge {
+  font-size: 10px; font-weight: 700;
+  padding: 3px 8px; border-radius: 20px;
+  background: var(--blue-bg); color: var(--blue);
+  border: 1px solid var(--blue-border);
+  letter-spacing: 0.04em;
+}
+
+/* ── THEME TOGGLE ── */
+.ps-theme-btn {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 1px solid var(--border-2);
+  background: transparent; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; color: var(--text-2);
+  transition: var(--transition);
+}
+.ps-theme-btn:hover { background: var(--bg-3); color: var(--text); }
+
+/* ── CARD ── */
+.ps-card {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--card-shadow);
+  padding: 16px;
+  margin-bottom: 10px;
+  transition: var(--transition);
+}
+.ps-card:hover { border-color: var(--border-2); }
+
+/* ── SECTION TITLE ── */
+.ps-section-title {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--text-3); margin-bottom: 10px;
+  display: flex; align-items: center; gap: 6px;
+}
+.ps-section-title button {
+  margin-left: auto; font-size: 10px; padding: 2px 8px;
+  border-radius: var(--radius-sm); border: 1px solid var(--border-2);
+  background: transparent; color: var(--text-2);
+  cursor: pointer; font-family: var(--font-body);
+  transition: var(--transition);
+}
+.ps-section-title button:hover { background: var(--blue-bg); color: var(--blue); border-color: var(--blue-border); }
+
+/* ── INPUTS ── */
+.ps-input, .ps-select, .ps-textarea {
+  width: 100%;
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text);
+  font-size: 13px; font-family: var(--font-body);
+  padding: 10px 12px; outline: none;
+  -webkit-appearance: none;
+  transition: var(--transition);
+}
+.ps-input:focus, .ps-select:focus, .ps-textarea:focus {
+  border-color: var(--blue-border);
+  background: var(--bg-2);
+  box-shadow: 0 0 0 3px var(--blue-bg);
+}
+.ps-textarea { resize: vertical; min-height: 72px; line-height: 1.6; }
+.ps-label {
+  font-size: 11px; font-weight: 600; color: var(--text-2);
+  margin-bottom: 5px; display: block; letter-spacing: 0.02em;
+}
+.ps-field { margin-bottom: 12px; }
+.ps-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* ── BUTTONS ── */
+.ps-btn-primary {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 12px;
+  border-radius: var(--radius-md);
+  background: var(--blue); border: none;
+  color: #fff; font-size: 14px; font-weight: 600;
+  cursor: pointer; font-family: var(--font-body);
+  transition: var(--transition);
+}
+.ps-btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+.ps-btn-secondary {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 10px;
+  border-radius: var(--radius-md);
+  background: transparent; border: 1px solid var(--border-2);
+  color: var(--text-2); font-size: 13px; font-weight: 500;
+  cursor: pointer; font-family: var(--font-body);
+  transition: var(--transition);
+}
+.ps-btn-secondary:hover { background: var(--bg-3); color: var(--text); }
+.ps-btn-danger {
+  width: 100%; padding: 10px; border-radius: var(--radius-md);
+  background: var(--red-bg); border: 1px solid var(--red-border);
+  color: var(--red); font-size: 13px; font-weight: 500;
+  cursor: pointer; font-family: var(--font-body); transition: var(--transition);
+}
+
+/* ── TABS ── */
+.ps-tabs {
+  display: flex; overflow-x: auto;
+  background: var(--bg-2); border-bottom: 1px solid var(--border);
+  padding: 0 16px; gap: 2px; position: sticky; top: 54px; z-index: 50;
+}
+.ps-tab {
+  font-size: 12px; font-weight: 600; padding: 11px 14px;
+  cursor: pointer; border-bottom: 2px solid transparent;
+  color: var(--text-3); white-space: nowrap; margin-bottom: -1px;
+  transition: var(--transition);
+}
+.ps-tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+.ps-tab:hover:not(.active) { color: var(--text-2); }
+
+/* ── BOTTOM BAR ── */
+.ps-bottom-bar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  padding: 10px 14px;
+  background: var(--topbar-bg);
+  backdrop-filter: blur(16px);
+  border-top: 1px solid var(--border);
+  display: flex; gap: 8px; z-index: 100;
+}
+
+/* ── FAB ── */
+.ps-fab {
+  position: fixed; bottom: 22px; right: 16px;
+  width: 50px; height: 50px; border-radius: 50%;
+  background: var(--blue); border: none; color: #fff;
+  font-size: 22px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 16px rgba(27,111,232,0.35);
+  z-index: 40; transition: var(--transition);
+}
+.ps-fab:hover { transform: scale(1.05); opacity: 0.9; }
+
+/* ── STATUS PILLS ── */
+.ps-pill {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px; font-weight: 600;
+  padding: 3px 10px; border-radius: 20px; border: 1px solid;
+}
+.ps-pill.blue { background: var(--blue-bg); color: var(--blue); border-color: var(--blue-border); }
+.ps-pill.green { background: var(--green-bg); color: var(--green); border-color: var(--green-border); }
+.ps-pill.amber { background: var(--amber-bg); color: var(--amber); border-color: var(--amber-border); }
+.ps-pill.red { background: var(--red-bg); color: var(--red); border-color: var(--red-border); }
+.ps-pill.purple { background: var(--purple-bg); color: var(--purple); border-color: var(--purple-border); }
+
+/* ── AVATAR ── */
+.ps-avatar {
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-weight: 700; flex-shrink: 0;
+}
+.ps-avatar.sm { width: 28px; height: 28px; font-size: 10px; }
+.ps-avatar.md { width: 36px; height: 36px; font-size: 12px; }
+.ps-avatar.lg { width: 48px; height: 48px; font-size: 16px; }
+.ps-avatar.purple { background: var(--purple-bg); color: var(--purple-light); border: 1px solid var(--purple-border); }
+.ps-avatar.blue { background: var(--blue-bg); color: var(--blue); border: 1px solid var(--blue-border); }
+
+/* ── OVERLAY / MODAL ── */
+.ps-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 200; display: flex; align-items: flex-end; justify-content: center;
+  backdrop-filter: blur(4px);
+}
+.ps-overlay.hidden { display: none; }
+.ps-modal {
+  background: var(--bg-2);
+  border-top: 1px solid var(--border);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  padding: 20px 16px 40px;
+  width: 100%; max-width: 540px; max-height: 90vh; overflow-y: auto;
+}
+.ps-modal-title { font-size: 17px; font-weight: 700; margin-bottom: 4px; letter-spacing: -0.3px; }
+.ps-modal-sub { font-size: 12px; color: var(--text-2); margin-bottom: 16px; }
+.ps-modal-close { float: right; background: none; border: none; color: var(--text-2); font-size: 20px; cursor: pointer; margin-top: -3px; }
+
+/* ── TOAST ── */
+.ps-toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: var(--bg-2); border: 1px solid var(--border-2);
+  color: var(--text); padding: 9px 18px; border-radius: 20px;
+  font-size: 12px; font-weight: 500; z-index: 999;
+  white-space: nowrap; pointer-events: none;
+  box-shadow: var(--shadow-md);
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--bg-4); border-radius: 2px; }
+
+/* ── UTILITIES ── */
+.hidden { display: none !important; }
+.ps-divider { height: 1px; background: var(--border); margin: 16px 0; }
+.ps-content { padding: 14px 14px 80px; }

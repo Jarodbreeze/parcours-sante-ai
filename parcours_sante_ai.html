@@ -2,23 +2,27 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+<link rel="stylesheet" href="ps_design.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>ParcourSanté AI</title>
 <style>
-:root{
-  --bg:#0f1117;--bg2:#161820;--bg3:#1e2130;
-  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.16);
-  --text:#f0f1f5;--text2:#8b8fa8;--text3:#565a72;
-  --purple:#7c6ff7;--purple-l:#a99ef9;--purple-bg:rgba(124,111,247,0.12);--purple-b:rgba(124,111,247,0.3);
-  --teal:#3ecfaa;--teal-bg:rgba(62,207,170,0.1);--teal-b:rgba(62,207,170,0.25);
-  --amber:#f0a43a;--amber-bg:rgba(240,164,58,0.1);--amber-b:rgba(240,164,58,0.25);--gold:#ffd700;--gold-bg:rgba(255,215,0,0.1);--gold-b:rgba(255,215,0,0.25);
-  --red:#e05c6a;--red-bg:rgba(224,92,106,0.1);--red-b:rgba(224,92,106,0.25);
-  --green:#4cba82;--green-bg:rgba(76,186,130,0.1);--green-b:rgba(76,186,130,0.25);
-  --blue:#5b9ef7;--blue-bg:rgba(91,158,247,0.1);--blue-b:rgba(91,158,247,0.25);
-  --r:12px;--rs:8px;
+:root,[data-theme="light"],[data-theme="dark"]{
+  /* Alias pour compatibilite legacy */
+  --bg2:var(--bg-2);--bg3:var(--bg-3);--bg4:var(--bg-4);
+  --border2:var(--border-2);
+  --text2:var(--text-2);--text3:var(--text-3);
+  --blue-bg:var(--blue-bg);--blue-b:var(--blue-border);
+  --purple-l:var(--purple-light);--purple-bg:var(--purple-bg);--purple-b:var(--purple-border);
+  --teal-bg:var(--teal-bg);--teal-b:var(--teal-border);
+  --amber-bg:var(--amber-bg);--amber-b:var(--amber-border);
+  --red-bg:var(--red-bg);--red-b:var(--red-border);
+  --green-bg:var(--green-bg);--green-b:var(--green-border);
+  --r:var(--radius-lg);--rs:var(--radius-md);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 
 /* SCREEN MANAGER */
 .screen{display:none;min-height:100vh;flex-direction:column}
@@ -35,13 +39,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
 .ob-sub{font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:28px}
 .ob-field{margin-bottom:12px}
 .ob-label{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:5px;display:block}
-.ob-input{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:14px;padding:11px 13px;outline:none;font-family:inherit;-webkit-appearance:none}
+.ob-input{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:14px;padding:11px 13px;outline:none;font-family:var(--font-body);-webkit-appearance:none}
 .ob-input:focus{border-color:var(--purple-b)}
 .ob-input::placeholder{color:var(--text3)}
-.ob-select{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:14px;padding:11px 13px;outline:none;font-family:inherit;-webkit-appearance:none;cursor:pointer}
+.ob-select{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:14px;padding:11px 13px;outline:none;font-family:var(--font-body);-webkit-appearance:none;cursor:pointer}
 .ob-select:focus{border-color:var(--purple-b)}
 .ob-select option{background:var(--bg2)}
-.ob-btn{width:100%;padding:14px;border-radius:var(--r);background:var(--purple);border:none;color:#fff;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;margin-top:8px;transition:opacity .2s,transform .1s}
+.ob-btn{width:100%;padding:14px;border-radius:var(--r);background:var(--purple);border:none;color:#fff;font-size:15px;font-weight:700;font-family:var(--font-body);cursor:pointer;margin-top:8px;transition:opacity .2s,transform .1s}
 .ob-btn:active{transform:scale(.98)}
 .ob-api-row{display:flex;gap:6px;margin-top:12px;padding:10px 12px;background:var(--bg2);border-radius:var(--rs);border:1px solid var(--border);align-items:center}
 .ob-api-label{font-size:11px;color:var(--text3);flex-shrink:0}
@@ -72,7 +76,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
 
 /* QUICK STATS */
 .quick-stats{display:flex;gap:8px;padding:0 16px 16px;overflow-x:auto}
-.qs-card{flex-shrink:0;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:10px 14px;min-width:110px;transition:all .15s}.qs-card:hover{border-color:var(--border2);background:var(--bg3);transform:translateY(-1px)}
+.qs-card{flex-shrink:0;background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px 16px;min-width:110px;transition:var(--transition);box-shadow:var(--shadow-sm)}.qs-card:hover{border-color:var(--border-2);background:var(--bg-3);transform:translateY(-2px);box-shadow:var(--shadow-md)}
 .qs-val{font-size:20px;font-weight:700;letter-spacing:-.5px}
 .qs-label{font-size:10px;color:var(--text3);margin-top:2px;text-transform:uppercase;letter-spacing:.04em}
 
@@ -127,7 +131,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
 .fab{position:fixed;bottom:80px;right:16px;width:50px;height:50px;border-radius:50%;background:var(--purple);border:none;color:#fff;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(124,111,247,0.4);z-index:40;transition:transform .2s}
 .fab:active{transform:scale(.92)}
 .fab-menu{position:fixed;bottom:140px;right:16px;display:flex;flex-direction:column;gap:8px;z-index:40}
-.fab-item{display:flex;align-items:center;gap:8px;background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:8px 14px;cursor:pointer;transition:all .15s;white-space:nowrap;font-size:12px;font-family:inherit;color:var(--text)}
+.fab-item{display:flex;align-items:center;gap:8px;background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:8px 14px;cursor:pointer;transition:all .15s;white-space:nowrap;font-size:12px;font-family:var(--font-body);color:var(--text)}
 .fab-item:hover{border-color:var(--border2)}
 .fab-item-icon{font-size:14px}
 
@@ -135,7 +139,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
 #screen-search{background:var(--bg);padding:0}
 .search-header{padding:12px 16px;display:flex;gap:10px;align-items:center;border-bottom:1px solid var(--border)}
 .search-input-wrap{flex:1;display:flex;align-items:center;gap:8px;background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:8px 14px}
-.search-input-wrap input{flex:1;background:transparent;border:none;color:var(--text);font-size:14px;outline:none;font-family:inherit}
+.search-input-wrap input{flex:1;background:transparent;border:none;color:var(--text);font-size:14px;outline:none;font-family:var(--font-body)}
 .search-input-wrap input::placeholder{color:var(--text3)}
 .search-cancel{font-size:13px;color:var(--purple-l);cursor:pointer;flex-shrink:0}
 .search-results{padding:14px 16px;overflow-y:auto;flex:1}
@@ -235,7 +239,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
         <div style="font-size:11px;color:var(--text3);line-height:1.5">Obtenez votre clé sur <strong style="color:var(--purple-l)">console.anthropic.com</strong> → API Keys. Sans clé, les modèles de courriers et d'évaluation fonctionnent quand même.</div>
         <div style="display:flex;gap:6px;width:100%">
           <input type="password" class="ob-api-input" id="ob_api" placeholder="sk-ant-api03-..." style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:12px;padding:8px 10px;outline:none;font-family:monospace" />
-          <button onclick="saveObApi()" style="padding:8px 12px;border-radius:var(--rs);background:var(--purple);border:none;color:#fff;font-size:12px;cursor:pointer;font-family:inherit;flex-shrink:0">Enregistrer</button>
+          <button onclick="saveObApi()" style="padding:8px 12px;border-radius:var(--rs);background:var(--purple);border:none;color:#fff;font-size:12px;cursor:pointer;font-family:var(--font-body);flex-shrink:0">Enregistrer</button>
         </div>
       </div>
 
@@ -253,7 +257,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
   <!-- TOPBAR -->
   <div class="topbar">
     <div class="tb-logo">
-      <div class="tb-dot">🏥</div>
+      <div class="tb-dot">🏥
+  <button class="ps-theme-btn" onclick="toggleTheme()" title="Changer le theme">🌓</button></div>
       <div class="tb-name">ParcourSanté AI</div>
     </div>
     <div class="tb-user">
@@ -269,7 +274,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
   <div id="demoBar" style="display:none;background:rgba(245,166,35,0.12);border-bottom:1px solid rgba(245,166,35,0.3);padding:7px 14px;align-items:center;gap:8px;font-size:11px;color:var(--amber);font-weight:600">
     <span>🎬</span>
     <span style="flex:1">Mode démonstration — Données fictives de M. Jean-Pierre MBEKI</span>
-    <button onclick="resetDemo()" style="padding:3px 10px;border-radius:4px;border:1px solid rgba(245,166,35,0.4);background:transparent;color:var(--amber);font-size:10px;cursor:pointer;font-family:inherit">Quitter la démo</button>
+    <button onclick="resetDemo()" style="padding:3px 10px;border-radius:4px;border:1px solid rgba(245,166,35,0.4);background:transparent;color:var(--amber);font-size:10px;cursor:pointer;font-family:var(--font-body)">Quitter la démo</button>
   </div>
 
   <div class="home-content">
@@ -374,12 +379,16 @@ const MODULES = [
   {id:'staff',    name:'Staff IA',            desc:'Conseil des 9 experts pluridisciplinaires', icon:'🧠', color:'var(--amber)', bg:'var(--amber-bg)', file:'mediasante_staff_ia.html', badge:'IA',    featured:true},
   {id:'visite',   name:'Première visite',     desc:'AGGIR · IADL · Up & Go · PPCS',    icon:'🏠', color:'var(--green)',   bg:'var(--green-bg)', file:'mediasante_premiere_visite.html', badge:null,    featured:false},
   {id:'transmissions',name:'Transmissions',   desc:'Journal de bord du dossier',        icon:'📝', color:'var(--blue)',    bg:'var(--blue-bg)',  file:'mediasante_transmissions.html',   badge:null,    featured:false},
-  {id:'messagerie',name:'Messagerie',         desc:'Chat sécurisé inter-professionnels',icon:'💬', color:'var(--purple-l)',bg:'var(--purple-bg)',file:'mediasante_messagerie.html',      badge:null,    featured:false},
+  {id:'contacts', name:'Carnet de contacts', desc:'Partenaires · Médecins · Structures · Accès rapide', icon:'📒', color:'var(--teal)', bg:'var(--teal-bg)', file:'mediasante_contacts.html'},
   {id:'orientation',name:'Orientation',       desc:'Annuaire 93 · IA d\'orientation',   icon:'🗺️', color:'var(--amber)',  bg:'var(--amber-bg)', file:'mediasante_orientation.html',     badge:null,    featured:false},
   {id:'dashboard',name:'Dashboard',           desc:'Activité · Ruptures · Rapport ARS', icon:'📊', color:'var(--teal)',   bg:'var(--teal-bg)',  file:'mediasante_dashboard.html',       badge:null,    featured:false},
   {id:'agenda',   name:'Agenda & Coordination',desc:'RDV · Relances · Volet médical · Multi-structures', icon:'📅', color:'var(--blue)', bg:'var(--blue-bg)', file:'mediasante_agenda.html', badge:'NEW', featured:true},
   {id:'dossiers', name:'Mes Dossiers',           desc:'Fiches patients · Cercle de soin · Documents', icon:'👤', color:'var(--purple)', bg:'var(--purple-bg)', file:'mediasante_fiche_patient.html', badge:null, featured:false},
   {id:'carte_patients', name:'Carte Patients', desc:'Visualiser · Filtrer urgences · Optimiser tournees', icon:'🗺️', color:'var(--teal)', bg:'var(--teal-bg)', file:'mediasante_carte_patients.html', badge:'NEW', featured:true},
+  {id:'transport', name:'Transport & Ambulance', desc:'Bon de transport · Transporteurs 93 · Remboursement CPAM', icon:'🚑', color:'var(--green)', bg:'var(--green-bg)', file:'mediasante_transport.html', badge:'NEW', featured:true},
+  {id:'protection_juridique', name:'Protection Juridique', desc:'Evaluation · Tutelle · Curatelle · Suivi MJPM', icon:'⚖️', color:'var(--purple)', bg:'var(--purple-bg)', file:'mediasante_protection_juridique.html', badge:'NEW', featured:true},
+  {id:'dac_france', name:'DAC France & CERFA', desc:'Annuaire DAC IDF + metropoles · CERFA interactifs · Recherche IA nationale', icon:'🗺️', color:'var(--teal)', bg:'var(--teal-bg)', file:'mediasante_dac_france.html', badge:'NEW', featured:true},
+  {id:'staff_prep', name:'Prep. Staff / RESAD / RCP', desc:'Presentation · Collegiale · Compte-rendu automatique', icon:'👥', color:'var(--amber)', bg:'var(--amber-bg)', file:'mediasante_staff_prep.html', badge:'NEW', featured:true},
   {id:'carte',    name:'Carte Mentale',          desc:'Creusage · Analyse · Plan d\'action staff',    icon:'🗺️', color:'var(--gold)',   bg:'var(--gold-bg)',   file:'mediasante_carte_mentale.html',  badge:'NEW', featured:true},
 ];
 
@@ -446,6 +455,7 @@ function showHome() {
   showScreen('home');
   closeFab();
   renderHome();
+  if(getDossiers().length > 0) setTimeout(showAlertesJour, 1200);
 }
 
 function goHome() {
@@ -458,6 +468,10 @@ function openModule(id) {
   if (!mod) return;
   // Module dossiers : afficher la liste avant d'ouvrir
   if(id === 'dossiers') { showDossiersList(); return; }
+  if(id === 'transport') { window.location.href = 'mediasante_transport.html'; return; }
+  if(id === 'protection_juridique') { window.location.href = 'mediasante_protection_juridique.html'; return; }
+  if(id === 'dac_france') { window.location.href = 'mediasante_dac_france.html'; return; }
+  if(id === 'staff_prep') { window.location.href = 'mediasante_staff_prep.html'; return; }
   if(id === 'carte_patients') { window.location.href = 'mediasante_carte_patients.html'; return; }
   if(id === 'carte') {
     const dossiers = getDossiers();
@@ -536,6 +550,86 @@ function switchBottomNav(id) {
 }
 
 // ═══ RENDER HOME ═══
+function exporterDonnees() {
+  const data = {
+    version: "1.0",
+    date: new Date().toISOString(),
+    dossiers: JSON.parse(localStorage.getItem("mediasante_dossiers")||"[]"),
+    profil: JSON.parse(localStorage.getItem("ps_user_profile")||"{}"),
+    rdvs: JSON.parse(localStorage.getItem("ps_rdvs")||"[]"),
+    orientations: JSON.parse(localStorage.getItem("ps_orientations")||"[]"),
+    contacts: JSON.parse(localStorage.getItem("ps_contacts")||"[]"),
+    transports: JSON.parse(localStorage.getItem("ps_transports")||"[]"),
+    pj_suivis: JSON.parse(localStorage.getItem("ps_pj_suivis")||"[]"),
+    transmissions: {}
+  };
+
+  // Inclure toutes les transmissions
+  data.dossiers.forEach(d => {
+    const txs = localStorage.getItem("transmissions_"+d.id);
+    if(txs) data.transmissions[d.id] = JSON.parse(txs);
+  });
+
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type: "application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "parcoursante_backup_" + new Date().toISOString().split("T")[0] + ".json";
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast("Export téléchargé ✓");
+}
+
+function importerDonnees() {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = ".json";
+  input.onchange = function(e) {
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if(!data.version || !data.dossiers) {
+          showToast("Fichier invalide");
+          return;
+        }
+        if(!confirm("Importer " + data.dossiers.length + " dossier(s) depuis le " + new Date(data.date).toLocaleDateString("fr-FR") + " ? Les données actuelles seront fusionnées.")) return;
+
+        // Fusionner les dossiers (pas écraser)
+        const existing = JSON.parse(localStorage.getItem("mediasante_dossiers")||"[]");
+        const existingIds = existing.map(d => d.id);
+        const newDossiers = data.dossiers.filter(d => !existingIds.includes(d.id));
+        localStorage.setItem("mediasante_dossiers", JSON.stringify([...existing, ...newDossiers]));
+
+        // Restaurer transmissions
+        if(data.transmissions) {
+          Object.entries(data.transmissions).forEach(([id, txs]) => {
+            if(!localStorage.getItem("transmissions_"+id)) {
+              localStorage.setItem("transmissions_"+id, JSON.stringify(txs));
+            }
+          });
+        }
+
+        // Restaurer autres données
+        if(data.rdvs?.length) {
+          const existRdvs = JSON.parse(localStorage.getItem("ps_rdvs")||"[]");
+          const existRdvIds = existRdvs.map(r => r.id);
+          localStorage.setItem("ps_rdvs", JSON.stringify([...existRdvs, ...data.rdvs.filter(r => !existRdvIds.includes(r.id))]));
+        }
+
+        renderHome();
+        showToast(newDossiers.length + " dossier(s) importé(s) ✓");
+      } catch(err) {
+        showToast("Erreur lecture fichier");
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
 function renderHome() {
   renderGreeting();
   renderQuickStats();
@@ -543,6 +637,120 @@ function renderHome() {
   renderModulesGrid();
   renderRecentActivity();
   checkAlerts();
+}
+
+function showAlertesJour() {
+  const dossiers = getDossiers();
+  const now = Date.now();
+  const today = new Date().toISOString().split("T")[0];
+  const in7 = new Date(Date.now()+7*86400000).toISOString().split("T")[0];
+  const alertes = [];
+
+  dossiers.forEach(d => {
+    const p = d.data?.patient || {};
+    const name = [p.prenom, p.nom].filter(Boolean).join(" ") || d.id;
+
+    // Droits expirés
+    (d.droits||[]).forEach(dr => {
+      if(dr.statut === "expire") {
+        alertes.push({urgence:"rouge", dossier:d.id, name, msg:"Droit expiré : "+dr.type, action:"fiche"});
+      }
+      if(dr.fin && dr.fin <= in7 && dr.fin >= today && dr.statut !== "expire") {
+        alertes.push({urgence:"orange", dossier:d.id, name, msg:"Droit expire dans moins de 7j : "+dr.type, action:"fiche"});
+      }
+    });
+
+    // PPCS non validé depuis +10j
+    if(d.ppcs && !d.ppcs_valide) {
+      const daysPPCS = Math.floor((now - new Date(d.ppcs.date))/86400000);
+      if(daysPPCS > 10) alertes.push({urgence:"orange", dossier:d.id, name, msg:"PPCS non validé depuis "+daysPPCS+"j", action:"visite"});
+    }
+
+    // Sans contact depuis +15j
+    const txs = JSON.parse(localStorage.getItem("transmissions_"+d.id)||"[]");
+    if(txs[0]) {
+      const days = Math.floor((now - new Date(txs[0].date))/86400000);
+      if(days > 15 && (!d.statut_manuel || d.statut_manuel === "actif")) {
+        alertes.push({urgence:"orange", dossier:d.id, name, msg:"Sans contact depuis "+days+"j", action:"fiche"});
+      }
+    }
+
+    // Dossier +30j sans évaluation
+    if(!d.evaluation) {
+      const daysSince = Math.floor((now - new Date(d.date))/86400000);
+      if(daysSince > 30) alertes.push({urgence:"gris", dossier:d.id, name, msg:"Aucune évaluation depuis "+daysSince+"j", action:"visite"});
+    }
+  });
+
+  // RDV du jour
+  const rdvs = JSON.parse(localStorage.getItem("ps_rdvs")||"[]");
+  const rdvAuj = rdvs.filter(r => r.date === today && r.statut !== "annule");
+  rdvAuj.forEach(r => alertes.unshift({urgence:"bleu", name:r.titre, msg:"Aujourd'hui "+r.heure+(r.lieu?" — "+r.lieu:""), action:"agenda"}));
+
+  // Si rien → pas d'overlay
+  if(!alertes.length) return;
+
+  // Vérifier si on a déjà montré les alertes aujourd'hui
+  const lastShown = localStorage.getItem("ps_alertes_shown");
+  if(lastShown === today) return;
+  localStorage.setItem("ps_alertes_shown", today);
+
+  // Créer l'overlay
+  const overlay = document.createElement("div");
+  overlay.id = "alertesOverlay";
+  overlay.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:300;display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(6px)";
+
+  const panel = document.createElement("div");
+  panel.style.cssText = "background:var(--bg-2);border-top:1px solid var(--border);border-radius:20px 20px 0 0;padding:20px 16px 40px;width:100%;max-width:540px;max-height:80vh;overflow-y:auto";
+
+  const urgColors = {rouge:"var(--red)", orange:"var(--amber)", bleu:"var(--blue)", gris:"var(--text-3)"};
+  const urgBg = {rouge:"var(--red-bg)", orange:"var(--amber-bg)", bleu:"var(--blue-bg)", gris:"var(--bg-3)"};
+  const urgBorder = {rouge:"var(--red-border)", orange:"var(--amber-border)", bleu:"var(--blue-border)", gris:"var(--border)"};
+
+  const rouges = alertes.filter(a => a.urgence === "rouge").length;
+  const oranges = alertes.filter(a => a.urgence === "orange").length;
+
+  panel.innerHTML = "<div style='display:flex;align-items:center;justify-content:space-between;margin-bottom:16px'>"+
+    "<div>"+
+    "<div style='font-size:17px;font-weight:700;letter-spacing:-.4px'>Alertes du jour</div>"+
+    "<div style='font-size:12px;color:var(--text-2);margin-top:2px'>"+new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})+"</div>"+
+    "</div>"+
+    "<button onclick=\"document.getElementById('alertesOverlay').remove()\" style=\"background:var(--bg-3);border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:18px;color:var(--text-2)\">×</button>"+
+    "</div>";
+
+  if(rouges) panel.innerHTML += "<div style='font-size:11px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px'>"+rouges+" urgente(s)</div>";
+
+  alertes.forEach(a => {
+    const item = document.createElement("div");
+    item.style.cssText = "display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:"+urgBg[a.urgence]+";border:1px solid "+urgBorder[a.urgence]+";border-radius:10px;margin-bottom:6px;cursor:pointer";
+    item.innerHTML = "<div style='flex:1'>"+
+      "<div style='font-size:13px;font-weight:600;color:"+urgColors[a.urgence]+"'>"+a.name+"</div>"+
+      "<div style='font-size:11px;color:var(--text-2);margin-top:2px'>"+a.msg+"</div>"+
+      "</div>"+
+      "<span style='font-size:11px;color:"+urgColors[a.urgence]+"'>→</span>";
+    item.onclick = (function(al){return function(){
+      document.getElementById("alertesOverlay").remove();
+      if(al.action==="fiche" && al.dossier) {
+        localStorage.setItem("fiche_patient_id", al.dossier);
+        window.location.href = "mediasante_fiche_patient.html";
+      } else if(al.action==="agenda") {
+        window.location.href = "mediasante_agenda.html";
+      } else if(al.action==="visite") {
+        if(al.dossier) localStorage.setItem("fiche_patient_id", al.dossier);
+        window.location.href = "mediasante_premiere_visite.html";
+      }
+    };})(a);
+    panel.appendChild(item);
+  });
+
+  const btnClose = document.createElement("button");
+  btnClose.style.cssText = "width:100%;padding:12px;border-radius:10px;background:transparent;border:1px solid var(--border);color:var(--text-2);font-size:13px;cursor:pointer;font-family:var(--font-body);margin-top:10px";
+  btnClose.textContent = "Tout vu — Fermer";
+  btnClose.onclick = function(){overlay.remove();};
+  panel.appendChild(btnClose);
+
+  overlay.appendChild(panel);
+  document.body.appendChild(overlay);
 }
 
 function renderNextAction() {
@@ -654,8 +862,8 @@ function showOnboarding() {
           <div style="font-size:20px;font-weight:700;letter-spacing:-.5px;margin-bottom:10px">${s.title}</div>
           <div style="font-size:14px;color:var(--text2);line-height:1.6;max-width:360px;margin:0 auto">${s.desc}</div>
         </div>
-        <button id="onboardingBtn" style="width:100%;padding:14px;border-radius:12px;background:var(--blue);border:none;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:10px">${s.btn}</button>
-        ${currentStep > 0 ? `<button onclick="skipOnboarding()" style="width:100%;padding:10px;border-radius:12px;background:transparent;border:1px solid rgba(255,255,255,.08);color:var(--text3);font-size:13px;cursor:pointer;font-family:inherit">Passer cette étape</button>` : ''}
+        <button id="onboardingBtn" style="width:100%;padding:14px;border-radius:12px;background:var(--blue);border:none;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--font-body);margin-bottom:10px">${s.btn}</button>
+        ${currentStep > 0 ? `<button onclick="skipOnboarding()" style="width:100%;padding:10px;border-radius:12px;background:transparent;border:1px solid rgba(255,255,255,.08);color:var(--text3);font-size:13px;cursor:pointer;font-family:var(--font-body)">Passer cette étape</button>` : ''}
       </div>`;
 
     document.getElementById('onboardingBtn').onclick = function() {
@@ -956,11 +1164,11 @@ function showProfile() {
     <div style="display:flex;flex-direction:column;gap:8px">
       <div>
         <div style="font-size:10px;color:#565a72;margin-bottom:3px;text-transform:uppercase;letter-spacing:.06em">Nom</div>
-        <input id="pp_nom" type="text" value="${userProfile.nom||''}" placeholder="Votre nom" style="width:100%;background:#0f1117;border:1px solid rgba(255,255,255,.08);border-radius:6px;color:#f0f1f5;font-size:12px;padding:7px 9px;outline:none;font-family:inherit"/>
+        <input id="pp_nom" type="text" value="${userProfile.nom||''}" placeholder="Votre nom" style="width:100%;background:#0f1117;border:1px solid rgba(255,255,255,.08);border-radius:6px;color:#f0f1f5;font-size:12px;padding:7px 9px;outline:none;font-family:var(--font-body)"/>
       </div>
       <div>
         <div style="font-size:10px;color:#565a72;margin-bottom:3px;text-transform:uppercase;letter-spacing:.06em">Fonction</div>
-        <select id="pp_role" style="width:100%;background:#0f1117;border:1px solid rgba(255,255,255,.08);border-radius:6px;color:#f0f1f5;font-size:12px;padding:7px 9px;outline:none;font-family:inherit;-webkit-appearance:none">
+        <select id="pp_role" style="width:100%;background:#0f1117;border:1px solid rgba(255,255,255,.08);border-radius:6px;color:#f0f1f5;font-size:12px;padding:7px 9px;outline:none;font-family:var(--font-body);-webkit-appearance:none">
           <option value="mediateur" ${userProfile.role==='mediateur'?'selected':''}>Médiateur(trice) en santé</option>
           <option value="coordinateur" ${userProfile.role==='coordinateur'?'selected':''}>Coordinateur de parcours</option>
           <option value="ide" ${userProfile.role==='ide'?'selected':''}>IDE coordinateur(trice)</option>
@@ -971,7 +1179,19 @@ function showProfile() {
       </div>
       <div>
         <div style="font-size:10px;color:#565a72;margin-bottom:3px;text-transform:uppercase;letter-spacing:.06em">Structure</div>
-        <input id="pp_structure" type="text" value="${userProfile.structure||''}" placeholder="DAC 93 Nord..." style="width:100%;background:#0f1117;border:1px solid rgba(255,255,255,.08);border-radius:6px;color:#f0f1f5;font-size:12px;padding:7px 9px;outline:none;font-family:inherit"/>
+        <input id="pp_structure" type="text" value="${userProfile.structure||''}" placeholder="DAC 93 Nord..." style="width:100%;background:#0f1117;border:1px solid rgba(255,255,255,.08);border-radius:6px;color:#f0f1f5;font-size:12px;padding:7px 9px;outline:none;font-family:var(--font-body)"/>
+      </div>
+      <div>
+        <div style="font-size:10px;color:#565a72;margin-bottom:3px;text-transform:uppercase;letter-spacing:.06em">Téléphone professionnel</div>
+        <input id="pp_tel" type="tel" value="${userProfile.tel||''}" placeholder="01 XX XX XX XX" style="width:100%;background:#0f1117;border:1px solid rgba(255,255,255,.08);border-radius:6px;color:#f0f1f5;font-size:12px;padding:7px 9px;outline:none;font-family:var(--font-body)"/>
+      </div>
+      <div>
+        <div style="font-size:10px;color:#565a72;margin-bottom:3px;text-transform:uppercase;letter-spacing:.06em">Email professionnel</div>
+        <input id="pp_email" type="email" value="${userProfile.email||''}" placeholder="prenom.nom@structure.fr" style="width:100%;background:#0f1117;border:1px solid rgba(255,255,255,.08);border-radius:6px;color:#f0f1f5;font-size:12px;padding:7px 9px;outline:none;font-family:var(--font-body)"/>
+      </div>
+      <div>
+        <div style="font-size:10px;color:#565a72;margin-bottom:3px;text-transform:uppercase;letter-spacing:.06em">Adresse structure</div>
+        <input id="pp_adresse" type="text" value="${userProfile.adresse||''}" placeholder="Ex: Seine-Saint-Denis (93)" style="width:100%;background:#0f1117;border:1px solid rgba(255,255,255,.08);border-radius:6px;color:#f0f1f5;font-size:12px;padding:7px 9px;outline:none;font-family:var(--font-body)"/>
       </div>
       <div style="border-top:1px solid rgba(255,255,255,.06);padding-top:10px;margin-top:2px">
         <div style="font-size:10px;color:#565a72;margin-bottom:3px;text-transform:uppercase;letter-spacing:.06em">Clé API Claude</div>
@@ -980,9 +1200,11 @@ function showProfile() {
         </div>
         <div style="font-size:10px;color:#565a72;margin-top:4px;line-height:1.4">Saisie une fois ici → active l'IA dans tous les modules</div>
       </div>
-      <button onclick="activerNotifications()" id="notifBtn" style="width:100%;padding:8px;border-radius:8px;background:rgba(240,164,58,0.1);border:1px solid rgba(240,164,58,0.3);color:var(--amber);font-size:12px;cursor:pointer;font-family:inherit;margin-top:4px">🔔 Activer les notifications</button>
-      <button onclick="saveProfile()" style="width:100%;padding:10px;border-radius:8px;background:var(--purple);border:none;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:6px">Enregistrer</button>
-      <button onclick="document.getElementById('profilePanel').remove()" style="width:100%;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,.08);color:#8b8fa8;font-size:12px;cursor:pointer;font-family:inherit">Fermer</button>
+      <button onclick="exporterDonnees()" style="width:100%;padding:8px;border-radius:8px;background:rgba(77,158,246,0.1);border:1px solid rgba(77,158,246,0.25);color:var(--blue);font-size:12px;cursor:pointer;font-family:var(--font-body);margin-top:4px">💾 Exporter mes données</button>
+      <button onclick="importerDonnees()" style="width:100%;padding:8px;border-radius:8px;background:rgba(61,184,122,0.1);border:1px solid rgba(61,184,122,0.25);color:var(--green);font-size:12px;cursor:pointer;font-family:var(--font-body);margin-top:4px">📥 Importer une sauvegarde</button>
+      <button onclick="activerNotifications()" id="notifBtn" style="width:100%;padding:8px;border-radius:8px;background:rgba(240,164,58,0.1);border:1px solid rgba(240,164,58,0.3);color:var(--amber);font-size:12px;cursor:pointer;font-family:var(--font-body);margin-top:4px">🔔 Activer les notifications</button>
+      <button onclick="saveProfile()" style="width:100%;padding:10px;border-radius:8px;background:var(--purple);border:none;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font-body);margin-top:6px">Enregistrer</button>
+      <button onclick="document.getElementById('profilePanel').remove()" style="width:100%;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,.08);color:#8b8fa8;font-size:12px;cursor:pointer;font-family:var(--font-body)">Fermer</button>
     </div>
   `;
 
@@ -1000,28 +1222,33 @@ function activerNotifications() {
 }
 
 function saveProfile() {
-  const nom = document.getElementById('pp_nom')?.value.trim() || userProfile.nom;
-  const role = document.getElementById('pp_role')?.value || userProfile.role;
-  const structure = document.getElementById('pp_structure')?.value.trim() || userProfile.structure;
-  const apiKey = document.getElementById('pp_api')?.value.trim();
+  const nom = document.getElementById('pp_nom')?.value || '';
+  const role = document.getElementById('pp_role')?.value || '';
+  const structure = document.getElementById('pp_structure')?.value || '';
+  const tel = document.getElementById('pp_tel')?.value || '';
+  const email = document.getElementById('pp_email')?.value || '';
+  const adresse = document.getElementById('pp_adresse')?.value || '';
+  const apiKey = document.getElementById('pp_api')?.value || '';
 
-  if(nom) {
-    userProfile.nom = nom;
-    userProfile.role = role;
-    userProfile.structure = structure;
-    userProfile.avatar = initials(nom);
-    localStorage.setItem('ps_user_profile', JSON.stringify(userProfile));
-    localStorage.setItem('mediasante_user', nom);
-  }
-  if(apiKey && apiKey.startsWith('sk-')) {
+  userProfile = { nom, role, structure, tel, email, adresse, onboarded: true };
+  localStorage.setItem('ps_user_profile', JSON.stringify(userProfile));
+
+  if (apiKey && apiKey.startsWith('sk-')) {
     localStorage.setItem('mediasante_api_key', apiKey);
   }
 
+  // Mettre à jour les clés pour les courriers
+  if(structure) localStorage.setItem('mediasante_user_structure', structure);
+  if(adresse) localStorage.setItem('mediasante_user_adresse', adresse);
+  if(tel) localStorage.setItem('mediasante_user_tel', tel);
+  if(email) localStorage.setItem('mediasante_user_email', email);
+  if(nom) localStorage.setItem('mediasante_user', nom + (role ? ' — ' + role : ''));
+
   document.getElementById('profilePanel')?.remove();
-  renderGreeting();
-  updateAvatar();
-  showToast('Profil mis à jour ✓');
+  renderHome();
+  showToast('Profil enregistré ✓');
 }
+
 
 function updateAvatar() {
   const av = document.getElementById('userAvatar');

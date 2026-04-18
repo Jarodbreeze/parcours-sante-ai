@@ -9,17 +9,17 @@
 <title>ParcourSanté AI — Première visite</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
-:root{
-  /* Remap vers ps_design.css */
-  --bg:var(--bg);--bg2:var(--bg-2);--bg3:var(--bg-3);--bg4:var(--bg-4);
-  --border:var(--border);--border2:var(--border-2);
-  --text:var(--text);--text2:var(--text-2);--text3:var(--text-3);
-  --blue:var(--blue);--blue-bg:var(--blue-bg);--blue-b:var(--blue-border);
-  --purple:var(--purple);--purple-l:var(--purple-light);--purple-bg:var(--purple-bg);--purple-b:var(--purple-border);
-  --teal:var(--teal);--teal-bg:var(--teal-bg);--teal-b:var(--teal-border);
-  --amber:var(--amber);--amber-bg:var(--amber-bg);--amber-b:var(--amber-border);
-  --red:var(--red);--red-bg:var(--red-bg);--red-b:var(--red-border);
-  --green:var(--green);--green-bg:var(--green-bg);--green-b:var(--green-border);
+:root,[data-theme="light"],[data-theme="dark"]{
+  /* Alias pour compatibilite legacy */
+  --bg2:var(--bg-2);--bg3:var(--bg-3);--bg4:var(--bg-4);
+  --border2:var(--border-2);
+  --text2:var(--text-2);--text3:var(--text-3);
+  --blue-bg:var(--blue-bg);--blue-b:var(--blue-border);
+  --purple-l:var(--purple-light);--purple-bg:var(--purple-bg);--purple-b:var(--purple-border);
+  --teal-bg:var(--teal-bg);--teal-b:var(--teal-border);
+  --amber-bg:var(--amber-bg);--amber-b:var(--amber-border);
+  --red-bg:var(--red-bg);--red-b:var(--red-border);
+  --green-bg:var(--green-bg);--green-b:var(--green-border);
   --r:var(--radius-lg);--rs:var(--radius-md);
 }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -513,6 +513,34 @@ input::placeholder,textarea::placeholder{color:var(--text3)}
 
   <button class="btn-secondary" onclick="savePPCS()">💾 Sauvegarder dans le dossier</button>
   <button class="btn-secondary" onclick="resetAll()">↺ Nouvelle évaluation</button>
+  <div id="apaBtn" style="display:none;margin-top:10px">
+    <button class="btn-primary" onclick="toggleAPA()" style="width:100%;padding:12px;border-radius:var(--r);background:var(--amber);border:none;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font-body)">📋 Évaluation APA — Calculer le plan d'aide</button>
+  </div>
+</div>
+
+<!-- PANNEAU APA -->
+<div id="apaPanel" style="display:none;margin:0 16px 20px;background:var(--bg-2);border:1px solid var(--amber-border);border-radius:var(--radius-lg);padding:16px;border-top:3px solid var(--amber)">
+  <div style="font-size:15px;font-weight:700;margin-bottom:4px">📋 Évaluation APA</div>
+  <div style="font-size:12px;color:var(--text-2);margin-bottom:14px">Calcul du plan d'aide APA à domicile — Plafonds 2026</div>
+  
+  <!-- Éligibilité -->
+  <div id="apaEligibilite" style="margin-bottom:14px"></div>
+
+  <!-- Besoins heure par heure -->
+  <div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Besoins identifiés</div>
+  <div id="apaBesoins" style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px"></div>
+  
+  <!-- Ressources patient -->
+  <div class="ps-field">
+    <label class="ps-label">Revenus mensuels nets du patient (€)</label>
+    <input type="number" class="ps-input" id="apaRevenus" placeholder="ex: 900" oninput="calcAPA()">
+  </div>
+
+  <!-- Résultat -->
+  <div id="apaResultat" style="margin-top:10px"></div>
+
+  <!-- Bouton courrier -->
+  <button onclick="genCourrierAPA()" style="width:100%;margin-top:10px;padding:10px;border-radius:var(--radius-md);background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font-body)">✉️ Générer le courrier APA → CD93</button>
 </div>
 
 </div><!-- /main -->
@@ -876,6 +904,7 @@ function buildSynthScores(){
       <div class="score-card-lbl">Up & Go</div>
       <div class="score-card-sub" style="color:${!upgoTime?'var(--text3)':upgoTime<12?'var(--green)':upgoTime<20?'var(--amber)':'var(--red)'}">${!upgoTime?'Non réalisé':upgoTime<12?'Normal':upgoTime<20?'Risque modéré':'Risque élevé'}</div>
     </div>`;
+  updateAPABtn();
 }
 
 function computeGIR(){
@@ -1162,6 +1191,85 @@ function showToast(msg){
   t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:9px 18px;border-radius:20px;font-size:12px;z-index:9999;white-space:nowrap';
   t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2200);
 }
-</script>
-</body>
-</html>
+
+// ═══ ÉVALUATION APA ═══
+
+const APA_PLAFONDS_2026 = {1:1914, 2:1539, 3:1114, 4:747};
+
+const APA_BESOINS = [
+  {id:"toilette", label:"Aide à la toilette", unite:"fois/semaine", dureeMin:30, dureeMax:60},
+  {id:"habillage", label:"Aide à l'habillage", unite:"fois/semaine", dureeMin:15, dureeMax:30},
+  {id:"repas", label:"Aide aux repas (préparation + prise)", unite:"repas/jour", dureeMin:20, dureeMax:45},
+  {id:"menage", label:"Aide ménagère", unite:"heures/semaine", dureeMin:60, dureeMax:180},
+  {id:"courses", label:"Courses et déplacements", unite:"fois/semaine", dureeMin:60, dureeMax:120},
+  {id:"medicaments", label:"Aide à la prise de médicaments", unite:"fois/jour", dureeMin:10, dureeMax:20},
+  {id:"mobilite", label:"Aide à la mobilité / transferts", unite:"fois/jour", dureeMin:15, dureeMax:30},
+  {id:"nuit", label:"Garde de nuit", unite:"nuits/semaine", dureeMin:480, dureeMax:480},
+  {id:"teleassistance", label:"Téléassistance", unite:"forfait mensuel", dureeMin:0, dureeMax:0, forfait:true},
+];
+
+function toggleAPA(){
+  const panel = document.getElementById("apaPanel");
+  const isOpen = panel.style.display !== "none";
+  panel.style.display = isOpen ? "none" : "block";
+  if(!isOpen) initAPA();
+}
+
+function initAPA(){
+  var gir = computeGIR();
+  var elElig = document.getElementById("apaEligibilite");
+
+  if(gir === 0 || gir > 4){
+    elElig.innerHTML = "<div style='padding:10px;border-radius:8px;background:var(--red-bg);border:1px solid var(--red-border);font-size:13px;color:var(--red)'>GIR "+(gir||"non calcule")+" — Non eligible a l APA (reservee aux GIR 1 a 4).</div>";
+    document.getElementById("apaBesoins").innerHTML = "";
+    document.getElementById("apaResultat").innerHTML = "";
+    return;
+  }
+
+  var plafonds = {1:1914, 2:1539, 3:1114, 4:747};
+  var plafond = plafonds[gir];
+  elElig.innerHTML = "<div style='padding:10px;border-radius:8px;background:var(--green-bg);border:1px solid var(--green-border);margin-bottom:10px'>" +
+    "<div style='font-size:13px;font-weight:700;color:var(--green)'>GIR "+gir+" — ELIGIBLE APA</div>" +
+    "<div style='font-size:12px;color:var(--text-2);margin-top:4px'>Plafond plan aide 2026 : <strong>"+plafond.toLocaleString("fr-FR")+" EUR / mois</strong></div>" +
+    "<div style='font-size:11px;color:var(--text-3);margin-top:2px'>Age minimum : 60 ans · Residence stable en France</div>" +
+    "</div>";
+
+  var besoinsEl = document.getElementById("apaBesoins");
+  besoinsEl.innerHTML = "";
+  APA_BESOINS.forEach(function(b){
+    var row = document.createElement("div");
+    row.style.cssText = "display:grid;grid-template-columns:1fr 80px 80px;gap:8px;align-items:center;padding:8px 10px;background:var(--bg-3);border-radius:8px;border:1px solid var(--border)";
+
+    var label = document.createElement("div");
+    label.style.cssText = "font-size:12px;font-weight:500";
+    label.textContent = b.label;
+    row.appendChild(label);
+
+    if(b.forfait){
+      var chk = document.createElement("input");
+      chk.type = "checkbox"; chk.id = "besoin_"+b.id;
+      chk.style.cssText = "width:18px;height:18px;cursor:pointer";
+      chk.onchange = calcAPA;
+      row.appendChild(chk);
+      var lbl = document.createElement("div");
+      lbl.style.cssText = "font-size:11px;color:var(--text-3)";
+      lbl.textContent = "~20EUR/mois";
+      row.appendChild(lbl);
+    } else {
+      var freq = document.createElement("input");
+      freq.type = "number"; freq.id = "besoin_"+b.id;
+      freq.min = 0; freq.max = 30; freq.placeholder = "0";
+      freq.style.cssText = "background:var(--bg-2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;padding:5px 8px;outline:none;font-family:var(--font-body);width:100%";
+      freq.oninput = calcAPA;
+      row.appendChild(freq);
+      var unite = document.createElement("div");
+      unite.style.cssText = "font-size:10px;color:var(--text-3);line-height:1.3";
+      unite.textContent = b.unite;
+      row.appendChild(unite);
+    }
+    besoinsEl.appendChild(row);
+  });
+  calcAPA();
+}
+
+

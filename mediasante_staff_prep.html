@@ -8,17 +8,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>ParcourSante AI — Preparation Staff / RESAD / RCP</title>
 <style>
-:root{
-  /* Remap vers ps_design.css */
-  --bg:var(--bg);--bg2:var(--bg-2);--bg3:var(--bg-3);--bg4:var(--bg-4);
-  --border:var(--border);--border2:var(--border-2);
-  --text:var(--text);--text2:var(--text-2);--text3:var(--text-3);
-  --blue:var(--blue);--blue-bg:var(--blue-bg);--blue-b:var(--blue-border);
-  --purple:var(--purple);--purple-l:var(--purple-light);--purple-bg:var(--purple-bg);--purple-b:var(--purple-border);
-  --teal:var(--teal);--teal-bg:var(--teal-bg);--teal-b:var(--teal-border);
-  --amber:var(--amber);--amber-bg:var(--amber-bg);--amber-b:var(--amber-border);
-  --red:var(--red);--red-bg:var(--red-bg);--red-b:var(--red-border);
-  --green:var(--green);--green-bg:var(--green-bg);--green-b:var(--green-border);
+:root,[data-theme="light"],[data-theme="dark"]{
+  /* Alias pour compatibilite legacy */
+  --bg2:var(--bg-2);--bg3:var(--bg-3);--bg4:var(--bg-4);
+  --border2:var(--border-2);
+  --text2:var(--text-2);--text3:var(--text-3);
+  --blue-bg:var(--blue-bg);--blue-b:var(--blue-border);
+  --purple-l:var(--purple-light);--purple-bg:var(--purple-bg);--purple-b:var(--purple-border);
+  --teal-bg:var(--teal-bg);--teal-b:var(--teal-border);
+  --amber-bg:var(--amber-bg);--amber-b:var(--amber-border);
+  --red-bg:var(--red-bg);--red-b:var(--red-border);
+  --green-bg:var(--green-bg);--green-b:var(--green-border);
   --r:var(--radius-lg);--rs:var(--radius-md);
 }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -690,15 +690,7 @@ function imprimerCR(){
   var w=window.open("","_blank");
   var name=staffData.dossierName||"Patient";
   var type={staff:"Staff DAC",resad:"RESAD",rcp:"RCP",synthese:"Synthese",crsa:"CRSA"}[staffData.type]||"Staff";
-  w.document.write("<html><head><title>CR "+type+" - "+name+"</title><style>body{font-family:var(--font-body);padding:30px;max-width:700px;margin:0 auto;font-size:13px;line-height:1.7}pre{white-space:pre-wrap;font-family:monospace}</style></head><body><pre>"+staffData.cr+"</pre></body></html>");
-  w.document.close();
-  w.print();
-}
-
-function showToast(msg){
-  var t=document.createElement("div");t.className="toast";t.textContent=msg;
-  document.body.appendChild(t);setTimeout(function(){t.remove();},2400);
-}
-</script>
+  w.document.write("<html><head><title>CR "+type+" - "+name+"</title><style>body{font-family:var(--font-body);padding:30px;max-width:700px;margin:0 auto;font-size:13px;line-height:1.7}pre{white-space:pre-wrap;font-family:monospace}</style></head><body><pre>"+staffData.cr+"</pre>
+t>
 </body>
 </html>

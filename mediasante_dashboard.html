@@ -9,17 +9,17 @@
 <title>ParcourSanté AI — Dashboard</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <style>
-:root{
-  /* Remap vers ps_design.css */
-  --bg:var(--bg);--bg2:var(--bg-2);--bg3:var(--bg-3);--bg4:var(--bg-4);
-  --border:var(--border);--border2:var(--border-2);
-  --text:var(--text);--text2:var(--text-2);--text3:var(--text-3);
-  --blue:var(--blue);--blue-bg:var(--blue-bg);--blue-b:var(--blue-border);
-  --purple:var(--purple);--purple-l:var(--purple-light);--purple-bg:var(--purple-bg);--purple-b:var(--purple-border);
-  --teal:var(--teal);--teal-bg:var(--teal-bg);--teal-b:var(--teal-border);
-  --amber:var(--amber);--amber-bg:var(--amber-bg);--amber-b:var(--amber-border);
-  --red:var(--red);--red-bg:var(--red-bg);--red-b:var(--red-border);
-  --green:var(--green);--green-bg:var(--green-bg);--green-b:var(--green-border);
+:root,[data-theme="light"],[data-theme="dark"]{
+  /* Alias pour compatibilite legacy */
+  --bg2:var(--bg-2);--bg3:var(--bg-3);--bg4:var(--bg-4);
+  --border2:var(--border-2);
+  --text2:var(--text-2);--text3:var(--text-3);
+  --blue-bg:var(--blue-bg);--blue-b:var(--blue-border);
+  --purple-l:var(--purple-light);--purple-bg:var(--purple-bg);--purple-b:var(--purple-border);
+  --teal-bg:var(--teal-bg);--teal-b:var(--teal-border);
+  --amber-bg:var(--amber-bg);--amber-b:var(--amber-border);
+  --red-bg:var(--red-bg);--red-b:var(--red-border);
+  --green-bg:var(--green-bg);--green-b:var(--green-border);
   --r:var(--radius-lg);--rs:var(--radius-md);
 }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -961,6 +961,27 @@ function showToast(msg){
   t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e2130;border:1px solid rgba(255,255,255,.2);color:#f0f1f5;padding:9px 18px;border-radius:20px;font-size:12px;z-index:9999;white-space:nowrap';
   t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2400);
 }
+</script>
+
+<script>
+(function(){
+  var dossiers = JSON.parse(localStorage.getItem("mediasante_dossiers")||"[]");
+  var isDemo = dossiers.some(function(d){return d.id==="DEMO-0001";});
+  if(!isDemo) return;
+  var bar = document.createElement("div");
+  bar.style.cssText = "position:fixed;bottom:0;left:0;right:0;z-index:9999;background:rgba(245,166,35,0.95);backdrop-filter:blur(8px);padding:8px 16px;display:flex;align-items:center;gap:10px;font-size:12px;font-weight:600;color:#92400e;border-top:1px solid rgba(245,166,35,0.5)";
+  bar.innerHTML = "<span style=\"font-size:14px\">🎬</span><span style=\"flex:1\">Mode demo — Donnees fictives (M. MBEKI)</span>"+
+    "<button onclick=\"quitterDemo()\" style=\"padding:5px 12px;border-radius:6px;background:#92400e;border:none;color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit\">Quitter la demo</button>";
+  document.body.appendChild(bar);
+  document.body.style.paddingBottom = "50px";
+  window.quitterDemo = function(){
+    var d = JSON.parse(localStorage.getItem("mediasante_dossiers")||"[]").filter(function(x){return x.id!=="DEMO-0001";});
+    localStorage.setItem("mediasante_dossiers", JSON.stringify(d));
+    localStorage.removeItem("transmissions_DEMO-0001");
+    if(localStorage.getItem("fiche_patient_id")==="DEMO-0001") localStorage.removeItem("fiche_patient_id");
+    window.location.href = "parcours_sante_ai.html";
+  };
+})();
 </script>
 </body>
 </html>
