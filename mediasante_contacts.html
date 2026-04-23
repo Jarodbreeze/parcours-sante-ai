@@ -1,342 +1,37 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+<script>(function(){var t=localStorage.getItem("ps_theme")||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");document.documentElement.setAttribute("data-theme",t);})();</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>ParcourSante AI — Carnet de contacts</title>
 <link rel="stylesheet" href="ps_design.css">
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<script>(function(){var t=localStorage.getItem("ps_theme")||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");document.documentElement.setAttribute("data-theme",t);})();</script>
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
-.topbar{position:sticky;top:0;z-index:100;background:var(--topbar-bg);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);height:54px;display:flex;align-items:center;padding:0 14px;gap:10px}
-.back-btn{padding:6px 12px;border-radius:6px;border:1px solid var(--border-2);background:transparent;color:var(--text-2);font-size:12px;cursor:pointer;font-family:var(--font-body)}
-.tb-title{font-size:14px;font-weight:600;flex:1;text-align:center}
-.ps-theme-btn{width:32px;height:32px;border-radius:50%;border:1px solid var(--border-2);background:transparent;cursor:pointer;font-size:14px}
-.search-bar{padding:12px 14px;background:var(--bg-2);border-bottom:1px solid var(--border);position:sticky;top:54px;z-index:50;display:flex;gap:8px}
-.search-input{flex:1;background:var(--bg-3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;padding:10px 14px;outline:none;font-family:var(--font-body)}
-.search-input:focus{border-color:var(--blue-border)}
-.btn-add{padding:10px 14px;border-radius:10px;background:var(--blue);border:none;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font-body);white-space:nowrap}
-.content{padding:12px 14px 90px}
-.alpha-section{margin-bottom:12px}
-.alpha-label{font-size:11px;font-weight:700;color:var(--text-3);letter-spacing:.08em;padding:4px 0;margin-bottom:6px;border-bottom:1px solid var(--border)}
-.contact-card{background:var(--bg-2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px;transition:all .15s}
-.contact-card:hover{border-color:var(--border-2)}
-.contact-header{display:flex;align-items:center;gap:12px;margin-bottom:8px}
-.contact-av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;border:1px solid}
-.contact-main{flex:1;min-width:0}
-.contact-name{font-size:14px;font-weight:600;margin-bottom:1px}
-.contact-role{font-size:11px;color:var(--text-2)}
-.contact-structure{font-size:11px;color:var(--text-3)}
-.contact-info{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
-.info-chip{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text-2);padding:3px 8px;background:var(--bg-3);border-radius:6px;border:1px solid var(--border)}
-.contact-actions{display:flex;gap:6px}
-.c-btn{flex:1;padding:7px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text-2);font-family:var(--font-body);text-align:center;transition:all .15s}
-.c-btn.call{background:var(--green-bg);border-color:var(--green-border);color:var(--green)}
-.c-btn.mail{background:var(--blue-bg);border-color:var(--blue-border);color:var(--blue)}
-.c-btn.del{background:var(--red-bg);border-color:var(--red-border);color:var(--red)}
-.empty-state{text-align:center;padding:50px 20px;color:var(--text-3)}
-.empty-icon{font-size:40px;margin-bottom:10px}
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px)}
-.overlay.hidden{display:none}
-.modal{background:var(--bg-2);border-top:1px solid var(--border);border-radius:20px 20px 0 0;padding:20px 16px 40px;width:100%;max-width:540px;max-height:90vh;overflow-y:auto}
-.modal-title{font-size:17px;font-weight:700;margin-bottom:14px;letter-spacing:-.3px}
-.field{margin-bottom:10px}
-.field label{font-size:11px;font-weight:600;color:var(--text-2);display:block;margin-bottom:4px}
-.field input,.field select,.field textarea{width:100%;background:var(--bg-3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;padding:9px 11px;outline:none;font-family:var(--font-body);-webkit-appearance:none}
-.field input:focus,.field select:focus{border-color:var(--blue-border)}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.btn-primary{width:100%;padding:12px;border-radius:10px;background:var(--blue);border:none;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font-body);margin-top:8px}
-.btn-secondary{width:100%;padding:10px;border-radius:10px;border:1px solid var(--border-2);background:transparent;color:var(--text-2);font-size:13px;cursor:pointer;font-family:var(--font-body);margin-top:6px}
-.role-colors{mt:background:var(--purple-bg);color:var(--purple);border-color:var(--purple-border)}
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--bg-2);border:1px solid var(--border-2);color:var(--text);padding:9px 18px;border-radius:20px;font-size:12px;z-index:999;white-space:nowrap;pointer-events:none}
-</style>
-</head>
-<body>
-
-<div class="topbar">
-  <button class="back-btn" onclick="window.location.href='parcours_sante_ai.html'">&#8249; Accueil</button>
-  <div class="tb-title">Carnet de contacts</div>
-  <button class="ps-theme-btn" onclick="toggleTheme()">🌓</button>
-</div>
-
-<div class="search-bar">
-  <input type="text" class="search-input" id="searchInput" placeholder="Rechercher un contact..." oninput="render()">
-  <button class="btn-add" onclick="openModal()">+ Ajouter</button>
-</div>
-
-<div class="content" id="mainContent"></div>
-
-<!-- MODAL -->
-<div class="overlay hidden" id="modalOverlay" onclick="if(event.target===this)closeModal()">
-  <div class="modal">
-    <div class="modal-title" id="modalTitle">Nouveau contact</div>
-    <input type="hidden" id="editId">
-    <div class="grid2">
-      <div class="field"><label>Prénom</label><input type="text" id="c-prenom" placeholder="Prénom"></div>
-      <div class="field"><label>Nom</label><input type="text" id="c-nom" placeholder="NOM"></div>
-    </div>
-    <div class="field"><label>Rôle / Fonction</label>
-      <select id="c-role">
-        <option value="mt">Médecin traitant</option>
-        <option value="spec">Médecin spécialiste</option>
-        <option value="ide">IDE / Infirmier(ère)</option>
-        <option value="kine">Kinésithérapeute</option>
-        <option value="ergo">Ergothérapeute</option>
-        <option value="as">Assistante sociale</option>
-        <option value="pharma">Pharmacien(ne)</option>
-        <option value="coord">Coordinateur de parcours</option>
-        <option value="dac">DAC / CPTS</option>
-        <option value="cpam">CPAM / MDPH</option>
-        <option value="cd">Conseil Départemental</option>
-        <option value="hopital">Hôpital / Service</option>
-        <option value="ssiad">SSIAD / SAAD</option>
-        <option value="famille">Famille / Aidant</option>
-        <option value="juridique">Protection juridique</option>
-        <option value="autre">Autre</option>
-      </select>
-    </div>
-    <div class="field"><label>Structure / Établissement</label><input type="text" id="c-structure" placeholder="Ex: Cabinet médical Épinay"></div>
-    <div class="grid2">
-      <div class="field"><label>Téléphone</label><input type="tel" id="c-tel" placeholder="01 XX XX XX XX"></div>
-      <div class="field"><label>Mobile</label><input type="tel" id="c-mobile" placeholder="06 XX XX XX XX"></div>
-    </div>
-    <div class="field"><label>Email</label><input type="email" id="c-email" placeholder="prenom.nom@structure.fr"></div>
-    <div class="field"><label>Adresse</label><input type="text" id="c-adresse" placeholder="Adresse complète"></div>
-    <div class="field"><label>Spécialité / Note</label><input type="text" id="c-note" placeholder="Ex: Gériatre, suit M. MBEKI depuis 2020"></div>
-    <div class="field"><label>Patient(s) associé(s)</label><select id="c-dossier">
-      <option value="">Aucun dossier spécifique</option>
-    </select></div>
-    <button class="btn-primary" onclick="saveContact()">Enregistrer</button>
-    <button class="btn-secondary" onclick="closeModal()">Annuler</button>
-  </div>
-</div>
-
 <script>
-var contacts = JSON.parse(localStorage.getItem("ps_contacts_carnet")||"[]");
-
-var ROLE_CONFIG = {
-  mt:{label:"Médecin traitant",color:"var(--blue)",bg:"var(--blue-bg)",border:"var(--blue-border)",icon:"🩺"},
-  spec:{label:"Spécialiste",color:"var(--purple)",bg:"var(--purple-bg)",border:"var(--purple-border)",icon:"🏥"},
-  ide:{label:"IDE",color:"var(--teal)",bg:"var(--teal-bg)",border:"var(--teal-border)",icon:"💉"},
-  kine:{label:"Kiné",color:"var(--green)",bg:"var(--green-bg)",border:"var(--green-border)",icon:"🤸"},
-  ergo:{label:"Ergo",color:"var(--green)",bg:"var(--green-bg)",border:"var(--green-border)",icon:"♿"},
-  as:{label:"Assistante sociale",color:"var(--amber)",bg:"var(--amber-bg)",border:"var(--amber-border)",icon:"🤝"},
-  pharma:{label:"Pharmacien",color:"var(--blue)",bg:"var(--blue-bg)",border:"var(--blue-border)",icon:"💊"},
-  coord:{label:"Coordinateur",color:"var(--purple)",bg:"var(--purple-bg)",border:"var(--purple-border)",icon:"📋"},
-  dac:{label:"DAC / CPTS",color:"var(--purple)",bg:"var(--purple-bg)",border:"var(--purple-border)",icon:"🏗️"},
-  cpam:{label:"CPAM / MDPH",color:"var(--blue)",bg:"var(--blue-bg)",border:"var(--blue-border)",icon:"📄"},
-  cd:{label:"Conseil Dép.",color:"var(--amber)",bg:"var(--amber-bg)",border:"var(--amber-border)",icon:"🏛️"},
-  hopital:{label:"Hôpital",color:"var(--red)",bg:"var(--red-bg)",border:"var(--red-border)",icon:"🏥"},
-  ssiad:{label:"SSIAD/SAAD",color:"var(--teal)",bg:"var(--teal-bg)",border:"var(--teal-border)",icon:"🏠"},
-  famille:{label:"Famille/Aidant",color:"var(--green)",bg:"var(--green-bg)",border:"var(--green-border)",icon:"👪"},
-  juridique:{label:"Protection jur.",color:"var(--purple)",bg:"var(--purple-bg)",border:"var(--purple-border)",icon:"⚖️"},
-  autre:{label:"Autre",color:"var(--text-2)",bg:"var(--bg-3)",border:"var(--border)",icon:"👤"},
-};
-
-function getDossiers(){return JSON.parse(localStorage.getItem("mediasante_dossiers")||"[]");}
-
-window.addEventListener("load", function(){
-  // Pré-charger les dossiers dans le select
-  var sel = document.getElementById("c-dossier");
-  getDossiers().forEach(function(d){
-    var p = d.data&&d.data.patient||{};
-    var name = [p.prenom,p.nom].filter(Boolean).join(" ")||d.id;
-    sel.innerHTML += "<option value='"+d.id+"'>"+name+"</option>";
-  });
-  render();
-});
-
-function render(){
-  var el = document.getElementById("mainContent");
-  var q = document.getElementById("searchInput").value.toLowerCase().trim();
-  el.innerHTML = "";
-
-  var filtered = contacts.filter(function(c){
-    if(!q) return true;
-    return (c.nom||"").toLowerCase().includes(q) ||
-      (c.prenom||"").toLowerCase().includes(q) ||
-      (c.structure||"").toLowerCase().includes(q) ||
-      (c.note||"").toLowerCase().includes(q) ||
-      (c.role||"").toLowerCase().includes(q);
-  });
-
-  if(!filtered.length){
-    el.innerHTML = "<div class='empty-state'><div class='empty-icon'>📒</div><div style='font-size:13px;margin-bottom:6px'>"+(q?"Aucun résultat":"Votre carnet est vide")+"</div><div style='font-size:12px'>Ajoutez vos contacts partenaires, médecins, structures...</div></div>";
-    return;
-  }
-
-  // Grouper alphabétiquement
-  var grouped = {};
-  filtered.forEach(function(c){
-    var letter = ((c.nom||c.prenom||"?")[0]).toUpperCase();
-    if(!grouped[letter]) grouped[letter] = [];
-    grouped[letter].push(c);
-  });
-
-  Object.keys(grouped).sort().forEach(function(letter){
-    var section = document.createElement("div");
-    section.className = "alpha-section";
-    var label = document.createElement("div");
-    label.className = "alpha-label";
-    label.textContent = letter;
-    section.appendChild(label);
-
-    grouped[letter].forEach(function(c){
-      var rc = ROLE_CONFIG[c.role]||ROLE_CONFIG.autre;
-      var card = document.createElement("div");
-      card.className = "contact-card";
-
-      var header = document.createElement("div");
-      header.className = "contact-header";
-
-      var av = document.createElement("div");
-      av.className = "contact-av";
-      av.style.cssText = "background:"+rc.bg+";border-color:"+rc.border+";color:"+rc.color;
-      av.textContent = rc.icon;
-      header.appendChild(av);
-
-      var main = document.createElement("div");
-      main.className = "contact-main";
-      main.innerHTML = "<div class='contact-name'>"+[c.prenom,c.nom].filter(Boolean).join(" ")+"</div>"+
-        "<div class='contact-role'>"+rc.label+(c.note?" — "+c.note:"")+"</div>"+
-        (c.structure?"<div class='contact-structure'>"+c.structure+"</div>":"");
-      header.appendChild(main);
-      card.appendChild(header);
-
-      // Infos
-      var info = document.createElement("div");
-      info.className = "contact-info";
-      if(c.tel) info.innerHTML += "<div class='info-chip'>📞 "+c.tel+"</div>";
-      if(c.mobile) info.innerHTML += "<div class='info-chip'>📱 "+c.mobile+"</div>";
-      if(c.email) info.innerHTML += "<div class='info-chip'>✉️ "+c.email+"</div>";
-      if(c.adresse) info.innerHTML += "<div class='info-chip'>📍 "+c.adresse+"</div>";
-      if(info.innerHTML) card.appendChild(info);
-
-      // Actions
-      var actions = document.createElement("div");
-      actions.className = "contact-actions";
-
-      if(c.tel||c.mobile){
-        var btnCall = document.createElement("div");
-        btnCall.className = "c-btn call";
-        btnCall.textContent = "📞 Appeler";
-        btnCall.onclick = (function(tel,mobile){return function(){window.location.href="tel:"+(mobile||tel).replace(/\s/g,"");};})(c.tel,c.mobile);
-        actions.appendChild(btnCall);
-      }
-      if(c.email){
-        var btnMail = document.createElement("div");
-        btnMail.className = "c-btn mail";
-        btnMail.textContent = "✉️ Email";
-        btnMail.onclick = (function(email){return function(){window.location.href="mailto:"+email;};})(c.email);
-        actions.appendChild(btnMail);
-      }
-      var btnEdit = document.createElement("div");
-      btnEdit.className = "c-btn";
-      btnEdit.textContent = "Modifier";
-      btnEdit.onclick = (function(contact){return function(){openModal(contact);};})(c);
-      actions.appendChild(btnEdit);
-
-      var btnDel = document.createElement("div");
-      btnDel.className = "c-btn del";
-      btnDel.textContent = "✕";
-      btnDel.onclick = (function(id){return function(){
-        if(confirm("Supprimer ce contact ?")) {
-          contacts = contacts.filter(function(x){return x.id!==id;});
-          localStorage.setItem("ps_contacts_carnet", JSON.stringify(contacts));
-          render();
-        }
-      };})(c.id);
-      actions.appendChild(btnDel);
-      card.appendChild(actions);
-      section.appendChild(card);
-    });
-    el.appendChild(section);
-  });
-}
-
-function openModal(contact){
-  document.getElementById("modalTitle").textContent = contact ? "Modifier le contact" : "Nouveau contact";
-  document.getElementById("editId").value = contact ? contact.id : "";
-  document.getElementById("c-prenom").value = contact ? (contact.prenom||"") : "";
-  document.getElementById("c-nom").value = contact ? (contact.nom||"") : "";
-  document.getElementById("c-role").value = contact ? (contact.role||"autre") : "mt";
-  document.getElementById("c-structure").value = contact ? (contact.structure||"") : "";
-  document.getElementById("c-tel").value = contact ? (contact.tel||"") : "";
-  document.getElementById("c-mobile").value = contact ? (contact.mobile||"") : "";
-  document.getElementById("c-email").value = contact ? (contact.email||"") : "";
-  document.getElementById("c-adresse").value = contact ? (contact.adresse||"") : "";
-  document.getElementById("c-note").value = contact ? (contact.note||"") : "";
-  document.getElementById("c-dossier").value = contact ? (contact.dossierId||"") : "";
-  document.getElementById("modalOverlay").classList.remove("hidden");
-}
-
-function closeModal(){
-  document.getElementById("modalOverlay").classList.add("hidden");
-}
-
-function saveContact(){
-  var id = document.getElementById("editId").value;
-  var contact = {
-    id: id || "c_"+Date.now(),
-    prenom: document.getElementById("c-prenom").value.trim(),
-    nom: document.getElementById("c-nom").value.trim(),
-    role: document.getElementById("c-role").value,
-    structure: document.getElementById("c-structure").value.trim(),
-    tel: document.getElementById("c-tel").value.trim(),
-    mobile: document.getElementById("c-mobile").value.trim(),
-    email: document.getElementById("c-email").value.trim(),
-    adresse: document.getElementById("c-adresse").value.trim(),
-    note: document.getElementById("c-note").value.trim(),
-    dossierId: document.getElementById("c-dossier").value,
-    createdAt: id ? undefined : new Date().toISOString(),
-  };
-
-  if(!contact.nom && !contact.prenom){showToast("Nom ou prénom requis");return;}
-
-  if(id){
-    var idx = contacts.findIndex(function(c){return c.id===id;});
-    if(idx>=0) contacts[idx] = contact;
-  } else {
-    contacts.push(contact);
-  }
-
-  localStorage.setItem("ps_contacts_carnet", JSON.stringify(contacts));
-  closeModal();
-  render();
-  showToast(id ? "Contact mis à jour" : "Contact ajouté ✓");
-}
 
 function toggleTheme(){
-  var current = document.documentElement.getAttribute("data-theme");
-  document.documentElement.setAttribute("data-theme",current==="dark"?"light":"dark");
-  localStorage.setItem("ps_theme",current==="dark"?"light":"dark");
-}
-
-function showToast(msg){
-  var t=document.createElement("div");t.className="toast";t.textContent=msg;
-  document.body.appendChild(t);setTimeout(function(){t.remove();},2400);
+  var c=document.documentElement.getAttribute("data-theme");
+  document.documentElement.setAttribute("data-theme",c==="dark"?"light":"dark");
+  localStorage.setItem("ps_theme",c==="dark"?"light":"dark");
 }
 </script>
-
 <script>
 (function(){
-  var dossiers = JSON.parse(localStorage.getItem("mediasante_dossiers")||"[]");
-  var isDemo = dossiers.some(function(d){return d.id==="DEMO-0001";});
-  if(!isDemo) return;
-  var bar = document.createElement("div");
-  bar.style.cssText = "position:fixed;bottom:0;left:0;right:0;z-index:9999;background:rgba(245,166,35,0.95);backdrop-filter:blur(8px);padding:8px 16px;display:flex;align-items:center;gap:10px;font-size:12px;font-weight:600;color:#92400e;border-top:1px solid rgba(245,166,35,0.5)";
-  bar.innerHTML = "<span style=\"font-size:14px\">🎬</span><span style=\"flex:1\">Mode demo — Donnees fictives (M. MBEKI)</span>"+
-    "<button onclick=\"quitterDemo()\" style=\"padding:5px 12px;border-radius:6px;background:#92400e;border:none;color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit\">Quitter la demo</button>";
+  var dossiers=JSON.parse(localStorage.getItem("mediasante_dossiers")||"[]");
+  if(!dossiers.some(function(d){return d.id==="DEMO-0001";})) return;
+  var bar=document.createElement("div");
+  bar.style.cssText="position:fixed;bottom:0;left:0;right:0;z-index:9999;background:rgba(245,166,35,0.95);padding:8px 16px;display:flex;align-items:center;gap:10px;font-size:12px;font-weight:600;color:#92400e;border-top:1px solid rgba(245,166,35,0.5)";
+  var s1=document.createElement("span");s1.textContent="Demo";bar.appendChild(s1);
+  var s2=document.createElement("span");s2.style.flex="1";s2.textContent="Mode demo — Donnees fictives";bar.appendChild(s2);
+  var qBtn=document.createElement("button");qBtn.textContent="Quitter";qBtn.style.cssText="padding:5px 12px;border-radius:6px;background:#92400e;border:none;color:#fff;font-size:11px;font-weight:700;cursor:pointer";qBtn.onclick=function(){window.quitterDemo();};bar.appendChild(qBtn);
   document.body.appendChild(bar);
-  document.body.style.paddingBottom = "50px";
-  window.quitterDemo = function(){
-    var d = JSON.parse(localStorage.getItem("mediasante_dossiers")||"[]").filter(function(x){return x.id!=="DEMO-0001";});
-    localStorage.setItem("mediasante_dossiers", JSON.stringify(d));
+  document.body.style.paddingBottom="50px";
+  window.quitterDemo=function(){
+    var d=JSON.parse(localStorage.getItem("mediasante_dossiers")||"[]").filter(function(x){return x.id!=="DEMO-0001";});
+    localStorage.setItem("mediasante_dossiers",JSON.stringify(d));
     localStorage.removeItem("transmissions_DEMO-0001");
     if(localStorage.getItem("fiche_patient_id")==="DEMO-0001") localStorage.removeItem("fiche_patient_id");
-    window.location.href = "parcours_sante_ai.html";
+    window.location.href="parcours_sante_ai.html";
   };
 })();
 </script>

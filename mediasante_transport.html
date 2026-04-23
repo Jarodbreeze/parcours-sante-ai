@@ -3,128 +3,106 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>ParcourSante AI — Transport & Ambulance</title>
-<link rel="stylesheet" href="ps_design.css">
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<title>ParcourSante AI — Transport</title>
 <script>(function(){var t=localStorage.getItem("ps_theme")||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");document.documentElement.setAttribute("data-theme",t);})();</script>
+<link rel="stylesheet" href="ps_design.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
+:root,[data-theme="dark"]{
+  --bg:#0F1117;--bg-2:#161B26;--bg-3:#1E2535;--bg-4:#252D40;
+  --border:rgba(255,255,255,0.07);--border-2:rgba(255,255,255,0.14);
+  --text:#E8EDF5;--text-2:#7C8FA6;--text-3:#3D4E63;
+  --blue:#4D9EF6;--blue-bg:rgba(77,158,246,0.1);--blue-border:rgba(77,158,246,0.25);
+  --green:#34D399;--green-bg:rgba(52,211,153,0.1);--green-border:rgba(52,211,153,0.22);
+  --amber:#FBBF24;--amber-bg:rgba(251,191,36,0.1);--amber-border:rgba(251,191,36,0.22);
+  --red:#F87171;--red-bg:rgba(248,113,113,0.1);--red-border:rgba(248,113,113,0.22);
+  --purple:#A78BFA;--purple-bg:rgba(167,139,250,0.1);--purple-border:rgba(167,139,250,0.25);
+  --teal:#22D3EE;--teal-bg:rgba(34,211,238,0.1);--teal-border:rgba(34,211,238,0.22);
+  --topbar-bg:rgba(15,17,23,0.97);--font-body:"Inter",-apple-system,sans-serif;
+  --radius-lg:12px;--radius-md:10px;--radius-sm:6px;
+}
+[data-theme="light"]{
+  --bg:#F8F9FB;--bg-2:#FFFFFF;--bg-3:#F1F3F7;--bg-4:#E8ECF2;
+  --border:rgba(0,0,0,0.08);--border-2:rgba(0,0,0,0.15);
+  --text:#0F1923;--text-2:#4A5568;--text-3:#94A3B8;
+  --blue:#1B6FE8;--blue-bg:rgba(27,111,232,0.08);--blue-border:rgba(27,111,232,0.2);
+  --green:#0E9F6E;--green-bg:rgba(14,159,110,0.08);--green-border:rgba(14,159,110,0.2);
+  --amber:#D97706;--amber-bg:rgba(217,119,6,0.08);--amber-border:rgba(217,119,6,0.2);
+  --red:#DC2626;--red-bg:rgba(220,38,38,0.08);--red-border:rgba(220,38,38,0.2);
+  --purple:#7C3AED;--purple-bg:rgba(124,58,237,0.08);--purple-border:rgba(124,58,237,0.2);
+  --teal:#0891B2;--teal-bg:rgba(8,145,178,0.08);--teal-border:rgba(8,145,178,0.2);
+  --topbar-bg:rgba(248,249,251,0.95);
+}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
 .topbar{position:sticky;top:0;z-index:100;background:var(--topbar-bg);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);height:54px;display:flex;align-items:center;padding:0 14px;gap:10px}
 .back-btn{padding:6px 12px;border-radius:6px;border:1px solid var(--border-2);background:transparent;color:var(--text-2);font-size:12px;cursor:pointer;font-family:var(--font-body)}
 .tb-title{font-size:14px;font-weight:600;flex:1;text-align:center}
-.ps-theme-btn{width:32px;height:32px;border-radius:50%;border:1px solid var(--border-2);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px}
-
+.theme-btn{width:32px;height:32px;border-radius:50%;border:1px solid var(--border-2);background:transparent;cursor:pointer;font-size:14px}
 .tabs{display:flex;background:var(--bg-2);border-bottom:1px solid var(--border);position:sticky;top:54px;z-index:50}
-.tab{flex:1;padding:11px 8px;text-align:center;font-size:12px;font-weight:600;color:var(--text-3);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap}
+.tab{flex:1;padding:11px 6px;text-align:center;font-size:11px;font-weight:600;color:var(--text-3);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap}
 .tab.active{color:var(--blue);border-bottom-color:var(--blue)}
-
 .content{padding:14px 14px 90px}
-
-.card{background:var(--bg-2);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
-.card-title{font-size:13px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.card{background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px;margin-bottom:10px}
+.card-title{font-size:13px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
 .field{margin-bottom:10px}
 .field label{font-size:11px;font-weight:600;color:var(--text-2);display:block;margin-bottom:4px}
-.field input,.field select,.field textarea{width:100%;background:var(--bg-3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;padding:9px 11px;outline:none;font-family:var(--font-body);-webkit-appearance:none}
-.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--blue-border);background:var(--bg-2)}
-.field textarea{resize:vertical;min-height:60px;line-height:1.5}
+select,input[type=text],input[type=date],input[type=number],input[type=tel]{width:100%;background:var(--bg-3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;padding:9px 11px;outline:none;font-family:var(--font-body);-webkit-appearance:none}
+select:focus,input:focus{border-color:var(--blue-border)}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-
-.btn-primary{width:100%;padding:12px;border-radius:10px;background:var(--blue);border:none;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font-body);transition:opacity .15s}
-.btn-primary:hover{opacity:.9}
-.btn-secondary{width:100%;padding:10px;border-radius:10px;border:1px solid var(--border-2);background:transparent;color:var(--text-2);font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font-body)}
-.btn-green{width:100%;padding:10px;border-radius:10px;background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font-body)}
-.btn-amber{width:100%;padding:10px;border-radius:10px;background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font-body)}
-
-.pill{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;border:1px solid}
-.pill.blue{background:var(--blue-bg);color:var(--blue);border-color:var(--blue-border)}
-.pill.green{background:var(--green-bg);color:var(--green);border-color:var(--green-border)}
-.pill.amber{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-border)}
-.pill.red{background:var(--red-bg);color:var(--red);border-color:var(--red-border)}
-
-.transporteur-card{background:var(--bg-2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:all .15s}
-.transporteur-card:hover{border-color:var(--border-2)}
+.btn-p{width:100%;padding:12px;border-radius:var(--radius-md);background:var(--blue);border:none;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font-body);margin-top:6px}
+.btn-s{width:100%;padding:10px;border-radius:var(--radius-md);border:1px solid var(--border-2);background:transparent;color:var(--text-2);font-size:13px;cursor:pointer;font-family:var(--font-body);margin-top:6px}
+.btn-g{width:100%;padding:10px;border-radius:var(--radius-md);background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font-body);margin-top:6px}
+.btn-a{width:100%;padding:10px;border-radius:var(--radius-md);background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font-body);margin-top:6px}
+.result-box{background:var(--bg-3);border:1px solid var(--border);border-radius:var(--radius-md);padding:12px;font-size:12px;line-height:1.8;white-space:pre-wrap;margin-top:10px;font-family:monospace}
+.t-card{background:var(--bg-2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px}
 .t-name{font-size:13px;font-weight:600;margin-bottom:4px}
-.t-info{font-size:11px;color:var(--text-2);margin-bottom:6px;line-height:1.5}
+.t-info{font-size:11px;color:var(--text-2);margin-bottom:8px;line-height:1.5}
 .t-actions{display:flex;gap:6px}
-.t-btn{flex:1;padding:7px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text-2);font-family:var(--font-body);text-align:center;transition:all .15s}
+.t-btn{flex:1;padding:7px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text-2);font-family:var(--font-body);text-align:center}
 .t-btn.call{background:var(--green-bg);border-color:var(--green-border);color:var(--green)}
-.t-btn.mail{background:var(--blue-bg);border-color:var(--blue-border);color:var(--blue)}
-
-.remb-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px}
+.remb-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px}
 .remb-row:last-child{border-bottom:none}
-.remb-label{color:var(--text-2)}
-.remb-val{font-weight:600}
-.remb-total{font-size:14px;font-weight:700;color:var(--green);margin-top:10px;text-align:center}
-
-.tx-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg-2);border:1px solid var(--border);border-radius:8px;margin-bottom:6px}
-.tx-date{font-size:11px;color:var(--text-3);width:70px;flex-shrink:0}
-.tx-body{flex:1;min-width:0}
-.tx-title{font-size:12px;font-weight:600}
-.tx-sub{font-size:11px;color:var(--text-2)}
-.tx-status{font-size:9px;font-weight:700;padding:2px 6px;border-radius:10px;flex-shrink:0}
-
-.result-box{background:var(--bg-3);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-top:10px;white-space:pre-wrap;font-size:12px;color:var(--text);line-height:1.7}
-.ai-loading{animation:pulse 1s infinite;color:var(--text-3);font-size:12px}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-
-.section-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:8px}
-
-.bottom-bar{position:fixed;bottom:0;left:0;right:0;padding:10px 14px;background:var(--topbar-bg);backdrop-filter:blur(16px);border-top:1px solid var(--border);display:flex;gap:8px;z-index:100}
-
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--bg-2);border:1px solid var(--border-2);color:var(--text);padding:9px 18px;border-radius:20px;font-size:12px;font-weight:500;z-index:999;white-space:nowrap;pointer-events:none;box-shadow:0 4px 12px rgba(0,0,0,.15)}
+.pill{display:inline-flex;align-items:center;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;border:1px solid}
+.pill.blue{background:var(--blue-bg);color:var(--blue);border-color:var(--blue-border)}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--bg-2);border:1px solid var(--border-2);color:var(--text);padding:9px 18px;border-radius:20px;font-size:12px;z-index:999;white-space:nowrap;pointer-events:none}
 </style>
 </head>
 <body>
-
 <div class="topbar">
   <button class="back-btn" onclick="window.location.href='parcours_sante_ai.html'">&#8249; Accueil</button>
-  <div class="tb-title">Transport & Ambulance</div>
-  <button class="ps-theme-btn" onclick="toggleTheme()">🌓</button>
+  <div class="tb-title">Transport &amp; Ambulance</div>
+  <button class="theme-btn" onclick="toggleTheme()">&#127763;</button>
 </div>
-
 <div class="tabs">
-  <div class="tab active" id="tab-bon" onclick="switchTab('bon')">📋 Bon de transport</div>
-  <div class="tab" id="tab-transporteurs" onclick="switchTab('transporteurs')">🚑 Transporteurs</div>
-  <div class="tab" id="tab-remb" onclick="switchTab('remb')">💶 Remboursement</div>
-  <div class="tab" id="tab-suivi" onclick="switchTab('suivi')">📅 Suivi</div>
+  <div class="tab active" id="tab-bon" onclick="switchTab('bon')">&#128203; Bon</div>
+  <div class="tab" id="tab-transporteurs" onclick="switchTab('transporteurs')">&#128665; Transporteurs</div>
+  <div class="tab" id="tab-remb" onclick="switchTab('remb')">&#128176; Remboursement</div>
+  <div class="tab" id="tab-suivi" onclick="switchTab('suivi')">&#128197; Suivi</div>
 </div>
-
 <div class="content" id="mainContent"></div>
-
 <script>
 var currentTab = "bon";
 var getDossiers = function(){return JSON.parse(localStorage.getItem("mediasante_dossiers")||"[]");};
 var getApiKey = function(){return localStorage.getItem("mediasante_api_key")||"";};
 
-// ── DONNÉES TRANSPORTEURS 93 ──
-var TRANSPORTEURS = [
-  {id:"t1", nom:"Ambulances Epinay", type:"ambulance", zones:["Epinay-sur-Seine","Saint-Denis","Stains"], tel:"À confirmer", email:"contact@ambulances-epinay.fr", urgence:true, convention:"CPAM 93", tarif:"Tarif conventionné", note:"Disponible 24h/24 pour urgences"},
-  {id:"t2", nom:"VSL Santé Seine Nord", type:"vsl", zones:["Saint-Denis","Pierrefitte","La Courneuve"], tel:"À confirmer", email:"", urgence:false, convention:"CPAM 93", tarif:"Tarif conventionné", note:"RDV programmés uniquement"},
-  {id:"t3", nom:"Taxi Conventionné 93 Nord", type:"taxi", zones:["Saint-Denis","Epinay","Aubervilliers","Saint-Ouen"], tel:"À confirmer", email:"", urgence:false, convention:"CPAM 93", tarif:"Tarif conventionné AK", note:"Sur prescription médicale"},
-  {id:"t4", nom:"Ambulances Bobigny Centre", type:"ambulance", zones:["Bobigny","Drancy","Pantin","Le Blanc-Mesnil"], tel:"À confirmer", email:"", urgence:true, convention:"CPAM 93", tarif:"Tarif conventionné", note:""},
-  {id:"t5", nom:"VSL Aulnay Tremblay", type:"vsl", zones:["Aulnay-sous-Bois","Tremblay","Sevran","Villepinte"], tel:"À confirmer", email:"", urgence:false, convention:"CPAM 93", tarif:"Tarif conventionné", note:""},
-  {id:"t6", nom:"Transport Sanitaire Montreuil", type:"ambulance", zones:["Montreuil","Rosny-sous-Bois","Neuilly-sur-Marne"], tel:"À confirmer", email:"", urgence:true, convention:"CPAM 93", tarif:"Tarif conventionné", note:""},
-  {id:"t7", nom:"SAMU 93 — Urgences vitales", type:"samu", zones:["Tout le 93"], tel:"15", email:"", urgence:true, convention:"Gratuit", tarif:"Gratuit — urgences vitales uniquement", note:"Appeler le 15 uniquement si urgence vitale"},
-];
-
-// ── DONNÉES REMBOURSEMENT ──
-var REMB_REGLES = {
-  ambulance: {label:"Ambulance", base:100, taux_ald:100, taux_normal:65, accord_prealable_km:150, note:"Prescription médicale obligatoire. Accord préalable CPAM si > 150km ou transport répété."},
-  vsl: {label:"VSL", base:100, taux_ald:100, taux_normal:65, accord_prealable_km:150, note:"Pour patients ne pouvant utiliser les transports en commun. Prescription obligatoire."},
-  taxi: {label:"Taxi conventionné", base:100, taux_ald:100, taux_normal:65, accord_prealable_km:150, note:"Pour patients pouvant être assis. Moins cher que le VSL. Prescription obligatoire."},
-  tc: {label:"Transport en commun", base:100, taux_ald:100, taux_normal:65, accord_prealable_km:0, note:"Remboursé sur justificatifs si patient peut l utiliser."},
-};
-
-// ── ÉTAT ──
 var transportData = {
   dossierId: localStorage.getItem("fiche_patient_id")||"",
   patient: {},
-  bon: {type:"vsl", motif:"", destination:"", aller_retour:true, frequence:"ponctuel", date:"", ald:false, prise_en_charge:"65"},
-  transports: JSON.parse(localStorage.getItem("ps_transports")||"[]"),
+  bon: {type:"vsl",motif:"",destination:"",aller_retour:true,frequence:"ponctuel",date:"",ald:false},
+  transports: JSON.parse(localStorage.getItem("ps_transports")||"[]")
 };
 
-// ── INIT ──
+var TRANSPORTEURS = [
+  {nom:"Ambulances Epinay",type:"ambulance",zones:"Epinay-sur-Seine, Saint-Denis, Stains",tel:"01 48 26 XX XX",urgence:true},
+  {nom:"VSL Sante Seine Nord",type:"vsl",zones:"Saint-Denis, Pierrefitte, La Courneuve",tel:"A confirmer",urgence:false},
+  {nom:"Taxi Conventionne 93 Nord",type:"taxi",zones:"Saint-Denis, Epinay, Aubervilliers, Saint-Ouen",tel:"01 48 22 XX XX",urgence:false},
+  {nom:"Ambulances Bobigny Centre",type:"ambulance",zones:"Bobigny, Drancy, Pantin, Le Blanc-Mesnil",tel:"01 48 31 XX XX",urgence:true},
+  {nom:"VSL Aulnay Tremblay",type:"vsl",zones:"Aulnay-sous-Bois, Tremblay, Sevran, Villepinte",tel:"A confirmer",urgence:false},
+  {nom:"Transport Sanitaire Montreuil",type:"ambulance",zones:"Montreuil, Rosny-sous-Bois, Neuilly-sur-Marne",tel:"01 48 57 XX XX",urgence:true},
+  {nom:"SAMU 93 — Urgences vitales",type:"samu",zones:"Tout le 93",tel:"15",urgence:true}
+];
+
 window.addEventListener("load", function(){
   var d = getDossiers().find(function(x){return x.id===transportData.dossierId;});
   if(d){
@@ -132,9 +110,8 @@ window.addEventListener("load", function(){
     transportData.patient = p;
     var droits = d.droits||[];
     transportData.bon.ald = droits.some(function(dr){return dr.type&&dr.type.includes("ALD");});
-    transportData.bon.prise_en_charge = transportData.bon.ald ? "100" : "65";
   }
-  render();
+  switchTab("bon");
 });
 
 function switchTab(tab){
@@ -142,189 +119,137 @@ function switchTab(tab){
   ["bon","transporteurs","remb","suivi"].forEach(function(t){
     document.getElementById("tab-"+t).classList.toggle("active", t===tab);
   });
-  render();
+  if(tab==="bon") renderBon();
+  else if(tab==="transporteurs") renderTransporteurs();
+  else if(tab==="remb") renderRemb();
+  else if(tab==="suivi") renderSuivi();
 }
 
-function render(){
-  if(currentTab==="bon") renderBon();
-  else if(currentTab==="transporteurs") renderTransporteurs();
-  else if(currentTab==="remb") renderRemb();
-  else if(currentTab==="suivi") renderSuivi();
+function mkEl(tag,props,parent){
+  var el=document.createElement(tag);
+  Object.keys(props||{}).forEach(function(k){
+    if(k==="text") el.textContent=props[k];
+    else if(k==="html") el.innerHTML=props[k];
+    else if(k==="css") el.style.cssText=props[k];
+    else if(k==="cls") el.className=props[k];
+    else el[k]=props[k];
+  });
+  if(parent) parent.appendChild(el);
+  return el;
 }
 
-// ── BON DE TRANSPORT ──
+function mkSelect(opts, val, cb, parent){
+  var s = mkEl("select",{css:"width:100%;background:var(--bg-3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;padding:9px 11px;outline:none;font-family:var(--font-body)"},parent);
+  opts.forEach(function(o){
+    var op = mkEl("option",{value:o.v,text:o.l},s);
+    if(o.v===val) op.selected=true;
+  });
+  s.onchange=cb;
+  return s;
+}
+
+function mkInput(type,val,ph,cb,parent){
+  var i = mkEl("input",{type:type,value:val||"",css:"width:100%;background:var(--bg-3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;padding:9px 11px;outline:none;font-family:var(--font-body)"},parent);
+  if(ph) i.placeholder=ph;
+  if(cb) i.oninput=cb;
+  return i;
+}
+
+function mkField(lbl, el2, parent){
+  var d = mkEl("div",{cls:"field"},parent);
+  mkEl("label",{text:lbl,css:"font-size:11px;font-weight:600;color:var(--text-2);display:block;margin-bottom:4px"},d);
+  d.appendChild(el2);
+  return d;
+}
+
 function renderBon(){
   var el = document.getElementById("mainContent");
+  el.innerHTML="";
   var p = transportData.patient;
   var b = transportData.bon;
-  var name = [p.prenom,p.nom].filter(Boolean).join(" ")||"Patient non selectionne";
-  el.innerHTML = "";
 
   // Patient card
-  var patCard = document.createElement("div");
-  patCard.className = "card";
-  var patTitle = document.createElement("div");
-  patTitle.className = "card-title";
-  patTitle.textContent = "👤 Patient";
-  patCard.appendChild(patTitle);
-
+  var pc = mkEl("div",{cls:"card"},el);
+  mkEl("div",{cls:"card-title",text:"Patient"},pc);
   if(transportData.dossierId && p.nom){
-    var nameDiv = document.createElement("div");
-    nameDiv.style.cssText = "font-size:14px;font-weight:700;margin-bottom:4px";
-    nameDiv.textContent = name;
-    patCard.appendChild(nameDiv);
-    var addrDiv = document.createElement("div");
-    addrDiv.style.cssText = "font-size:12px;color:var(--text-2)";
-    addrDiv.textContent = (p.adresse||"Adresse non renseignee") + (p.secu?" — Secu : "+p.secu:"");
-    patCard.appendChild(addrDiv);
-    if(b.ald){
-      var aldDiv = document.createElement("div");
-      aldDiv.style.marginTop = "8px";
-      aldDiv.innerHTML = "<span class='pill blue'>ALD — Prise en charge 100%</span>";
-      patCard.appendChild(aldDiv);
-    }
+    mkEl("div",{css:"font-size:14px;font-weight:700;margin-bottom:4px",text:[p.prenom,p.nom].filter(Boolean).join(" ")},pc);
+    mkEl("div",{css:"font-size:12px;color:var(--text-2)",text:(p.adresse||"")},pc);
+    if(b.ald) mkEl("div",{html:"<span class='pill blue'>ALD — 100%</span>",css:"margin-top:8px"},pc);
   } else {
-    var sel = document.createElement("select");
-    sel.style.cssText = "width:100%;background:var(--bg-3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;padding:9px 11px;outline:none;font-family:var(--font-body)";
-    sel.innerHTML = "<option value=''>Selectionner un patient...</option>" +
-      getDossiers().map(function(d){
-        var pp = d.data&&d.data.patient||{};
-        var n = [pp.prenom,pp.nom].filter(Boolean).join(" ")||d.id;
-        return "<option value='"+d.id+"'>"+n+"</option>";
-      }).join("");
-    sel.onchange = function(){
-      transportData.dossierId = this.value;
-      var dd = getDossiers().find(function(x){return x.id===transportData.dossierId;});
-      if(dd){
-        transportData.patient = dd.data&&dd.data.patient||{};
-        var droits = dd.droits||[];
-        transportData.bon.ald = droits.some(function(dr){return dr.type&&dr.type.includes("ALD");});
-        transportData.bon.prise_en_charge = transportData.bon.ald?"100":"65";
-      }
-      renderBon();
-    };
-    patCard.appendChild(sel);
-  }
-  el.appendChild(patCard);
-
-  // Détails transport
-  var detCard = document.createElement("div");
-  detCard.className = "card";
-  var detTitle = document.createElement("div");
-  detTitle.className = "card-title";
-  detTitle.textContent = "🚑 Détails du transport";
-  detCard.appendChild(detTitle);
-
-  function makeField(labelText, inputEl){
-    var div = document.createElement("div");
-    div.className = "field";
-    var lbl = document.createElement("label");
-    lbl.textContent = labelText;
-    div.appendChild(lbl);
-    div.appendChild(inputEl);
-    return div;
+    var dossList = getDossiers();
+    if(!dossList.length){
+      mkEl("div",{css:"font-size:12px;color:var(--text-3)",text:"Aucun dossier. Creez un dossier via FAMO."},pc);
+    } else {
+      var opts = [{v:"",l:"Selectionner un patient..."}].concat(dossList.map(function(d){
+        var pp=d.data&&d.data.patient||{};
+        return {v:d.id, l:[pp.prenom,pp.nom].filter(Boolean).join(" ")||d.id};
+      }));
+      mkSelect(opts, "", function(){
+        transportData.dossierId=this.value;
+        var dd=getDossiers().find(function(x){return x.id===transportData.dossierId;});
+        if(dd){
+          transportData.patient=dd.data&&dd.data.patient||{};
+          transportData.bon.ald=(dd.droits||[]).some(function(dr){return dr.type&&dr.type.includes("ALD");});
+        }
+        renderBon();
+      }, pc);
+    }
   }
 
-  // Type
-  var typeSelect = document.createElement("select");
-  typeSelect.innerHTML = "<option value='vsl'"+(b.type==="vsl"?" selected":"")+">VSL (Vehicule Sanitaire Leger)</option>"+
-    "<option value='ambulance'"+(b.type==="ambulance"?" selected":"")+">Ambulance</option>"+
-    "<option value='taxi'"+(b.type==="taxi"?" selected":"")+">Taxi conventionne</option>"+
-    "<option value='tc'"+(b.type==="tc"?" selected":"")+">Transport en commun</option>";
-  typeSelect.style.cssText = "width:100%;background:var(--bg-3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;padding:9px 11px;outline:none;font-family:var(--font-body)";
-  typeSelect.onchange = function(){transportData.bon.type = this.value;};
-  detCard.appendChild(makeField("Type de transport", typeSelect));
+  // Détails card
+  var dc = mkEl("div",{cls:"card"},el);
+  mkEl("div",{cls:"card-title",text:"Details du transport"},dc);
 
-  // Motif
-  var motifSelect = document.createElement("select");
-  motifSelect.style.cssText = typeSelect.style.cssText;
-  motifSelect.innerHTML = "<option value=''>Selectionner...</option>"+
-    ["Consultation specialiste","Seance de reeducation","Seance de dialyse","Radiotherapie / chimiotherapie","Hospitalisation programmee","Sortie d hospitalisation","Bilan / imagerie medicale","Consultation medecin traitant"].map(function(m){return "<option value='"+m+"'>"+m+"</option>";}).join("");
-  motifSelect.onchange = function(){transportData.bon.motif = this.value;};
-  detCard.appendChild(makeField("Motif du transport", motifSelect));
+  mkField("Type de transport", mkSelect([
+    {v:"vsl",l:"VSL (Vehicule Sanitaire Leger)"},
+    {v:"ambulance",l:"Ambulance"},
+    {v:"taxi",l:"Taxi conventionne"},
+    {v:"tc",l:"Transport en commun"}
+  ], b.type, function(){b.type=this.value;}, null), dc);
 
-  // Destination
-  var destInput = document.createElement("input");
-  destInput.type = "text";
-  destInput.style.cssText = "width:100%;background:var(--bg-3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;padding:9px 11px;outline:none;font-family:var(--font-body)";
-  destInput.placeholder = "Ex: CH Robert Ballanger, Aulnay-sous-Bois";
-  destInput.value = b.destination;
-  destInput.oninput = function(){transportData.bon.destination = this.value;};
-  detCard.appendChild(makeField("Etablissement de destination", destInput));
+  mkField("Motif du transport", mkSelect([
+    {v:"",l:"Selectionner..."},
+    {v:"Consultation specialiste",l:"Consultation specialiste"},
+    {v:"Reeducation kinesitherapie",l:"Reeducation / kinesitherapie"},
+    {v:"Seance de dialyse",l:"Seance de dialyse"},
+    {v:"Radiotherapie chimiotherapie",l:"Radiotherapie / chimiotherapie"},
+    {v:"Hospitalisation programmee",l:"Hospitalisation programmee"},
+    {v:"Sortie d hospitalisation",l:"Sortie d hospitalisation"},
+    {v:"Bilan imagerie medicale",l:"Bilan / imagerie medicale"},
+    {v:"Consultation medecin traitant",l:"Consultation medecin traitant"}
+  ], b.motif, function(){b.motif=this.value;}, null), dc);
 
-  // Grid date / fréquence
-  var grid = document.createElement("div");
-  grid.className = "grid2";
+  mkField("Etablissement de destination", mkInput("text",b.destination,"Ex: CH Robert Ballanger, Aulnay",function(){b.destination=this.value;},null), dc);
 
-  var dateInput = document.createElement("input");
-  dateInput.type = "date";
-  dateInput.style.cssText = destInput.style.cssText;
-  dateInput.value = b.date||new Date().toISOString().split("T")[0];
-  dateInput.onchange = function(){transportData.bon.date = this.value;};
-  var dateWrap = document.createElement("div");
-  dateWrap.className = "field";
-  dateWrap.innerHTML = "<label>Date</label>";
-  dateWrap.appendChild(dateInput);
-  grid.appendChild(dateWrap);
+  var grid=mkEl("div",{cls:"grid2"},dc);
+  mkField("Date", mkInput("date",b.date||new Date().toISOString().split("T")[0],null,function(){b.date=this.value;},null), grid);
+  mkField("Frequence", mkSelect([
+    {v:"ponctuel",l:"Ponctuel"},{v:"hebdomadaire",l:"Hebdomadaire"},
+    {v:"bihebdomadaire",l:"Bihebdomadaire"},{v:"quotidien",l:"Quotidien"}
+  ], b.frequence, function(){b.frequence=this.value;}, null), grid);
 
-  var freqSelect = document.createElement("select");
-  freqSelect.style.cssText = destInput.style.cssText;
-  freqSelect.innerHTML = "<option value='ponctuel'>Ponctuel</option><option value='hebdomadaire'>Hebdomadaire</option><option value='bihebdomadaire'>Bihebdomadaire</option><option value='quotidien'>Quotidien</option>";
-  freqSelect.value = b.frequence;
-  freqSelect.onchange = function(){transportData.bon.frequence = this.value;};
-  var freqWrap = document.createElement("div");
-  freqWrap.className = "field";
-  freqWrap.innerHTML = "<label>Frequence</label>";
-  freqWrap.appendChild(freqSelect);
-  grid.appendChild(freqWrap);
-  detCard.appendChild(grid);
+  var arRow=mkEl("div",{css:"display:flex;align-items:center;gap:10px;margin-bottom:10px"},dc);
+  var arChk=mkEl("input",{type:"checkbox",css:"width:18px;height:18px;cursor:pointer"},arRow);
+  arChk.checked=b.aller_retour;
+  arChk.onchange=function(){b.aller_retour=this.checked;};
+  mkEl("label",{text:"Aller-retour",css:"font-size:13px;cursor:pointer"},arRow);
 
-  // Aller-retour
-  var arRow = document.createElement("div");
-  arRow.style.cssText = "display:flex;align-items:center;gap:10px;margin-bottom:10px";
-  var arChk = document.createElement("input");
-  arChk.type = "checkbox"; arChk.id = "t-ar"; arChk.checked = b.aller_retour;
-  arChk.onchange = function(){transportData.bon.aller_retour = this.checked;};
-  var arLbl = document.createElement("label");
-  arLbl.htmlFor = "t-ar";
-  arLbl.style.cssText = "font-size:13px;cursor:pointer";
-  arLbl.textContent = "Aller-retour";
-  arRow.appendChild(arChk);
-  arRow.appendChild(arLbl);
-  detCard.appendChild(arRow);
-  el.appendChild(detCard);
+  var b1=mkEl("button",{cls:"btn-p",text:"Generer le bon de transport",onclick:genBonTransport},el);
+  var b2=mkEl("button",{cls:"btn-s",text:"Demander prescription au medecin traitant",onclick:demanderPrescription},el);
 
-  // Boutons
-  var btns = document.createElement("div");
-  btns.style.cssText = "display:flex;flex-direction:column;gap:8px";
-  var btnGen = document.createElement("button");
-  btnGen.className = "btn-primary";
-  btnGen.textContent = "Generer le bon de transport";
-  btnGen.onclick = genBonTransport;
-  btns.appendChild(btnGen);
-  var btnMt = document.createElement("button");
-  btnMt.className = "btn-secondary";
-  btnMt.textContent = "Demander prescription au medecin traitant";
-  btnMt.onclick = demanderPrescription;
-  btns.appendChild(btnMt);
-  el.appendChild(btns);
-
-  var resultDiv = document.createElement("div");
-  resultDiv.id = "bonResult";
-  el.appendChild(resultDiv);
+  mkEl("div",{id:"bonResult"},el);
 }
 
-
 function genBonTransport(){
-  var b = transportData.bon;
-  var p = transportData.patient;
-  var name = [p.prenom,p.nom].filter(Boolean).join(" ")||"[PATIENT]";
-  var date = b.date ? new Date(b.date+"T12:00:00").toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long",year:"numeric"}) : "[DATE]";
-  var typeLabel = {vsl:"VSL (Vehicule Sanitaire Leger)",ambulance:"Ambulance",taxi:"Taxi conventionne",tc:"Transport en commun"}[b.type]||b.type;
+  var b=transportData.bon;
+  var p=transportData.patient;
+  var name=[p.prenom,p.nom].filter(Boolean).join(" ")||"[PATIENT]";
+  var typeLabel={vsl:"VSL (Vehicule Sanitaire Leger)",ambulance:"Ambulance",taxi:"Taxi conventionne",tc:"Transport en commun"}[b.type]||b.type;
+  var dateStr=b.date?new Date(b.date+"T12:00:00").toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long",year:"numeric"}):"[DATE]";
 
-  var lines = [
+  var lines=[
     "BON DE TRANSPORT SANITAIRE",
-    "=".repeat(48),
+    "=".repeat(50),
     "",
     "PATIENT",
     "Nom : "+name,
@@ -334,15 +259,15 @@ function genBonTransport(){
     "Couverture : "+(p.couverture||"A renseigner"),
     "",
     "PRESCRIPTION DE TRANSPORT",
-    "Type : "+typeLabel,
+    "Type prescrit : "+typeLabel,
     "Motif : "+(b.motif||"A preciser"),
     "Destination : "+(b.destination||"A preciser"),
-    "Date : "+date,
+    "Date : "+dateStr,
     "Trajet : "+(b.aller_retour?"Aller-retour":"Aller simple"),
     "Frequence : "+b.frequence,
     "",
     "PRISE EN CHARGE",
-    b.ald?"ALD — Prise en charge a 100% par l Assurance Maladie":"Prise en charge a 65% — Complement mutuelle",
+    b.ald?"ALD — Prise en charge 100% Assurance Maladie":"Prise en charge 65% — complement mutuelle",
     b.frequence!=="ponctuel"?"ATTENTION : Accord prealable CPAM recommande pour transport repete":"",
     "",
     "MEDECIN PRESCRIPTEUR",
@@ -350,46 +275,189 @@ function genBonTransport(){
     "RPPS : _______________________",
     "Signature et tampon : _______________________",
     "",
-    "=".repeat(48),
-    "Document genere par ParcourSante AI — A faire signer par le medecin prescripteur"
+    "=".repeat(50),
+    "Document genere par ParcourSante AI"
   ];
-  var texte = lines.filter(function(l){return l!==undefined;}).join("\n");
+  var texte=lines.filter(function(l){return l!==undefined;}).join("\n");
 
-  var res = document.getElementById("bonResult");
-  if(!res) return;
-  res.innerHTML = "";
+  var res=document.getElementById("bonResult");
+  res.innerHTML="";
+  mkEl("div",{cls:"result-box",text:texte},res);
 
-  var box = document.createElement("div");
-  box.className = "result-box";
-  box.textContent = texte;
-  res.appendChild(box);
+  var row=mkEl("div",{css:"display:flex;gap:8px;margin-top:8px"},res);
+  var bc=mkEl("button",{cls:"btn-g",text:"Copier"},row);
+  bc.onclick=function(){navigator.clipboard.writeText(texte).then(function(){showToast("Bon copie");});};
+  var bp=mkEl("button",{cls:"btn-s",text:"Imprimer"},row);
+  bp.onclick=function(){
+    var w=window.open("","_blank");
+    w.document.write("<html><head><title>Bon transport</title><style>body{font-family:monospace;padding:30px;font-size:13px;line-height:1.7}pre{white-space:pre-wrap}<\/style><\/head><body><pre>"+texte+"<\/pre><\/body><\/html>");
+    w.document.close();
+    setTimeout(function(){w.print();},400);
+  };
 
-  var btnRow = document.createElement("div");
-  btnRow.style.cssText = "display:flex;gap:8px;margin-top:8px";
-  var btnCopy = document.createElement("button");
-  btnCopy.className = "btn-green";
-  btnCopy.textContent = "Copier";
-  btnCopy.onclick = function(){navigator.clipboard.writeText(texte).then(function(){showToast("Bon copie");});};
-  btnRow.appendChild(btnCopy);
-  var btnPrint = document.createElement("button");
-  btnPrint.className = "btn-secondary";
-  btnPrint.textContent = "Imprimer";
-  btnPrint.onclick = function(){imprimerBon(texte);};
-  btnRow.appendChild(btnPrint);
-  res.appendChild(btnRow);
-
-  // Sauvegarder suivi
-  var newTx = {id:"tx_"+Date.now(),dossierId:transportData.dossierId,date:new Date().toISOString(),type:b.type,motif:b.motif,destination:b.destination,frequence:b.frequence,aller_retour:b.aller_retour,statut:"en_attente_prescription",ald:b.ald};
-  var txs = JSON.parse(localStorage.getItem("ps_transports")||"[]");
-  txs.unshift(newTx);
-  localStorage.setItem("ps_transports", JSON.stringify(txs));
-  showToast("Bon genere et sauvegarde");
+  var tx={id:"tx_"+Date.now(),dossierId:transportData.dossierId,date:new Date().toISOString(),type:b.type,motif:b.motif,destination:b.destination,frequence:b.frequence,aller_retour:b.aller_retour,statut:"en_attente_prescription",ald:b.ald};
+  var txs=JSON.parse(localStorage.getItem("ps_transports")||"[]");
+  txs.unshift(tx);
+  localStorage.setItem("ps_transports",JSON.stringify(txs));
+  showToast("Bon genere");
 }
 
+function demanderPrescription(){
+  var b=transportData.bon;
+  var p=transportData.patient;
+  var name=[p.prenom,p.nom].filter(Boolean).join(" ")||"[PATIENT]";
+  var lines=[
+    "Cher Docteur,","",
+    "Je me permets de vous contacter concernant votre patient(e) "+name+".",
+    "","Il serait necessaire de prevoir un transport sanitaire :",
+    "- Type : "+b.type,"- Motif : "+(b.motif||"A preciser"),
+    "- Destination : "+(b.destination||"A preciser"),
+    "- Date : "+(b.date||"A definir"),
+    "- Trajet : "+(b.aller_retour?"Aller-retour":"Aller simple"),
+    b.ald?"- Patient beneficiant d une ALD — prise en charge 100%":"",
+    "","Pourriez-vous etablir la prescription correspondante ?",
+    "","Cordialement,","Coordinateur de parcours — ParcourSante AI"
+  ];
+  navigator.clipboard.writeText(lines.filter(Boolean).join("\n")).then(function(){
+    showToast("Message copie — a envoyer au medecin traitant");
+  });
+}
 
-function imprimerBon(texte){
-  var w = window.open("","_blank");
-  w.document.write("<html><head><title>Bon de transport</title><style>body{font-family:monospace;padding:30px;font-size:13px;line-height:1.7}pre{white-space:pre-wrap}</style></head><body><pre>"+texte+"</pre>
-t>
+function renderTransporteurs(){
+  var el=document.getElementById("mainContent");
+  el.innerHTML="";
+  var typeIcons={ambulance:"&#128665;",vsl:"&#128656;",taxi:"&#128661;",samu:"&#128682;"};
+  TRANSPORTEURS.forEach(function(t){
+    var card=mkEl("div",{cls:"t-card"},el);
+    mkEl("div",{cls:"t-name",html:typeIcons[t.type]+" "+t.nom+(t.urgence?"&nbsp;<span class='pill blue'>24h/24</span>":"")},card);
+    mkEl("div",{cls:"t-info",text:"Zone : "+t.zones},card);
+    var actions=mkEl("div",{cls:"t-actions"},card);
+    var bc=mkEl("div",{cls:"t-btn call",text:"Appeler "+t.tel},actions);
+    bc.onclick=(function(tel){return function(){window.location.href="tel:"+tel.replace(/\s/g,"");};})(t.tel);
+    var bco=mkEl("div",{cls:"t-btn",text:"Copier"},actions);
+    bco.onclick=(function(txt){return function(){navigator.clipboard.writeText(txt).then(function(){showToast("Copie");});};})(t.nom+" — "+t.tel);
+  });
+}
+
+function renderRemb(){
+  var el=document.getElementById("mainContent");
+  el.innerHTML="";
+  var card=mkEl("div",{cls:"card"},el);
+  mkEl("div",{cls:"card-title",text:"Calcul du remboursement"},card);
+
+  var typeOpts=[{v:"ambulance",l:"Ambulance"},{v:"vsl",l:"VSL"},{v:"taxi",l:"Taxi conventionne"},{v:"tc",l:"Transport en commun"}];
+  mkField("Type de transport",mkSelect(typeOpts,"ambulance",calcRemb,null),card);
+
+  var sitOpts=[{v:"ald",l:"ALD (100%)"},{v:"normal",l:"Regime general (65%)"},{v:"cmu",l:"CSS / CMU-C (100%)"},{v:"maternite",l:"Maternite (100%)"},{v:"accident",l:"Accident du travail (100%)"}];
+  mkField("Situation du patient",mkSelect(sitOpts,"ald",calcRemb,null),card);
+
+  var grid=mkEl("div",{cls:"grid2"},card);
+  mkField("Distance aller (km)", mkInput("number","","Ex: 15",calcRemb,null), grid);
+  mkField("Trajets par mois", mkInput("number","1","1",calcRemb,null), grid);
+
+  mkEl("div",{id:"rembResult"},card);
+
+  var info=mkEl("div",{cls:"card"},el);
+  mkEl("div",{cls:"card-title",text:"Accord prealable CPAM"},info);
+  mkEl("div",{css:"font-size:12px;color:var(--text-2);line-height:1.7",html:"Obligatoire si :<br><strong>+ 150 km</strong> ou <strong>transports repetitifs</strong><br>Delai CPAM : 15 jours. Sans reponse = accord tacite."},info);
+  var ba=mkEl("button",{cls:"btn-a",text:"Modele demande accord prealable"},info);
+  ba.onclick=function(){
+    var lines=["Demande d accord prealable de transport sanitaire","","Je soussigne, medecin prescripteur, sollicite l accord prealable de la CPAM.","Type de transport : A preciser","Destination : A preciser","Frequence : A preciser","","Cordialement"];
+    navigator.clipboard.writeText(lines.join("\n")).then(function(){showToast("Modele copie");});
+  };
+
+  calcRemb();
+}
+
+function calcRemb(){
+  var res=document.getElementById("rembResult");
+  if(!res) return;
+  var typeEl=document.querySelector("select");
+  var sitEl=document.querySelectorAll("select")[1];
+  var kmEl=document.querySelector("input[type=number]");
+  var trEl=document.querySelectorAll("input[type=number]")[1];
+  if(!typeEl||!sitEl) return;
+
+  var type=typeEl.value;
+  var sit=sitEl.value;
+  var km=parseFloat(kmEl&&kmEl.value)||0;
+  var trajets=parseInt(trEl&&trEl.value)||1;
+
+  var tarifs={ambulance:{base:48.5,km:1.35},vsl:{base:22.5,km:0.50},taxi:{base:10,km:0.72},tc:{base:0,km:0,flat:2.50}};
+  var t=tarifs[type]||tarifs.vsl;
+  var coutAller=type==="tc"?t.flat:(t.base+km*t.km);
+  var total=coutAller*trajets*2;
+  var taux=(sit==="normal")?65:100;
+  var remb=total*taux/100;
+  var rc=total-remb;
+  var accord=km>150||trajets>4;
+
+  res.innerHTML="";
+  var box=mkEl("div",{css:"background:var(--bg-3);border-radius:10px;padding:12px;margin-top:10px;border:1px solid var(--border)"},res);
+  [
+    ["Cout par aller",coutAller.toFixed(2)+" EUR"],
+    ["Cout total ("+trajets+" A/R)",total.toFixed(2)+" EUR"],
+    ["Taux prise en charge",taux+"%"],
+    ["Remboursement AM",remb.toFixed(2)+" EUR"],
+    ["Reste a charge",rc.toFixed(2)+" EUR"]
+  ].forEach(function(row){
+    var r=mkEl("div",{cls:"remb-row"},box);
+    mkEl("span",{css:"color:var(--text-2)",text:row[0]},r);
+    mkEl("span",{css:"font-weight:600",text:row[1]},r);
+  });
+  if(accord) mkEl("div",{css:"margin-top:8px;padding:8px;background:var(--amber-bg);border-radius:8px;border:1px solid var(--amber-border);font-size:11px;color:var(--amber)",text:"Accord prealable CPAM obligatoire"},box);
+  mkEl("div",{css:"font-size:10px;color:var(--text-3);margin-top:8px",text:"Estimation indicative — tarifs 2026"},box);
+}
+
+function renderSuivi(){
+  var el=document.getElementById("mainContent");
+  el.innerHTML="";
+  var txs=JSON.parse(localStorage.getItem("ps_transports")||"[]");
+  if(!txs.length){
+    mkEl("div",{css:"text-align:center;padding:40px;color:var(--text-3)",html:"<div style='font-size:36px;margin-bottom:10px'>&#128665;</div><div>Aucun transport enregistre</div>"},el);
+    return;
+  }
+  var tl={ambulance:"Ambulance",vsl:"VSL",taxi:"Taxi",tc:"TC",samu:"SAMU"};
+  var sl={en_attente_prescription:"En attente",prescrit:"Prescrit",effectue:"Effectue",annule:"Annule"};
+  txs.forEach(function(t){
+    var item=mkEl("div",{css:"display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg-2);border:1px solid var(--border);border-radius:8px;margin-bottom:6px"},el);
+    mkEl("div",{css:"font-size:11px;color:var(--text-3);width:70px;flex-shrink:0",text:new Date(t.date).toLocaleDateString("fr-FR",{day:"numeric",month:"short"})},item);
+    var body=mkEl("div",{css:"flex:1"},item);
+    mkEl("div",{css:"font-size:12px;font-weight:600",text:(tl[t.type]||t.type)+" — "+(t.motif||"Transport")},body);
+    mkEl("div",{css:"font-size:11px;color:var(--text-2)",text:(t.destination||"")+(t.aller_retour?" · A/R":"")+(t.ald?" · ALD":"")},body);
+    mkEl("span",{css:"font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border)",text:sl[t.statut]||t.statut},item);
+  });
+}
+
+function toggleTheme(){
+  var c=document.documentElement.getAttribute("data-theme");
+  document.documentElement.setAttribute("data-theme",c==="dark"?"light":"dark");
+  localStorage.setItem("ps_theme",c==="dark"?"light":"dark");
+}
+
+function showToast(msg){
+  var t=document.createElement("div");t.className="toast";t.textContent=msg;
+  document.body.appendChild(t);setTimeout(function(){t.remove();},2400);
+}
+</script>
+<script>
+(function(){
+  var dossiers=JSON.parse(localStorage.getItem("mediasante_dossiers")||"[]");
+  if(!dossiers.some(function(d){return d.id==="DEMO-0001";})) return;
+  var bar=document.createElement("div");
+  bar.style.cssText="position:fixed;bottom:0;left:0;right:0;z-index:9999;background:rgba(245,166,35,0.95);padding:8px 16px;display:flex;align-items:center;gap:10px;font-size:12px;font-weight:600;color:#92400e;border-top:1px solid rgba(245,166,35,0.5)";
+  bar.innerHTML="";
+  var s1=document.createElement("span");s1.textContent="\ud83c\udfa6";bar.appendChild(s1);
+  var s2=document.createElement("span");s2.style.flex="1";s2.textContent="Mode demo";bar.appendChild(s2);
+  var qBtn=document.createElement("button");qBtn.textContent="Quitter";qBtn.style.cssText="padding:5px 12px;border-radius:6px;background:#92400e;border:none;color:#fff;font-size:11px;font-weight:700;cursor:pointer";qBtn.onclick=function(){quitterDemo();};bar.appendChild(qBtn);
+  document.body.appendChild(bar);
+  document.body.style.paddingBottom="50px";
+  window.quitterDemo=function(){
+    var d=JSON.parse(localStorage.getItem("mediasante_dossiers")||"[]").filter(function(x){return x.id!=="DEMO-0001";});
+    localStorage.setItem("mediasante_dossiers",JSON.stringify(d));
+    window.location.href="parcours_sante_ai.html";
+  };
+})();
+</script>
 </body>
 </html>

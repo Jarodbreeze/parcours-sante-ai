@@ -1,13 +1,24 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+<script>(function(){var t=localStorage.getItem("ps_theme")||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");document.documentElement.setAttribute("data-theme",t);})();</script>
 <meta charset="UTF-8">
 <link rel="stylesheet" href="ps_design.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>ParcourSanté AI — Première visite</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js">
+function genCourrierAPA(){
+  var gir = computeGIR();
+  var revenus = document.getElementById("apaRevenus") ? document.getElementById("apaRevenus").value : "";
+  var p = currentPatient || {};
+  var name = [p.prenom, p.nom].filter(Boolean).join(" ") || "[PATIENT]";
+  window.location.href = "mediasante_courriers.html";
+}
+
+function toggleTheme(){var c=document.documentElement.getAttribute("data-theme");document.documentElement.setAttribute("data-theme",c==="dark"?"light":"dark");localStorage.setItem("ps_theme",c==="dark"?"light":"dark");}
+</script>
 <style>
 :root, [data-theme="dark"] {
   /* Variables principales */

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+<script>(function(){var t=localStorage.getItem("ps_theme")||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");document.documentElement.setAttribute("data-theme",t);})();</script>
 <meta charset="UTF-8">
 <link rel="stylesheet" href="ps_design.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -732,7 +733,39 @@ function imprimerCR(){
   var w=window.open("","_blank");
   var name=staffData.dossierName||"Patient";
   var type={staff:"Staff DAC",resad:"RESAD",rcp:"RCP",synthese:"Synthese",crsa:"CRSA"}[staffData.type]||"Staff";
-  w.document.write("<html><head><title>CR "+type+" - "+name+"</title><style>body{font-family:var(--font-body);padding:30px;max-width:700px;margin:0 auto;font-size:13px;line-height:1.7}pre{white-space:pre-wrap;font-family:monospace}</style></head><body><pre>"+staffData.cr+"</pre>
-t>
+  var css="body{font-family:Arial,sans-serif;padding:30px;max-width:700px;margin:0 auto;font-size:13px;line-height:1.7}pre{white-space:pre-wrap}h1{font-size:18px;margin-bottom:20px}";
+  var html="<html><head><title>CR "+type+" - "+name+"<\/title><style>"+css+"<\/style><\/head><body><h1>Compte-rendu "+type+"</h1><pre>"+document.getElementById("crPreview").textContent+"<\/pre><\/body><\/html>";
+  w.document.write(html);
+  w.document.close();
+  setTimeout(function(){w.print();},400);
+}
+
+
+function toggleTheme(){
+  var c=document.documentElement.getAttribute("data-theme");
+  document.documentElement.setAttribute("data-theme",c==="dark"?"light":"dark");
+  localStorage.setItem("ps_theme",c==="dark"?"light":"dark");
+}
+</script>
+<script>
+(function(){
+  var dossiers=JSON.parse(localStorage.getItem("mediasante_dossiers")||"[]");
+  if(!dossiers.some(function(d){return d.id==="DEMO-0001";})) return;
+  var bar=document.createElement("div");
+  bar.style.cssText="position:fixed;bottom:0;left:0;right:0;z-index:9999;background:rgba(245,166,35,0.95);padding:8px 16px;display:flex;align-items:center;gap:10px;font-size:12px;font-weight:600;color:#92400e;border-top:1px solid rgba(245,166,35,0.5)";
+  var s1=document.createElement("span");s1.textContent="Demo";bar.appendChild(s1);
+  var s2=document.createElement("span");s2.style.flex="1";s2.textContent="Mode demo — Donnees fictives";bar.appendChild(s2);
+  var qBtn=document.createElement("button");qBtn.textContent="Quitter";qBtn.style.cssText="padding:5px 12px;border-radius:6px;background:#92400e;border:none;color:#fff;font-size:11px;font-weight:700;cursor:pointer";qBtn.onclick=function(){window.quitterDemo();};bar.appendChild(qBtn);
+  document.body.appendChild(bar);
+  document.body.style.paddingBottom="50px";
+  window.quitterDemo=function(){
+    var d=JSON.parse(localStorage.getItem("mediasante_dossiers")||"[]").filter(function(x){return x.id!=="DEMO-0001";});
+    localStorage.setItem("mediasante_dossiers",JSON.stringify(d));
+    localStorage.removeItem("transmissions_DEMO-0001");
+    if(localStorage.getItem("fiche_patient_id")==="DEMO-0001") localStorage.removeItem("fiche_patient_id");
+    window.location.href="parcours_sante_ai.html";
+  };
+})();
+</script>
 </body>
 </html>

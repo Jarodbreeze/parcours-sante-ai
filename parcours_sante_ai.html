@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+<script>(function(){var t=localStorage.getItem("ps_theme")||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");document.documentElement.setAttribute("data-theme",t);})();</script>
 <meta charset="UTF-8">
 <link rel="stylesheet" href="ps_design.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -431,7 +432,7 @@ const MODULES = [
   {id:'protection_juridique', name:'Protection Juridique', desc:'Evaluation · Tutelle · Curatelle · Suivi MJPM', icon:'⚖️', color:'var(--purple)', bg:'var(--purple-bg)', file:'mediasante_protection_juridique.html', badge:'NEW', featured:true},
   {id:'dac_france', name:'DAC France & CERFA', desc:'Annuaire DAC IDF + metropoles · CERFA interactifs · Recherche IA nationale', icon:'🗺️', color:'var(--teal)', bg:'var(--teal-bg)', file:'mediasante_dac_france.html', badge:'NEW', featured:true},
   {id:'staff_prep', name:'Prep. Staff / RESAD / RCP', desc:'Presentation · Collegiale · Compte-rendu automatique', icon:'👥', color:'var(--amber)', bg:'var(--amber-bg)', file:'mediasante_staff_prep.html', badge:'NEW', featured:true},
-  {id:'carte',    name:'Carte Mentale',          desc:'Creusage · Analyse · Plan d\'action staff',    icon:'🗺️', color:'var(--gold)',   bg:'var(--gold-bg)',   file:'mediasante_carte_mentale.html',  badge:'NEW', featured:true},
+  {id:'carte',    name:'Carte Mentale',          desc:'Creusage · Analyse · Plan d\'action staff',    icon:'🗺️', color:'#FFB347',   bg:'var(--gold-bg)',   file:'mediasante_carte_mentale.html',  badge:'NEW', featured:true},
 ];
 
 // ═══ STATE ═══
@@ -1329,6 +1330,13 @@ function formatRelTime(dateStr) {
 document.addEventListener('click', e => {
   if (fabOpen && !e.target.closest('.fab') && !e.target.closest('.fab-menu')) closeFab();
 });
+
+function toggleTheme(){
+  var current = document.documentElement.getAttribute("data-theme");
+  var next = current === "dark" ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", next);
+  localStorage.setItem("ps_theme", next);
+}
 </script>
 </body>
 </html>
