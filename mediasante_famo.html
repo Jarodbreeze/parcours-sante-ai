@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#4D9EF6">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ParcourSante AI">
 <script>(function(){var t=localStorage.getItem("ps_theme")||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");document.documentElement.setAttribute("data-theme",t);})();</script>
 <meta charset="UTF-8">
 <link rel="stylesheet" href="ps_design.css">
@@ -1314,6 +1319,17 @@ function toggleTheme(){
     window.location.href="parcours_sante_ai.html";
   };
 })();
+</script>
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('./sw.js').then(function(reg){
+      console.log('SW enregistre:', reg.scope);
+    }).catch(function(err){
+      console.log('SW erreur:', err);
+    });
+  });
+}
 </script>
 </body>
 </html>

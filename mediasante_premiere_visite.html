@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#4D9EF6">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ParcourSante AI">
 <script>(function(){var t=localStorage.getItem("ps_theme")||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");document.documentElement.setAttribute("data-theme",t);})();</script>
 <meta charset="UTF-8">
 <link rel="stylesheet" href="ps_design.css">
@@ -18,6 +23,34 @@ function genCourrierAPA(){
 }
 
 function toggleTheme(){var c=document.documentElement.getAttribute("data-theme");document.documentElement.setAttribute("data-theme",c==="dark"?"light":"dark");localStorage.setItem("ps_theme",c==="dark"?"light":"dark");}
+
+function closeModal(){
+  var m = document.getElementById("patientModal");
+  if(m) m.classList.add("hidden");
+}
+
+function copyPPCS(){
+  var ppcsEl = document.getElementById("ppcsContent");
+  var text = ppcsEl ? ppcsEl.innerText||ppcsEl.textContent : "";
+  if(!text){ showToast("Aucun contenu PPCS"); return; }
+  navigator.clipboard.writeText(text).then(function(){
+    showToast("PPCS copie");
+  });
+}
+
+function exportPDF(){
+  printDoc();
+}
+
+function printDoc(){
+  var ppcsEl = document.getElementById("ppcsContent");
+  var text = ppcsEl ? ppcsEl.innerText||ppcsEl.textContent : "";
+  var w = window.open("","_blank");
+  var html = "<html><head><title>PPCS</title><style>body{font-family:Arial,sans-serif;padding:30px;font-size:13px;line-height:1.7}pre{white-space:pre-wrap}<\/style><\/head><body><pre>"+text+"<\/pre><\/body><\/html>";
+  w.document.write(html);
+  w.document.close();
+  setTimeout(function(){w.print();}, 400);
+}
 </script>
 <style>
 :root, [data-theme="dark"] {

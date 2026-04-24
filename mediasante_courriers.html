@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#4D9EF6">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ParcourSante AI">
 <script>(function(){var t=localStorage.getItem("ps_theme")||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");document.documentElement.setAttribute("data-theme",t);})();</script>
 <meta charset="UTF-8">
 <link rel="stylesheet" href="ps_design.css">
@@ -392,6 +397,7 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
       <div class="btn-icon" title="Copier" onclick="copyCourrier()">⎘</div>
       <div class="btn-icon" title="Exporter PDF" onclick="exportPDF()">↓</div>
       <div class="btn-icon" title="Imprimer" onclick="window.print()">⎙</div>
+      <div class="btn-icon" title="Envoyer par email / MSSante" onclick="envoyerEmail()" style="background:var(--blue-bg);color:var(--blue);border-color:var(--blue-border)">✉</div>
     </div>
   </div>
 
@@ -1367,6 +1373,52 @@ async function refineCourrier() {
 }
 
 // ─── EXPORT / COPY ───
+
+function envoyerEmail(){
+  var text = document.getElementById('letterBody').innerText;
+  var subject = '';
+  // Extraire le sujet depuis la première ligne du courrier
+  var lines = text.split('\n').filter(function(l){return l.trim();});
+  // Chercher "Objet :" dans le courrier
+  var objetLine = lines.find(function(l){return l.toLowerCase().startsWith('objet');});
+  if(objetLine){
+    subject = objetLine.replace(/^objet\s*:\s*/i,'').trim();
+  } else if(currentModel){
+    var models = MODELS || [];
+    var m = models.find ? models.find(function(x){return x.id===currentModel;}) : null;
+    subject = m ? m.name : 'Courrier medical';
+  }
+
+  // Destinataire depuis le cercle de soin du patient si disponible
+  var toEmail = '';
+  if(currentPatient && currentPatient.dossierId){
+    var dossiers = getDossiers();
+    var d = dossiers.find(function(x){return x.id===currentPatient.dossierId;});
+    if(d && d.cercle_soin){
+      var mt = d.cercle_soin.find(function(c){return c.role&&(c.role.toLowerCase().includes('medecin')||c.role.toLowerCase().includes('mt'));});
+      if(mt && mt.email) toEmail = mt.email;
+    }
+  }
+
+  // Construire le mailto
+  var body = encodeURIComponent(text);
+  var subjectEnc = encodeURIComponent(subject);
+  var mailtoUrl = 'mailto:' + toEmail + '?subject=' + subjectEnc + '&body=' + body;
+
+  // Si trop long pour mailto (>2000 chars), copier et ouvrir email vide
+  if(mailtoUrl.length > 2000){
+    navigator.clipboard.writeText(text).then(function(){
+      showToast('Courrier copié — collez dans votre messagerie');
+      window.location.href = 'mailto:' + toEmail + '?subject=' + subjectEnc;
+    });
+    return;
+  }
+
+  window.location.href = mailtoUrl;
+  setTimeout(function(){
+    showToast('Ouverture de votre client mail (MSSante, Outlook...)');
+  }, 500);
+}
 function copyCourrier() {
   const text = document.getElementById('letterBody').innerText;
   navigator.clipboard.writeText(text).then(() => showToast('Copié ✓'));
@@ -1448,6 +1500,17 @@ function toggleTheme(){
     window.location.href="parcours_sante_ai.html";
   };
 })();
+</script>
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('./sw.js').then(function(reg){
+      console.log('SW enregistre:', reg.scope);
+    }).catch(function(err){
+      console.log('SW erreur:', err);
+    });
+  });
+}
 </script>
 </body>
 </html>

@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#4D9EF6">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ParcourSante AI">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>ParcourSante AI — Dictee vocale</title>
+<script>(function(){var t=localStorage.getItem("ps_theme")||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");document.documentElement.setAttribute("data-theme",t);})();</script>
+<link rel="stylesheet" href="ps_design.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root,[data-theme="dark"]{--bg:#0F1117;--bg-2:#161B26;--bg-3:#1E2535;--bg-4:#252D40;--border:rgba(255,255,255,0.07);--border-2:rgba(255,255,255,0.14);--text:#E8EDF5;--text-2:#7C8FA6;--text-3:#3D4E63;--blue:#4D9EF6;--blue-bg:rgba(77,158,246,0.1);--blue-border:rgba(77,158,246,0.25);--green:#34D399;--green-bg:rgba(52,211,153,0.1);--green-border:rgba(52,211,153,0.22);--amber:#FBBF24;--amber-bg:rgba(251,191,36,0.1);--amber-border:rgba(251,191,36,0.22);--red:#F87171;--red-bg:rgba(248,113,113,0.1);--red-border:rgba(248,113,113,0.22);--purple:#A78BFA;--purple-bg:rgba(167,139,250,0.1);--purple-border:rgba(167,139,250,0.25);--topbar-bg:rgba(15,17,23,0.97);--font-body:"Inter",-apple-system,sans-serif;--radius-lg:12px;--radius-md:10px;}
+[data-theme="light"]{--bg:#F8F9FB;--bg-2:#FFFFFF;--bg-3:#F1F3F7;--bg-4:#E8ECF2;--border:rgba(0,0,0,0.08);--border-2:rgba(0,0,0,0.15);--text:#0F1923;--text-2:#4A5568;--text-3:#94A3B8;--blue:#1B6FE8;--blue-bg:rgba(27,111,232,0.08);--blue-border:rgba(27,111,232,0.2);--green:#0E9F6E;--green-bg:rgba(14,159,110,0.08);--green-border:rgba(14,159,110,0.2);--amber:#D97706;--amber-bg:rgba(217,119,6,0.08);--amber-border:rgba(217,119,6,0.2);--red:#DC2626;--red-bg:rgba(220,38,38,0.08);--red-border:rgba(220,38,38,0.2);--purple:#7C3AED;--purple-bg:rgba(124,58,237,0.08);--purple-border:rgba(124,58,237,0.2);--topbar-bg:rgba(248,249,251,0.95);}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+.topbar{position:sticky;top:0;z-index:100;background:var(--topbar-bg);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);height:54px;display:flex;align-items:center;padding:0 14px;gap:10px}
+.back-btn{padding:6px 12px;border-radius:6px;border:1px solid var(--border-2);background:transparent;color:var(--text-2);font-size:12px;cursor:pointer;font-family:var(--font-body)}
+.tb-title{font-size:14px;font-weight:600;flex:1;text-align:center}
+.theme-btn{width:32px;height:32px;border-radius:50%;border:1px solid var(--border-2);background:transparent;cursor:pointer;font-size:14px}
+.content{padding:16px 14px 100px}
+.card{background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:12px}
+.card-title{font-size:13px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px;color:var(--text)}
+
+/* Bouton micro */
+.mic-container{display:flex;flex-direction:column;align-items:center;padding:24px 0}
+.mic-btn{width:88px;height:88px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:36px;transition:all .2s;position:relative;background:var(--blue-bg);border:2px solid var(--blue-border)}
+.mic-btn.recording{background:rgba(248,113,113,0.15);border-color:var(--red);animation:micPulse 1s ease-in-out infinite}
+.mic-btn.processing{background:var(--amber-bg);border-color:var(--amber-border);animation:none;cursor:default}
+@keyframes micPulse{0%,100%{box-shadow:0 0 0 0 rgba(248,113,113,0.3)}50%{box-shadow:0 0 0 16px rgba(248,113,113,0)}}
+.mic-status{font-size:13px;font-weight:600;margin-top:12px;color:var(--text-2)}
+.mic-timer{font-size:22px;font-weight:800;letter-spacing:-.5px;margin-top:4px;color:var(--red);min-height:30px}
+.wave-container{display:flex;align-items:center;gap:3px;height:32px;margin-top:8px}
+.wave-bar{width:4px;border-radius:2px;background:var(--red);opacity:.7;animation:wave 0.8s ease-in-out infinite}
+.wave-bar:nth-child(2){animation-delay:.1s}
+.wave-bar:nth-child(3){animation-delay:.2s}
+.wave-bar:nth-child(4){animation-delay:.3s}
+.wave-bar:nth-child(5){animation-delay:.15s}
+@keyframes wave{0%,100%{height:6px}50%{height:28px}}
+
+/* Transcript */
+.transcript-box{background:var(--bg-3);border:1px solid var(--border);border-radius:var(--radius-md);padding:12px;min-height:80px;font-size:13px;line-height:1.7;color:var(--text);white-space:pre-wrap;margin-top:8px}
+.transcript-placeholder{color:var(--text-3);font-style:italic}
+
+/* Résultat IA */
+.result-section{margin-top:6px}
+.result-field{margin-bottom:10px}
+.result-label{font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.result-value{background:var(--bg-3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:13px;line-height:1.6;color:var(--text)}
+.result-value.editable{cursor:text;border-color:var(--border-2)}
+.result-value.editable:focus{outline:none;border-color:var(--blue-border);background:var(--bg-2)}
+.alert-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:700;border:1px solid;margin-right:4px;margin-bottom:4px}
+.alert-badge.red{background:var(--red-bg);color:var(--red);border-color:var(--red-border)}
+.alert-badge.amber{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-border)}
+.alert-badge.blue{background:var(--blue-bg);color:var(--blue);border-color:var(--blue-border)}
+
+/* Boutons */
+.btn-p{width:100%;padding:13px;border-radius:var(--radius-md);background:var(--blue);border:none;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font-body)}
+.btn-g{width:100%;padding:11px;border-radius:var(--radius-md);background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font-body);margin-top:8px}
+.btn-s{width:100%;padding:10px;border-radius:var(--radius-md);border:1px solid var(--border-2);background:transparent;color:var(--text-2);font-size:13px;cursor:pointer;font-family:var(--font-body);margin-top:6px}
+.field-sel{width:100%;background:var(--bg-3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;padding:9px 11px;outline:none;font-family:var(--font-body);-webkit-appearance:none}
+.field-sel:focus{border-color:var(--blue-border)}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--bg-2);border:1px solid var(--border-2);color:var(--text);padding:9px 18px;border-radius:20px;font-size:12px;z-index:999;white-space:nowrap;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,.2)}
+.loading{color:var(--text-3);animation:pulse 1s infinite;font-size:12px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <button class="back-btn" onclick="window.location.href='parcours_sante_ai.html'">&#8249; Accueil</button>
+  <div class="tb-title">Dictee vocale</div>
+  <button class="theme-btn" onclick="toggleTheme()">&#127763;</button>
+</div>
+<div class="content" id="mainContent"></div>
+<script>
+var getDossiers = function(){return JSON.parse(localStorage.getItem("mediasante_dossiers")||"[]");};
+var getApiKey = function(){return localStorage.getItem("mediasante_api_key")||"";};
+
+var state = {
+  recognition: null,
+  isRecording: false,
+  isProcessing: false,
+  transcript: "",
+  interimTranscript: "",
+  timerInterval: null,
+  timerSeconds: 0,
+  dossierId: localStorage.getItem("fiche_patient_id")||"",
+  result: null,
+};
+
+window.addEventListener("load", function(){
+  render();
+  checkMicSupport();
+});
+
+function checkMicSupport(){
+  if(!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)){
+    var warn = document.getElementById("micWarn");
+    if(warn) warn.style.display = "block";
+  }
+}
+
+function render(){
+  var el = document.getElementById("mainContent");
+  el.innerHTML = "";
+
+  // Sélection patient
+  var pc = mkCard("Patient", el);
+  var dossiers = getDossiers();
+  var sel = mkEl("select",{cls:"field-sel"},pc);
+  mkEl("option",{value:"",text:"Aucun dossier selectionne"},sel);
+  dossiers.forEach(function(d){
+    var p = d.data&&d.data.patient||{};
+    var name = [p.prenom,p.nom].filter(Boolean).join(" ")||d.id;
+    var opt = mkEl("option",{value:d.id,text:name},sel);
+    if(d.id === state.dossierId) opt.selected = true;
+  });
+  sel.onchange = function(){state.dossierId = this.value;};
+
+  // Avertissement compatibilité
+  var warn = mkEl("div",{id:"micWarn",css:"display:none;margin-top:8px;padding:8px 12px;background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:8px;font-size:12px;color:var(--amber)"},pc);
+  warn.textContent = "Dictee vocale non disponible sur ce navigateur. Utilisez Chrome ou Safari sur iOS.";
+
+  // Zone de dictee
+  var dc = mkCard("Dictee", el);
+
+  // Instructions
+  mkEl("div",{css:"font-size:12px;color:var(--text-2);line-height:1.6;margin-bottom:14px",
+    text:"Parlez naturellement apres avoir clique sur le micro. Decrivez la visite, les observations, les actions. L IA structure automatiquement la transmission."},dc);
+
+  // Micro
+  var micC = mkEl("div",{cls:"mic-container"},dc);
+  var micBtn = mkEl("button",{
+    id:"micBtn",
+    cls:"mic-btn" + (state.isRecording?" recording":state.isProcessing?" processing":""),
+    text: state.isProcessing ? "..." : "🎙"
+  }, micC);
+  micBtn.onclick = toggleRecording;
+  if(state.isProcessing) micBtn.disabled = true;
+
+  var micStatus = mkEl("div",{cls:"mic-status",id:"micStatus",
+    text: state.isRecording ? "Enregistrement en cours... Parlez" :
+          state.isProcessing ? "Analyse en cours..." :
+          "Appuyez pour commencer la dictee"}, micC);
+
+  var micTimer = mkEl("div",{cls:"mic-timer",id:"micTimer",
+    text: state.isRecording ? formatTime(state.timerSeconds) : ""}, micC);
+
+  // Ondes visuelles
+  if(state.isRecording){
+    var waveC = mkEl("div",{cls:"wave-container"},micC);
+    for(var i=0;i<5;i++) mkEl("div",{cls:"wave-bar"},waveC);
+  }
+
+  // Transcript brut
+  mkEl("div",{css:"font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px",text:"Transcription"},dc);
+  var tBox = mkEl("div",{cls:"transcript-box",id:"transcriptBox"},dc);
+  if(state.transcript || state.interimTranscript){
+    tBox.textContent = state.transcript + state.interimTranscript;
+  } else {
+    mkEl("div",{cls:"transcript-placeholder",text:"Votre dictee apparaitra ici en temps reel..."},tBox);
+  }
+
+  // Bouton effacer
+  if(state.transcript){
+    var btnClear = mkEl("button",{cls:"btn-s",text:"Effacer et recommencer"},dc);
+    btnClear.onclick = function(){state.transcript="";state.result=null;render();};
+  }
+
+  // Analyse IA
+  if(state.transcript && !state.result && !state.isProcessing){
+    var btnAnalyse = mkEl("button",{cls:"btn-p",text:"Analyser et structurer avec l IA"},dc);
+    btnAnalyse.style.marginTop = "12px";
+    btnAnalyse.onclick = analyserAvecIA;
+  }
+
+  // Résultat structuré
+  if(state.result){
+    var rc = mkCard("Transmission structuree", el);
+    mkEl("div",{css:"font-size:11px;color:var(--text-2);margin-bottom:12px",
+      text:"Verifiez et editez si necessaire avant de sauvegarder."},rc);
+
+    renderResultField("Titre de la transmission", "title", rc);
+    renderResultField("Observations", "content", rc, true);
+    renderResultField("Actions realisees", "actions", rc, true);
+    renderResultField("Points de vigilance", "vigilance", rc, true);
+    renderResultField("Prochaines etapes", "next", rc, true);
+
+    // Alertes detectees
+    if(state.result.alerts && state.result.alerts.length > 0){
+      var alertDiv = mkEl("div",{css:"margin-bottom:10px"},rc);
+      mkEl("div",{cls:"result-label",text:"Alertes detectees"},alertDiv);
+      var alertsRow = mkEl("div",{},alertDiv);
+      state.result.alerts.forEach(function(a){
+        mkEl("span",{cls:"alert-badge "+(a.level||"amber"),text:a.label},alertsRow);
+      });
+    }
+
+    // Sauvegarde
+    var btnSave = mkEl("button",{cls:"btn-p",text:"Sauvegarder dans le dossier"},rc);
+    btnSave.style.marginTop = "4px";
+    btnSave.onclick = sauvegarderTransmission;
+
+    var btnCopy = mkEl("button",{cls:"btn-g",text:"Copier le texte"},rc);
+    btnCopy.onclick = function(){
+      var text = [state.result.title,state.result.content,state.result.actions,state.result.vigilance,state.result.next].filter(Boolean).join("\n\n");
+      navigator.clipboard.writeText(text).then(function(){showToast("Transmission copiee");});
+    };
+  }
+}
+
+function renderResultField(label, key, parent, multiline){
+  var div = mkEl("div",{cls:"result-field"},parent);
+  mkEl("div",{cls:"result-label",text:label},div);
+  var val = state.result[key]||"";
+  if(multiline){
+    var ta = mkEl("div",{cls:"result-value editable",text:val},div);
+    ta.contentEditable = "true";
+    ta.oninput = (function(k){return function(){state.result[k]=this.textContent;};})(key);
+  } else {
+    var inp = mkEl("div",{cls:"result-value editable",text:val},div);
+    inp.contentEditable = "true";
+    inp.oninput = (function(k){return function(){state.result[k]=this.textContent;};})(key);
+  }
+}
+
+function mkCard(title, parent){
+  var c = mkEl("div",{cls:"card"},parent);
+  if(title) mkEl("div",{cls:"card-title",text:title},c);
+  return c;
+}
+
+function mkEl(tag,props,parent){
+  var el = document.createElement(tag);
+  Object.keys(props||{}).forEach(function(k){
+    if(k==="text") el.textContent=props[k];
+    else if(k==="html") el.innerHTML=props[k];
+    else if(k==="css") el.style.cssText=props[k];
+    else if(k==="cls") el.className=props[k];
+    else el[k]=props[k];
+  });
+  if(parent) parent.appendChild(el);
+  return el;
+}
+
+// ═══ RECONNAISSANCE VOCALE ═══
+function toggleRecording(){
+  if(state.isProcessing) return;
+  if(state.isRecording){
+    stopRecording();
+  } else {
+    startRecording();
+  }
+}
+
+function startRecording(){
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR){ showToast("Dictee non disponible sur ce navigateur"); return; }
+
+  state.recognition = new SR();
+  state.recognition.lang = "fr-FR";
+  state.recognition.continuous = true;
+  state.recognition.interimResults = true;
+  state.recognition.maxAlternatives = 1;
+
+  state.recognition.onresult = function(event){
+    var interim = "";
+    var final_ = "";
+    for(var i = event.resultIndex; i < event.results.length; i++){
+      var transcript = event.results[i][0].transcript;
+      if(event.results[i].isFinal){
+        final_ += transcript + " ";
+      } else {
+        interim += transcript;
+      }
+    }
+    if(final_) state.transcript += final_;
+    state.interimTranscript = interim;
+    updateTranscriptDisplay();
+  };
+
+  state.recognition.onerror = function(event){
+    console.log("Erreur:", event.error);
+    if(event.error !== "aborted"){
+      showToast("Erreur micro: " + event.error);
+      stopRecording();
+    }
+  };
+
+  state.recognition.onend = function(){
+    if(state.isRecording){
+      // Relancer si toujours en mode enregistrement
+      try { state.recognition.start(); } catch(e){}
+    }
+  };
+
+  state.recognition.start();
+  state.isRecording = true;
+  state.timerSeconds = 0;
+  state.timerInterval = setInterval(function(){
+    state.timerSeconds++;
+    var timerEl = document.getElementById("micTimer");
+    if(timerEl) timerEl.textContent = formatTime(state.timerSeconds);
+  }, 1000);
+
+  // Mettre à jour le bouton
+  var micBtn = document.getElementById("micBtn");
+  var micStatus = document.getElementById("micStatus");
+  if(micBtn){ micBtn.className = "mic-btn recording"; micBtn.textContent = "⏹"; }
+  if(micStatus) micStatus.textContent = "Enregistrement... Parlez librement";
+
+  // Ajouter les ondes
+  var micC = micBtn && micBtn.parentNode;
+  if(micC && !micC.querySelector(".wave-container")){
+    var waveC = mkEl("div",{cls:"wave-container"},micC);
+    for(var i=0;i<5;i++) mkEl("div",{cls:"wave-bar"},waveC);
+  }
+}
+
+function stopRecording(){
+  if(state.recognition){
+    state.isRecording = false;
+    try { state.recognition.stop(); } catch(e){}
+  }
+  clearInterval(state.timerInterval);
+  state.interimTranscript = "";
+  render();
+}
+
+function updateTranscriptDisplay(){
+  var tBox = document.getElementById("transcriptBox");
+  if(tBox){
+    tBox.innerHTML = "";
+    tBox.textContent = state.transcript + state.interimTranscript;
+  }
+}
+
+function formatTime(s){
+  var m = Math.floor(s/60);
+  var sec = s % 60;
+  return (m<10?"0"+m:m) + ":" + (sec<10?"0"+sec:sec);
+}
+
+// ═══ ANALYSE IA ═══
+async function analyserAvecIA(){
+  var apiKey = getApiKey();
+  if(!apiKey.startsWith("sk-")){
+    showToast("Cle API requise — configurez-la dans le profil");
+    return;
+  }
+  if(!state.transcript.trim()){
+    showToast("Aucune dictee a analyser");
+    return;
+  }
+
+  state.isProcessing = true;
+  var micBtn = document.getElementById("micBtn");
+  if(micBtn){ micBtn.className = "mic-btn processing"; micBtn.textContent = "⏳"; micBtn.disabled = true; }
+  var micStatus = document.getElementById("micStatus");
+  if(micStatus) micStatus.textContent = "Analyse IA en cours...";
+
+  // Contexte patient
+  var patientCtx = "";
+  if(state.dossierId){
+    var d = getDossiers().find(function(x){return x.id===state.dossierId;});
+    if(d){
+      var p = d.data&&d.data.patient||{};
+      var gir = d.evaluation&&d.evaluation.gir;
+      patientCtx = "Patient : "+[p.prenom,p.nom].filter(Boolean).join(" ")+(p.age?", "+p.age+" ans":"")+(gir?", GIR "+gir:"")+". ";
+    }
+  }
+
+  var prompt = "Tu es coordinateur de parcours de sante DAC 93. " + patientCtx +
+    "Voici une dictee vocale apres une visite terrain : " + state.transcript.trim() + " " +
+    "Structure cette dictee en transmission professionnelle. Reponds UNIQUEMENT en JSON valide avec ces champs : " +
+    "title (titre court max 8 mots), " +
+    "type (visite|appel|coordination|administrative), " +
+    "content (observations cliniques professionnelles), " +
+    "actions (actions realisees), " +
+    "vigilance (points de vigilance ou vide), " +
+    "next (prochaines etapes), " +
+    "alerts (tableau [{label, level: red|amber|blue}] uniquement si risque chute/confusion/isolement/urgence/rupture soins/droits expires), " +
+    "tags (tableau de tags). Sois factuel et professionnel."
+
+  try {
+    var resp = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true"
+      },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 800,
+        messages: [{role:"user", content:prompt}]
+      })
+    });
+
+    var data = await resp.json();
+    var text = data.content&&data.content[0]&&data.content[0].text||"";
+    var clean = text.replace(/```json|```/g,"").trim();
+    var parsed = JSON.parse(clean);
+    state.result = parsed;
+    state.isProcessing = false;
+    render();
+  } catch(e){
+    state.isProcessing = false;
+    showToast("Erreur analyse: " + e.message);
+    render();
+  }
+}
+
+// ═══ SAUVEGARDE ═══
+function sauvegarderTransmission(){
+  if(!state.dossierId){
+    showToast("Selectionnez un patient d abord");
+    return;
+  }
+  if(!state.result) return;
+
+  var tx = {
+    id: "tx_" + Date.now(),
+    date: new Date().toISOString(),
+    source: "dictee_vocale",
+    title: state.result.title||"Transmission vocale",
+    type: state.result.type||"visite",
+    content: [state.result.content, state.result.actions, state.result.vigilance, state.result.next].filter(Boolean).join("\n\n"),
+    tags: state.result.tags||[],
+    alerts: state.result.alerts||[],
+    transcriptBrut: state.transcript
+  };
+
+  var txs = JSON.parse(localStorage.getItem("transmissions_"+state.dossierId)||"[]");
+  txs.unshift(tx);
+  localStorage.setItem("transmissions_"+state.dossierId, JSON.stringify(txs));
+
+  // Alertes detectees → mettre à jour le dossier
+  if(state.result.alerts && state.result.alerts.length > 0){
+    var dossiers = getDossiers();
+    var dIdx = dossiers.findIndex(function(x){return x.id===state.dossierId;});
+    if(dIdx >= 0){
+      if(!dossiers[dIdx].data) dossiers[dIdx].data = {};
+      if(!dossiers[dIdx].data.alerts) dossiers[dIdx].data.alerts = {};
+      state.result.alerts.forEach(function(a){
+        if(a.level==="red") dossiers[dIdx].data.alerts.urgent = true;
+        if(a.label&&a.label.toLowerCase().includes("chute")) dossiers[dIdx].data.alerts.chute = true;
+        if(a.label&&a.label.toLowerCase().includes("isolement")) dossiers[dIdx].data.alerts.isolement = true;
+        if(a.label&&a.label.toLowerCase().includes("confusion")) dossiers[dIdx].data.alerts.sante = true;
+      });
+      localStorage.setItem("mediasante_dossiers", JSON.stringify(dossiers));
+    }
+  }
+
+  showToast("Transmission sauvegardee dans le dossier");
+
+  // Reset
+  state.transcript = "";
+  state.result = null;
+  state.interimTranscript = "";
+  render();
+}
+
+function toggleTheme(){
+  var c=document.documentElement.getAttribute("data-theme");
+  document.documentElement.setAttribute("data-theme",c==="dark"?"light":"dark");
+  localStorage.setItem("ps_theme",c==="dark"?"light":"dark");
+}
+
+function showToast(msg){
+  var t=document.createElement("div");t.className="toast";t.textContent=msg;
+  document.body.appendChild(t);setTimeout(function(){t.remove();},2400);
+}
+</script>
+<script>
+(function(){
+  var dossiers=JSON.parse(localStorage.getItem("mediasante_dossiers")||"[]");
+  if(!dossiers.some(function(d){return d.id==="DEMO-0001";})) return;
+  var bar=document.createElement("div");
+  bar.style.cssText="position:fixed;bottom:0;left:0;right:0;z-index:9999;background:rgba(245,166,35,0.95);padding:8px 16px;display:flex;align-items:center;gap:10px;font-size:12px;font-weight:600;color:#92400e;border-top:1px solid rgba(245,166,35,0.5)";
+  var s1=document.createElement("span");s1.textContent="Mode demo";bar.appendChild(s1);
+  var s2=document.createElement("span");s2.style.flex="1";s2.textContent="Donnees fictives";bar.appendChild(s2);
+  var qBtn=document.createElement("button");qBtn.textContent="Quitter";qBtn.style.cssText="padding:5px 12px;border-radius:6px;background:#92400e;border:none;color:#fff;font-size:11px;font-weight:700;cursor:pointer";qBtn.onclick=function(){window.quitterDemo();};bar.appendChild(qBtn);
+  document.body.appendChild(bar);document.body.style.paddingBottom="50px";
+  window.quitterDemo=function(){
+    var d=JSON.parse(localStorage.getItem("mediasante_dossiers")||"[]").filter(function(x){return x.id!=="DEMO-0001";});
+    localStorage.setItem("mediasante_dossiers",JSON.stringify(d));
+    localStorage.removeItem("transmissions_DEMO-0001");
+    if(localStorage.getItem("fiche_patient_id")==="DEMO-0001") localStorage.removeItem("fiche_patient_id");
+    window.location.href="parcours_sante_ai.html";
+  };
+})();
+</script>
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('./sw.js').then(function(reg){
+      console.log('SW enregistre:', reg.scope);
+    }).catch(function(err){
+      console.log('SW erreur:', err);
+    });
+  });
+}
+</script>
+</body>
+</html>

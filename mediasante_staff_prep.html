@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#4D9EF6">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ParcourSante AI">
 <script>(function(){var t=localStorage.getItem("ps_theme")||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");document.documentElement.setAttribute("data-theme",t);})();</script>
 <meta charset="UTF-8">
 <link rel="stylesheet" href="ps_design.css">
@@ -568,6 +573,18 @@ function renderCollegiale(){
       "<option value=\"prochain_staff\" "+(d.statut==="prochain_staff"?"selected":"")+">Prochain staff</option>"+
       "</select></div></div>";
   });
+    // Décisions suggérées selon alertes
+  var dtypes = genDecisionsTypes();
+  if(dtypes.length > 0){
+    decisionsHtml += "<div style='margin-bottom:10px;padding:10px;background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--rs)'>";
+    decisionsHtml += "<div style='font-size:10px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px'>Decisions suggérees</div>";
+    dtypes.forEach(function(dt,i){
+      decisionsHtml += "<div onclick='addDecisionType("+i+")' style='cursor:pointer;padding:6px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;margin-bottom:5px;font-size:12px;display:flex;align-items:center;gap:8px'>";
+      decisionsHtml += "<span style='color:var(--amber);font-weight:700'>+</span><span style='flex:1'>"+dt.action+"</span><span style='font-size:9px;padding:2px 6px;border-radius:10px;background:var(--amber-bg);color:var(--amber)'>"+dt.resp+"</span>";
+      decisionsHtml += "</div>";
+    });
+    decisionsHtml += "</div>";
+  }
   decisionsHtml+="<button class=\"decision-add\" onclick=\"addDecision()\">+ Ajouter une decision</button>";
   decisionsHtml+="</div></div>";
 
@@ -766,6 +783,103 @@ function toggleTheme(){
     window.location.href="parcours_sante_ai.html";
   };
 })();
+
+// ═══ DÉCISIONS TYPES ═══
+var decisionsTypesCache = [];
+
+function genDecisionsTypes(){
+  var suggestions = [];
+  var d = null;
+  if(staffData.dossierId){
+    var dossiers = JSON.parse(localStorage.getItem("mediasante_dossiers")||"[]");
+    d = dossiers.find(function(x){return x.id===staffData.dossierId;});
+  }
+
+  // Décisions selon alertes du dossier
+  if(d){
+    var alerts = d.data&&d.data.alerts||{};
+    var droits = d.droits||[];
+    var eval_ = d.evaluation||{};
+    var gir = eval_.gir;
+
+    // Alertes droits expirés
+    var droitsExpires = droits.filter(function(dr){return dr.statut==="expire"||dr.statut==="a_renouveler";});
+    droitsExpires.forEach(function(dr){
+      suggestions.push({action:"Renouveler "+dr.type+" — contacter CPAM/CAF",resp:"Coordinateur",delai:"J+15",urgence:true});
+    });
+
+    // GIR → APA
+    if(gir && gir <= 4){
+      var hasAPA = droits.some(function(dr){return dr.type&&dr.type.toLowerCase().includes("apa");});
+      if(!hasAPA) suggestions.push({action:"Ouvrir dossier APA — CD93 (GIR "+gir+")",resp:"Coordinateur",delai:"J+30",urgence:gir<=2});
+    }
+
+    // Pas de SSIAD et dépendant
+    if(gir && gir <= 3){
+      var hasSoins = droits.some(function(dr){return dr.type&&(dr.type.includes("SSIAD")||dr.type.includes("HAD")||dr.type.includes("IDE"));});
+      if(!hasSoins) suggestions.push({action:"Orienter vers SSIAD — soins infirmiers à domicile",resp:"MT + Coordinateur",delai:"J+15",urgence:false});
+    }
+
+    // Alerte isolement
+    if(alerts.isolement || alerts.social){
+      suggestions.push({action:"Évaluer mise en place téléassistance",resp:"Coordinateur",delai:"J+7",urgence:false});
+      suggestions.push({action:"Orienter vers accueil de jour",resp:"Coordinateur",delai:"J+30",urgence:false});
+    }
+
+    // Alerte médicale
+    if(alerts.sante || alerts.medical){
+      suggestions.push({action:"Contacter médecin traitant — bilan de coordination",resp:"Coordinateur",delai:"J+7",urgence:true});
+    }
+
+    // Alerte administrative
+    if(alerts.administratif || alerts.droits){
+      suggestions.push({action:"RDV France Services ou CCAS — aide constitution dossier droits",resp:"AS + Coordinateur",delai:"J+14",urgence:false});
+    }
+
+    // Pas de cercle de soin constitué
+    var cercle = d.cercle_soin||[];
+    if(cercle.length < 2){
+      suggestions.push({action:"Constituer le cercle de soin — identifier les acteurs clés",resp:"Coordinateur",delai:"J+21",urgence:false});
+    }
+
+    // Pas de PPCS validé
+    if(!d.ppcs_valide){
+      suggestions.push({action:"Valider le PPCS avec le médecin traitant",resp:"MT + Coordinateur",delai:"J+30",urgence:false});
+    }
+  }
+
+  // Décisions types génériques toujours utiles
+  var generiques = [
+    {action:"Planifier visite à domicile de suivi",resp:"Coordinateur",delai:"J+15",urgence:false},
+    {action:"Envoyer compte-rendu aux intervenants",resp:"Coordinateur",delai:"J+7",urgence:false},
+    {action:"Informer le médecin traitant des décisions",resp:"Coordinateur",delai:"J+7",urgence:false},
+    {action:"Réévaluation dans 3 mois",resp:"Équipe",delai:"M+3",urgence:false},
+  ];
+
+  // Limiter à 6 suggestions max (priorité urgentes)
+  var all = suggestions.concat(generiques);
+  all.sort(function(a,b){return (b.urgence?1:0)-(a.urgence?1:0);});
+  decisionsTypesCache = all.slice(0,6);
+  return decisionsTypesCache;
+}
+
+function addDecisionType(idx){
+  var dt = decisionsTypesCache[idx];
+  if(!dt) return;
+  staffData.decisions.push({action:dt.action,responsable:dt.resp,delai:dt.delai,statut:"acte"});
+  renderCollegiale();
+}
+</script>
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('./sw.js').then(function(reg){
+      console.log('SW enregistre:', reg.scope);
+    }).catch(function(err){
+      console.log('SW erreur:', err);
+    });
+  });
+}
 </script>
 </body>
 </html>

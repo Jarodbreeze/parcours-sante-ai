@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#4D9EF6">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ParcourSante AI">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>ParcourSante AI — Score de risque</title>
+<script>(function(){var t=localStorage.getItem("ps_theme")||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");document.documentElement.setAttribute("data-theme",t);})();</script>
+<link rel="stylesheet" href="ps_design.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root,[data-theme="dark"]{--bg:#0F1117;--bg-2:#161B26;--bg-3:#1E2535;--bg-4:#252D40;--border:rgba(255,255,255,0.07);--border-2:rgba(255,255,255,0.14);--text:#E8EDF5;--text-2:#7C8FA6;--text-3:#3D4E63;--blue:#4D9EF6;--blue-bg:rgba(77,158,246,0.1);--blue-border:rgba(77,158,246,0.25);--green:#34D399;--green-bg:rgba(52,211,153,0.1);--green-border:rgba(52,211,153,0.22);--amber:#FBBF24;--amber-bg:rgba(251,191,36,0.1);--amber-border:rgba(251,191,36,0.22);--red:#F87171;--red-bg:rgba(248,113,113,0.1);--red-border:rgba(248,113,113,0.22);--purple:#A78BFA;--purple-bg:rgba(167,139,250,0.1);--purple-border:rgba(167,139,250,0.25);--topbar-bg:rgba(15,17,23,0.97);--font-body:"Inter",-apple-system,sans-serif;--radius-lg:12px;--radius-md:10px;}
+[data-theme="light"]{--bg:#F8F9FB;--bg-2:#FFFFFF;--bg-3:#F1F3F7;--bg-4:#E8ECF2;--border:rgba(0,0,0,0.08);--border-2:rgba(0,0,0,0.15);--text:#0F1923;--text-2:#4A5568;--text-3:#94A3B8;--blue:#1B6FE8;--blue-bg:rgba(27,111,232,0.08);--blue-border:rgba(27,111,232,0.2);--green:#0E9F6E;--green-bg:rgba(14,159,110,0.08);--green-border:rgba(14,159,110,0.2);--amber:#D97706;--amber-bg:rgba(217,119,6,0.08);--amber-border:rgba(217,119,6,0.2);--red:#DC2626;--red-bg:rgba(220,38,38,0.08);--red-border:rgba(220,38,38,0.2);--purple:#7C3AED;--purple-bg:rgba(124,58,237,0.08);--purple-border:rgba(124,58,237,0.2);--topbar-bg:rgba(248,249,251,0.95);}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+.topbar{position:sticky;top:0;z-index:100;background:var(--topbar-bg);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);height:54px;display:flex;align-items:center;padding:0 14px;gap:10px}
+.back-btn{padding:6px 12px;border-radius:6px;border:1px solid var(--border-2);background:transparent;color:var(--text-2);font-size:12px;cursor:pointer;font-family:var(--font-body)}
+.tb-title{font-size:14px;font-weight:600;flex:1;text-align:center}
+.theme-btn{width:32px;height:32px;border-radius:50%;border:1px solid var(--border-2);background:transparent;cursor:pointer;font-size:14px}
+.content{padding:14px 14px 90px}
+.card{background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px;margin-bottom:12px}
+.card-title{font-size:13px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+
+.risk-card{border-radius:var(--radius-lg);padding:14px;margin-bottom:10px;cursor:pointer;transition:all .15s;border:1px solid}
+.risk-card:hover{transform:translateY(-1px)}
+.risk-card.critical{background:rgba(248,113,113,0.08);border-color:var(--red-border)}
+.risk-card.high{background:rgba(251,191,36,0.08);border-color:var(--amber-border)}
+.risk-card.medium{background:rgba(77,158,246,0.08);border-color:var(--blue-border)}
+.risk-card.low{background:var(--bg-2);border-color:var(--border)}
+
+.risk-header{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.risk-score-badge{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;flex-shrink:0;border:2px solid}
+.risk-score-badge.critical{background:var(--red-bg);color:var(--red);border-color:var(--red-border)}
+.risk-score-badge.high{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-border)}
+.risk-score-badge.medium{background:var(--blue-bg);color:var(--blue);border-color:var(--blue-border)}
+.risk-score-badge.low{background:var(--green-bg);color:var(--green);border-color:var(--green-border)}
+
+.risk-name{font-size:13px;font-weight:700}
+.risk-sub{font-size:11px;color:var(--text-2);margin-top:1px}
+.risk-factors{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.risk-factor{font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;border:1px solid}
+.risk-factor.red{background:var(--red-bg);color:var(--red);border-color:var(--red-border)}
+.risk-factor.amber{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-border)}
+.risk-factor.blue{background:var(--blue-bg);color:var(--blue);border-color:var(--blue-border)}
+.risk-actions{display:flex;gap:6px;margin-top:10px}
+.risk-btn{flex:1;padding:7px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border-2);background:transparent;color:var(--text-2);font-family:var(--font-body);text-align:center}
+.risk-btn.primary{background:var(--blue-bg);border-color:var(--blue-border);color:var(--blue)}
+
+.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+.summary-cell{background:var(--bg-3);border:1px solid var(--border);border-radius:var(--radius-md);padding:10px;text-align:center}
+.summary-num{font-size:24px;font-weight:800}
+.summary-label{font-size:10px;color:var(--text-2);margin-top:2px}
+
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.bar-label{font-size:11px;color:var(--text-2);width:70px;flex-shrink:0;text-align:right}
+.bar-track{flex:1;height:6px;background:var(--bg-4);border-radius:3px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px;transition:width .5s}
+.bar-value{font-size:11px;font-weight:600;width:24px;text-align:right}
+
+.btn-p{width:100%;padding:12px;border-radius:var(--radius-md);background:var(--blue);border:none;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font-body)}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--bg-2);border:1px solid var(--border-2);color:var(--text);padding:9px 18px;border-radius:20px;font-size:12px;z-index:999;white-space:nowrap;pointer-events:none}
+.empty-state{text-align:center;padding:50px 20px;color:var(--text-3)}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <button class="back-btn" onclick="window.location.href='parcours_sante_ai.html'">&#8249; Accueil</button>
+  <div class="tb-title">Score de risque</div>
+  <button class="theme-btn" onclick="toggleTheme()">&#127763;</button>
+</div>
+<div class="content" id="mainContent"></div>
+<script>
+var getDossiers = function(){return JSON.parse(localStorage.getItem("mediasante_dossiers")||"[]");};
+
+window.addEventListener("load", function(){render();});
+
+// ═══ ALGORITHME SCORE DE RISQUE ═══
+// Chaque facteur a un poids. Score max = 100.
+var FACTEURS = [
+  {id:"sans_contact_14",label:"Sans contact +14j",poids:20,color:"red",
+   test:function(d,txs,now){
+     var last = txs[0];
+     var jours = last ? Math.floor((now-new Date(last.date))/86400000) : Math.floor((now-new Date(d.date))/86400000);
+     return jours > 14;
+   }
+  },
+  {id:"sans_contact_7",label:"Sans contact +7j",poids:10,color:"amber",
+   test:function(d,txs,now){
+     var last = txs[0];
+     var jours = last ? Math.floor((now-new Date(last.date))/86400000) : Math.floor((now-new Date(d.date))/86400000);
+     return jours > 7 && jours <= 14;
+   }
+  },
+  {id:"droits_expires",label:"Droits expires",poids:20,color:"red",
+   test:function(d){return (d.droits||[]).some(function(dr){return dr.statut==="expire";});}
+  },
+  {id:"droits_expiration",label:"Droits expirent bientot",poids:10,color:"amber",
+   test:function(d){
+     var in30 = new Date(Date.now()+30*86400000).toISOString().split("T")[0];
+     var today = new Date().toISOString().split("T")[0];
+     return (d.droits||[]).some(function(dr){return dr.fin && dr.fin <= in30 && dr.fin >= today;});
+   }
+  },
+  {id:"gir_eleve",label:"GIR 1-2 (haute dependance)",poids:15,color:"red",
+   test:function(d){return d.evaluation && d.evaluation.gir <= 2;}
+  },
+  {id:"sans_evaluation",label:"Sans evaluation GIR",poids:10,color:"amber",
+   test:function(d){return !d.evaluation;}
+  },
+  {id:"isolement",label:"Isolement social",poids:15,color:"red",
+   test:function(d){return d.data&&d.data.alerts&&d.data.alerts.isolement;}
+  },
+  {id:"alerte_sante",label:"Alerte medicale active",poids:15,color:"red",
+   test:function(d){return d.data&&d.data.alerts&&(d.data.alerts.sante||d.data.alerts.urgent);}
+  },
+  {id:"sans_ppcs",label:"Pas de PPCS valide",poids:8,color:"amber",
+   test:function(d){return !d.ppcs_valide;}
+  },
+  {id:"sans_cercle",label:"Cercle de soin incomplet",poids:8,color:"amber",
+   test:function(d){return !d.cercle_soin || d.cercle_soin.length < 2;}
+  },
+  {id:"txs_negatives",label:"Transmissions alarmantes",poids:12,color:"amber",
+   test:function(d,txs){
+     var mots = ["urgent","chute","confusion","danger","deterioration","alerte","hospitalise","urgences","refus","abandonne"];
+     return txs.slice(0,5).some(function(t){
+       var text = ((t.title||"")+" "+(t.content||"")).toLowerCase();
+       return mots.some(function(m){return text.includes(m);});
+     });
+   }
+  },
+  {id:"frequence_baisse",label:"Frequence de contact en baisse",poids:8,color:"amber",
+   test:function(d,txs,now){
+     if(txs.length < 4) return false;
+     var recent = txs.slice(0,2).map(function(t){return new Date(t.date).getTime();});
+     var ancien = txs.slice(2,4).map(function(t){return new Date(t.date).getTime();});
+     var intervRecent = recent[0] - recent[1];
+     var intervAncien = ancien[0] - ancien[1];
+     return intervRecent > intervAncien * 2;
+   }
+  },
+];
+
+function calcRisque(d){
+  var txs = JSON.parse(localStorage.getItem("transmissions_"+d.id)||"[]");
+  var now = Date.now();
+  var score = 0;
+  var facteurs_actifs = [];
+
+  FACTEURS.forEach(function(f){
+    try {
+      if(f.test(d, txs, now)){
+        score += f.poids;
+        facteurs_actifs.push({label:f.label, color:f.color, poids:f.poids});
+      }
+    } catch(e){}
+  });
+
+  score = Math.min(score, 100);
+
+  var level, label;
+  if(score >= 50){ level="critical"; label="Critique"; }
+  else if(score >= 30){ level="high"; label="Eleve"; }
+  else if(score >= 15){ level="medium"; label="Moyen"; }
+  else { level="low"; label="Faible"; }
+
+  return {score:score, level:level, label:label, facteurs:facteurs_actifs};
+}
+
+function render(){
+  var el = document.getElementById("mainContent");
+  el.innerHTML = "";
+  var dossiers = getDossiers().filter(function(d){return (d.statut_manuel||"actif") !== "archive";});
+
+  if(!dossiers.length){
+    mkEl("div",{cls:"empty-state",html:"<div style='font-size:36px;margin-bottom:10px'>&#128202;</div><div style='font-size:13px'>Aucun dossier actif</div>"},el);
+    return;
+  }
+
+  // Calculer tous les scores
+  var scored = dossiers.map(function(d){
+    var p = d.data&&d.data.patient||{};
+    var name = [p.prenom,p.nom].filter(Boolean).join(" ")||d.id;
+    var r = calcRisque(d);
+    return Object.assign({}, r, {id:d.id, name:name, age:p.age, gir:d.evaluation&&d.evaluation.gir});
+  });
+
+  // Trier par score décroissant
+  scored.sort(function(a,b){return b.score-a.score;});
+
+  // Résumé
+  var crit = scored.filter(function(x){return x.level==="critical";}).length;
+  var high = scored.filter(function(x){return x.level==="high";}).length;
+  var med = scored.filter(function(x){return x.level==="medium";}).length;
+  var low = scored.filter(function(x){return x.level==="low";}).length;
+
+  var sg = mkEl("div",{cls:"summary-grid"},el);
+  [{n:crit,l:"Critiques",c:"var(--red)"},{n:high,l:"Eleves",c:"var(--amber)"},{n:med,l:"Moyens",c:"var(--blue)"},{n:low,l:"Faibles",c:"var(--green)"}].forEach(function(s){
+    var sc = mkEl("div",{cls:"summary-cell"},sg);
+    mkEl("div",{css:"font-size:24px;font-weight:800;color:"+s.c,text:String(s.n)},sc);
+    mkEl("div",{css:"font-size:10px;color:var(--text-2);margin-top:2px",text:s.l},sc);
+  });
+
+  // Info méthodologie
+  var info = mkEl("div",{css:"padding:8px 12px;background:var(--bg-2);border:1px solid var(--border);border-radius:8px;font-size:11px;color:var(--text-2);line-height:1.5;margin-bottom:14px"},el);
+  info.textContent = "Score calcule sur 12 facteurs : absence de contact, droits, GIR, isolement, alertes medicales, transmissions. Mis a jour en temps reel. Usage indicatif uniquement.";
+
+  // Cartes patients
+  scored.forEach(function(s){
+    var card = mkEl("div",{cls:"risk-card "+s.level},el);
+
+    var header = mkEl("div",{cls:"risk-header"},card);
+    var badge = mkEl("div",{cls:"risk-score-badge "+s.level,text:String(s.score)},header);
+    var info2 = mkEl("div",{css:"flex:1"},header);
+    mkEl("div",{cls:"risk-name",text:s.name},info2);
+    mkEl("div",{cls:"risk-sub",text:(s.age?s.age+" ans · ":"")+(s.gir?"GIR "+s.gir+" · ":"")+s.label+" ("+s.score+"/100)"},info2);
+    var chevron = mkEl("div",{css:"color:var(--text-3);font-size:18px",text:"›"},header);
+
+    // Facteurs
+    if(s.facteurs.length > 0){
+      var ff = mkEl("div",{cls:"risk-factors"},card);
+      s.facteurs.slice(0,4).forEach(function(f){
+        mkEl("span",{cls:"risk-factor "+f.color,text:f.label},ff);
+      });
+      if(s.facteurs.length > 4){
+        mkEl("span",{cls:"risk-factor blue",text:"+"+(s.facteurs.length-4)+" autres"},ff);
+      }
+    } else {
+      mkEl("div",{css:"font-size:11px;color:var(--green);margin-top:4px",text:"Aucun facteur de risque detecte"},card);
+    }
+
+    // Actions rapides pour les niveaux critiques/hauts
+    if(s.level === "critical" || s.level === "high"){
+      var actions = mkEl("div",{cls:"risk-actions"},card);
+      var btnFiche = mkEl("div",{cls:"risk-btn primary",text:"Ouvrir le dossier"},actions);
+      btnFiche.onclick = (function(id){return function(e){
+        e.stopPropagation();
+        localStorage.setItem("fiche_patient_id",id);
+        window.location.href="mediasante_fiche_patient.html";
+      };})(s.id);
+
+      var btnTx = mkEl("div",{cls:"risk-btn",text:"Transmettre"},actions);
+      btnTx.onclick = (function(id){return function(e){
+        e.stopPropagation();
+        localStorage.setItem("fiche_patient_id",id);
+        window.location.href="mediasante_transmissions.html";
+      };})(s.id);
+    }
+
+    // Clic global → ouvrir fiche
+    card.onclick = (function(id){return function(){
+      localStorage.setItem("fiche_patient_id",id);
+      window.location.href="mediasante_fiche_patient.html";
+    };})(s.id);
+  });
+
+  // Explication des facteurs
+  var legendCard = mkEl("div",{cls:"card"},el);
+  mkEl("div",{cls:"card-title",text:"Comment le score est calcule"},legendCard);
+  FACTEURS.forEach(function(f){
+    var row = mkEl("div",{cls:"bar-row"},legendCard);
+    mkEl("div",{cls:"bar-label",text:"+"+f.poids},row);
+    var track = mkEl("div",{cls:"bar-track"},row);
+    var fill = mkEl("div",{cls:"bar-fill",css:"width:"+f.poids+"%;"+(f.color==="red"?"background:var(--red)":f.color==="amber"?"background:var(--amber)":"background:var(--blue)")},track);
+    mkEl("div",{css:"font-size:11px;color:var(--text-2);flex:1;margin-left:4px",text:f.label},row);
+  });
+}
+
+function mkEl(tag,props,parent){
+  var el=document.createElement(tag);
+  Object.keys(props||{}).forEach(function(k){
+    if(k==="text") el.textContent=props[k];
+    else if(k==="html") el.innerHTML=props[k];
+    else if(k==="css") el.style.cssText=props[k];
+    else if(k==="cls") el.className=props[k];
+    else el[k]=props[k];
+  });
+  if(parent) parent.appendChild(el);
+  return el;
+}
+
+function toggleTheme(){
+  var c=document.documentElement.getAttribute("data-theme");
+  document.documentElement.setAttribute("data-theme",c==="dark"?"light":"dark");
+  localStorage.setItem("ps_theme",c==="dark"?"light":"dark");
+}
+
+function showToast(msg){
+  var t=document.createElement("div");t.className="toast";t.textContent=msg;
+  document.body.appendChild(t);setTimeout(function(){t.remove();},2400);
+}
+</script>
+<script>
+(function(){
+  var dossiers=JSON.parse(localStorage.getItem("mediasante_dossiers")||"[]");
+  if(!dossiers.some(function(d){return d.id==="DEMO-0001";})) return;
+  var bar=document.createElement("div");
+  bar.style.cssText="position:fixed;bottom:0;left:0;right:0;z-index:9999;background:rgba(245,166,35,0.95);padding:8px 16px;display:flex;align-items:center;gap:10px;font-size:12px;font-weight:600;color:#92400e;border-top:1px solid rgba(245,166,35,0.5)";
+  var s1=document.createElement("span");s1.textContent="Mode demo";bar.appendChild(s1);
+  var s2=document.createElement("span");s2.style.flex="1";s2.textContent="Donnees fictives";bar.appendChild(s2);
+  var qBtn=document.createElement("button");qBtn.textContent="Quitter";qBtn.style.cssText="padding:5px 12px;border-radius:6px;background:#92400e;border:none;color:#fff;font-size:11px;font-weight:700;cursor:pointer";qBtn.onclick=function(){window.quitterDemo();};bar.appendChild(qBtn);
+  document.body.appendChild(bar);document.body.style.paddingBottom="50px";
+  window.quitterDemo=function(){
+    var d=JSON.parse(localStorage.getItem("mediasante_dossiers")||"[]").filter(function(x){return x.id!=="DEMO-0001";});
+    localStorage.setItem("mediasante_dossiers",JSON.stringify(d));
+    localStorage.removeItem("transmissions_DEMO-0001");
+    if(localStorage.getItem("fiche_patient_id")==="DEMO-0001") localStorage.removeItem("fiche_patient_id");
+    window.location.href="parcours_sante_ai.html";
+  };
+})();
+</script>
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('./sw.js').then(function(reg){
+      console.log('SW enregistre:', reg.scope);
+    }).catch(function(err){
+      console.log('SW erreur:', err);
+    });
+  });
+}
+</script>
+</body>
+</html>

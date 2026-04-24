@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#4D9EF6">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ParcourSante AI">
 <script>(function(){var t=localStorage.getItem("ps_theme")||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");document.documentElement.setAttribute("data-theme",t);})();</script>
 <meta charset="UTF-8">
 <link rel="stylesheet" href="ps_design.css">
@@ -428,6 +433,9 @@ const MODULES = [
   {id:'agenda',   name:'Agenda & Coordination',desc:'RDV · Relances · Volet médical · Multi-structures', icon:'📅', color:'var(--blue)', bg:'var(--blue-bg)', file:'mediasante_agenda.html', badge:'NEW', featured:true},
   {id:'dossiers', name:'Mes Dossiers',           desc:'Fiches patients · Cercle de soin · Documents', icon:'👤', color:'var(--purple)', bg:'var(--purple-bg)', file:'mediasante_fiche_patient.html', badge:null, featured:false},
   {id:'carte_patients', name:'Carte Patients', desc:'Visualiser · Filtrer urgences · Optimiser tournees', icon:'🗺️', color:'var(--teal)', bg:'var(--teal-bg)', file:'mediasante_carte_patients.html', badge:'NEW', featured:true},
+  {id:'dictee', name:'Dictee vocale', desc:'Parlez — l IA structure la transmission automatiquement', icon:'🎙', color:'var(--red)', bg:'var(--red-bg)', file:'mediasante_dictee.html', badge:'NEW'},
+  {id:'risque', name:'Score de risque', desc:'Detection precoce des ruptures de parcours', icon:'📊', color:'var(--purple)', bg:'var(--purple-bg)', file:'mediasante_risque.html', badge:'NEW'},
+  {id:'bilan', name:'Bilan d activite', desc:'Stats mensuelles · Alertes · Synthese IA · Export', icon:'📊', color:'var(--teal)', bg:'var(--teal-bg)', file:'mediasante_bilan.html'},
   {id:'transport', name:'Transport & Ambulance', desc:'Bon de transport · Transporteurs 93 · Remboursement CPAM', icon:'🚑', color:'var(--green)', bg:'var(--green-bg)', file:'mediasante_transport.html', badge:'NEW', featured:true},
   {id:'protection_juridique', name:'Protection Juridique', desc:'Evaluation · Tutelle · Curatelle · Suivi MJPM', icon:'⚖️', color:'var(--purple)', bg:'var(--purple-bg)', file:'mediasante_protection_juridique.html', badge:'NEW', featured:true},
   {id:'dac_france', name:'DAC France & CERFA', desc:'Annuaire DAC IDF + metropoles · CERFA interactifs · Recherche IA nationale', icon:'🗺️', color:'var(--teal)', bg:'var(--teal-bg)', file:'mediasante_dac_france.html', badge:'NEW', featured:true},
@@ -499,6 +507,52 @@ function showHome() {
   closeFab();
   renderHome();
   if(getDossiers().length > 0) setTimeout(showAlertesJour, 1200);
+  // Prompt installation PWA (une seule fois)
+  setTimeout(checkPWAInstall, 3000);
+}
+
+var deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', function(e){
+  e.preventDefault();
+  deferredPrompt = e;
+});
+
+function checkPWAInstall(){
+  if(localStorage.getItem('pwa_install_dismissed')) return;
+  if(window.matchMedia('(display-mode: standalone)').matches) return; // déjà installée
+  if(!deferredPrompt && !/iphone|ipad|ipod/i.test(navigator.userAgent)) return;
+  
+  var banner = document.getElementById('installBanner');
+  if(banner) return;
+  
+  var b = document.createElement('div');
+  b.id = 'installBanner';
+  b.style.cssText = 'position:fixed;bottom:70px;left:12px;right:12px;background:var(--bg-2);border:1px solid var(--blue-border);border-radius:14px;padding:12px 14px;z-index:200;display:flex;align-items:center;gap:10px;box-shadow:0 4px 20px rgba(0,0,0,.3)';
+  b.innerHTML = '<span style="font-size:24px">📱</span><div style="flex:1"><div style="font-size:13px;font-weight:700">Installer ParcourSante AI</div><div style="font-size:11px;color:var(--text-2)">Accès rapide depuis l écran d accueil</div></div>';
+  
+  var btnInstall = document.createElement('button');
+  btnInstall.style.cssText = 'padding:6px 14px;border-radius:8px;background:var(--blue);border:none;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font-body)';
+  btnInstall.textContent = 'Installer';
+  btnInstall.onclick = function(){
+    if(deferredPrompt){
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(function(){deferredPrompt=null;});
+    } else {
+      // iOS : afficher instructions
+      showToast('Sur Safari : Partager → Sur l écran d accueil');
+    }
+    b.remove();
+    localStorage.setItem('pwa_install_dismissed','1');
+  };
+  
+  var btnDismiss = document.createElement('button');
+  btnDismiss.style.cssText = 'padding:6px 10px;border-radius:8px;border:1px solid var(--border-2);background:transparent;color:var(--text-3);font-size:11px;cursor:pointer;font-family:var(--font-body)';
+  btnDismiss.textContent = '✕';
+  btnDismiss.onclick = function(){b.remove();localStorage.setItem('pwa_install_dismissed','1');};
+  
+  b.appendChild(btnInstall);
+  b.appendChild(btnDismiss);
+  document.body.appendChild(b);
 }
 
 function goHome() {
@@ -511,6 +565,10 @@ function openModule(id) {
   if (!mod) return;
   // Module dossiers : afficher la liste avant d'ouvrir
   if(id === 'dossiers') { showDossiersList(); return; }
+  if(id === 'questionnaire') { window.location.href = 'mediasante_questionnaire.html'; return; }
+  if(id === 'dictee') { window.location.href = 'mediasante_dictee.html'; return; }
+  if(id === 'risque') { window.location.href = 'mediasante_risque.html'; return; }
+  if(id === 'bilan') { window.location.href = 'mediasante_bilan.html'; return; }
   if(id === 'transport') { window.location.href = 'mediasante_transport.html'; return; }
   if(id === 'protection_juridique') { window.location.href = 'mediasante_protection_juridique.html'; return; }
   if(id === 'dac_france') { window.location.href = 'mediasante_dac_france.html'; return; }
@@ -679,6 +737,17 @@ function renderHome() {
   renderNextAction();  // Guide l'utilisateur vers la prochaine action
   renderModulesGrid();
   renderRecentActivity();
+  // Bouton installation PWA (si disponible)
+  var existing = document.getElementById('installPwaBtn');
+  if(!existing){
+    var installBtn = document.createElement('div');
+    installBtn.id = 'installPwaBtn';
+    installBtn.style.cssText = 'display:none;margin:0 16px 12px;padding:12px 16px;background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:12px;cursor:pointer;align-items:center;gap:12px';
+    installBtn.onclick = installerApp;
+    installBtn.innerHTML = '<span style="font-size:24px">📲</span><div><div style="font-size:13px;font-weight:700;color:var(--blue)">Installer sur l ecran d accueil</div><div style="font-size:11px;color:var(--text-2)">Accedez a ParcourSante AI sans navigateur</div></div>';
+    var homeContent = document.querySelector('.home-content');
+    if(homeContent) homeContent.insertBefore(installBtn, homeContent.firstChild);
+  }
   checkAlerts();
 }
 
@@ -805,9 +874,19 @@ function renderNextAction() {
   if(!dossiers.length) {
     showBanner('purple',
       '👋 Par où commencer ?',
-      'Créez votre premier dossier patient. Le formulaire FAMO vous guide étape par étape — 5 minutes suffisent.',
+      'Creez votre premier dossier patient via FAMO — ou explorez la demo guidee pour decouvrir l outil.',
       () => openModule('famo')
     );
+    // Afficher aussi le bouton démo
+    const urgentBanner = document.getElementById('urgentBanner');
+    if(urgentBanner && !document.getElementById('demoBtnHome')){
+      const demoBtn = document.createElement('div');
+      demoBtn.id = 'demoBtnHome';
+      demoBtn.style.cssText = 'margin:0 16px 12px;padding:12px 16px;background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.25);border-radius:12px;cursor:pointer;display:flex;align-items:center;gap:12px';
+      demoBtn.onclick = lancerDemoGuidee;
+      demoBtn.innerHTML = '<span style="font-size:24px">🎬</span><div><div style="font-size:13px;font-weight:700;color:var(--amber)">Démo guidée</div><div style="font-size:11px;color:var(--text-2)">Parcourez un cas patient fictif — M. Jean-Pierre MBEKI, 78 ans</div></div><span style="color:var(--amber);font-size:18px">→</span>';
+      urgentBanner.parentNode.insertBefore(demoBtn, urgentBanner.nextSibling);
+    }
     return;
   }
 
@@ -1336,6 +1415,233 @@ function toggleTheme(){
   var next = current === "dark" ? "light" : "dark";
   document.documentElement.setAttribute("data-theme", next);
   localStorage.setItem("ps_theme", next);
+}
+
+// ═══ DÉMO GUIDÉE ═══
+function lancerDemoGuidee(){
+  // Créer le dossier MBEKI complet
+  const demoId = 'DEMO-0001';
+  const demoDate = new Date().toISOString();
+  
+  const demoDossier = {
+    id: demoId,
+    date: demoDate,
+    statut_manuel: 'actif',
+    score: 4,
+    data: {
+      demandeur: {nom:'Dr Martin Sophie',structure:'Cabinet médical Épinay',tel:'01 48 26 XX XX',relation:'Médecin traitant'},
+      patient: {prenom:'Jean-Pierre',nom:'MBEKI',age:'78',naissance:'15/03/1946',adresse:'42 avenue Jean Jaurès, 93800 Épinay-sur-Seine',tel:'01 48 XX XX XX',couverture:'Sécu + Mutuelle Harmonie',langue:'Français',secu:'1 46 03 93 XXX XXX XX'},
+      demande: 'Coordination soins suite fracture col du fémur opérée. Retour domicile prévu. Isolement social important, veuf, enfants éloignés.',
+      alerts: {sante:true,isolement:true,droits:false,administratif:false},
+      obs: 'Patient coopératif mais anxieux. Domicile au 3e étage sans ascenseur → problème majeur pour le retour. Lit médicalisé à prévoir.'
+    },
+    motifs: ['sante','autonomie','isolement'],
+    evaluation: {gir:3, iadl:4, upgo:18},
+    ppcs: {
+      date: demoDate,
+      content: 'PPCS — Jean-Pierre MBEKI — GIR 3\n\n1. PROBLEMES IDENTIFIES\n- Perte autonomie suite chirurgie hanche\n- Isolement social (veuf, famille eloignee)\n- Risque de chute\n\n2. OBJECTIFS\n- Maintien domicile securise\n- Retour autonomie progressive\n\n3. PLAN D ACTIONS\n- SSIAD soins 2x/j\n- Kine domicile 3x/sem\n- SAAD aide menagere 2h/sem\n- Portage repas 5j/7\n- Dossier APA en cours\n- Teleassistance Presence Verte',
+      version: 1
+    },
+    ppcs_valide: false,
+    ppcs_versions: [],
+    droits: [
+      {type:'APA en cours',statut:'en_cours',debut:'',fin:''},
+      {type:'Sécu 100% ALD',statut:'actif',debut:'2020-01-01',fin:'2025-12-31'}
+    ],
+    cercle_soin: [
+      {role:'Médecin traitant',nom:'Dr Martin Sophie',tel:'01 48 26 XX XX',email:''},
+      {role:'Kiné',nom:'Dubois Pierre',tel:'06 XX XX XX XX',email:''},
+      {role:'Fils',nom:'MBEKI Christophe',tel:'06 XX XX XX XX',email:''}
+    ],
+    documents: []
+  };
+
+  // Sauvegarder le dossier démo
+  const existing = getDossiers().filter(d => d.id !== demoId);
+  saveDossiers([demoDossier, ...existing]);
+  localStorage.setItem('fiche_patient_id', demoId);
+
+  // Sauvegarder des transmissions démo
+  const demoTx = [
+    {id:'tx1',date:demoDate,title:'Retour hospitalisation',type:'info',content:'Patient rentré le 12/04. Chirurgie hanche réussie. SSIAD mis en place dès demain. Kiné 3x/sem.',tags:['sante']},
+    {id:'tx2',date:new Date(Date.now()-86400000*3).toISOString(),title:'Contact famille',type:'social',content:'Appel fils Christophe. Accord pour aide ménagère. Impossible de venir régulièrement (Lyon).',tags:['social']},
+    {id:'tx3',date:new Date(Date.now()-86400000*7).toISOString(),title:'Visite initiale',type:'eval',content:'GIR 3 confirmé. Timed Up and Go : 18 secondes. IADL 4/8. Domicile : escaliers sans ascenseur → adaptation nécessaire.',tags:['evaluation']}
+  ];
+  localStorage.setItem('transmissions_' + demoId, JSON.stringify(demoTx));
+
+  // Supprimer le bouton démo
+  const btn = document.getElementById('demoBtnHome');
+  if(btn) btn.remove();
+
+  // Afficher le walkthrough
+  showDemoWalkthrough();
+}
+
+function showDemoWalkthrough(){
+  const steps = [
+    {
+      icon:'👤',
+      title:'M. Jean-Pierre MBEKI — 78 ans',
+      desc:'Retour a domicile apres fracture col femur. GIR 3, isole social, veuf. Profil typique coordonne au DAC.',
+      btn:'Voir la fiche patient',
+      action: () => { closeDemoWalkthrough(); localStorage.setItem('fiche_patient_id','DEMO-0001'); window.location.href='mediasante_fiche_patient.html'; }
+    },
+    {
+      icon:'📋',
+      title:'Un PPCS est en cours',
+      desc:'Le PPCS a ete redige mais attend validation du medecin. SSIAD, kine, portage de repas planifies.',
+      btn:'Voir le PPCS',
+      action: () => { closeDemoWalkthrough(); localStorage.setItem('fiche_patient_id','DEMO-0001'); window.location.href='mediasante_fiche_patient.html'; }
+    },
+    {
+      icon:'🏥',
+      title:'Orienter vers les bonnes structures',
+      desc:'GIR 3 + isolement : SSIAD, SAAD, teleassistance, accueil de jour. Le filtre par situation vous donne les suggestions.',
+      btn:'Aller dans Orientation',
+      action: () => { closeDemoWalkthrough(); window.location.href='mediasante_orientation.html'; }
+    },
+    {
+      icon:'👥',
+      title:'Préparer le staff de coordination',
+      desc:'Presentez le dossier MBEKI en staff DAC. L outil genere la trame, chronom tre la collegiale, et redige le CR avec l IA.',
+      btn:'Préparer le staff',
+      action: () => { closeDemoWalkthrough(); localStorage.setItem('fiche_patient_id','DEMO-0001'); window.location.href='mediasante_staff_prep.html'; }
+    },
+    {
+      icon:'✉️',
+      title:'Générer les courriers',
+      desc:'Courrier MT, demande APA CD93, signalement AS — 54 modeles pre-remplis avec les donnees du dossier.',
+      btn:'Voir les courriers',
+      action: () => { closeDemoWalkthrough(); window.location.href='mediasante_courriers.html'; }
+    }
+  ];
+
+  let currentStep = 0;
+
+  const overlay = document.createElement('div');
+  overlay.id = 'demoWalkthrough';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:500;display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(8px)';
+
+  function renderStep(){
+    const s = steps[currentStep];
+    overlay.innerHTML = '';
+    const panel = document.createElement('div');
+    panel.style.cssText = 'background:var(--bg-2);border-top:1px solid var(--border);border-radius:24px 24px 0 0;padding:24px 20px 40px;width:100%;max-width:540px';
+
+    // Progress dots
+    const dots = document.createElement('div');
+    dots.style.cssText = 'display:flex;justify-content:center;gap:6px;margin-bottom:20px';
+    steps.forEach((_,i) => {
+      const d = document.createElement('div');
+      d.style.cssText = `width:${i===currentStep?20:6}px;height:6px;border-radius:3px;background:${i===currentStep?'var(--blue)':'var(--border-2)'};transition:all .3s`;
+      dots.appendChild(d);
+    });
+    panel.appendChild(dots);
+
+    // Contenu
+    const icon = document.createElement('div');
+    icon.style.cssText = 'font-size:40px;text-align:center;margin-bottom:12px';
+    icon.textContent = s.icon;
+    panel.appendChild(icon);
+
+    const title = document.createElement('div');
+    title.style.cssText = 'font-size:18px;font-weight:700;text-align:center;margin-bottom:8px;letter-spacing:-.3px';
+    title.textContent = s.title;
+    panel.appendChild(title);
+
+    const desc = document.createElement('div');
+    desc.style.cssText = 'font-size:13px;color:var(--text-2);text-align:center;line-height:1.6;margin-bottom:20px;padding:0 8px';
+    desc.textContent = s.desc;
+    panel.appendChild(desc);
+
+    // Bouton action principal
+    const btnAction = document.createElement('button');
+    btnAction.style.cssText = 'width:100%;padding:14px;border-radius:12px;background:var(--blue);border:none;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font-body);margin-bottom:10px';
+    btnAction.textContent = s.btn + ' →';
+    btnAction.onclick = s.action;
+    panel.appendChild(btnAction);
+
+    // Navigation
+    const nav = document.createElement('div');
+    nav.style.cssText = 'display:flex;gap:8px';
+
+    if(currentStep > 0){
+      const btnPrev = document.createElement('button');
+      btnPrev.style.cssText = 'flex:1;padding:11px;border-radius:10px;border:1px solid var(--border-2);background:transparent;color:var(--text-2);font-size:13px;cursor:pointer;font-family:var(--font-body)';
+      btnPrev.textContent = '← Précédent';
+      btnPrev.onclick = () => { currentStep--; renderStep(); };
+      nav.appendChild(btnPrev);
+    }
+
+    if(currentStep < steps.length - 1){
+      const btnNext = document.createElement('button');
+      btnNext.style.cssText = 'flex:1;padding:11px;border-radius:10px;border:1px solid var(--border-2);background:transparent;color:var(--text-2);font-size:13px;cursor:pointer;font-family:var(--font-body)';
+      btnNext.textContent = 'Étape suivante →';
+      btnNext.onclick = () => { currentStep++; renderStep(); };
+      nav.appendChild(btnNext);
+    }
+
+    const btnSkip = document.createElement('button');
+    btnSkip.style.cssText = 'flex:1;padding:11px;border-radius:10px;border:1px solid var(--border-2);background:transparent;color:var(--text-3);font-size:12px;cursor:pointer;font-family:var(--font-body)';
+    btnSkip.textContent = 'Explorer librement';
+    btnSkip.onclick = closeDemoWalkthrough;
+    nav.appendChild(btnSkip);
+
+    panel.appendChild(nav);
+    overlay.appendChild(panel);
+  }
+
+  renderStep();
+  document.body.appendChild(overlay);
+}
+
+function closeDemoWalkthrough(){
+  const el = document.getElementById('demoWalkthrough');
+  if(el) el.remove();
+  renderHome();
+}
+</script>
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('./sw.js').then(function(reg){
+      console.log('SW enregistre:', reg.scope);
+    }).catch(function(err){
+      console.log('SW erreur:', err);
+    });
+  });
+}
+
+// ═══ PWA INSTALL ═══
+var deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', function(e) {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Afficher le bouton d'installation si pas encore installé
+  var installBtn = document.getElementById('installPwaBtn');
+  if(installBtn) installBtn.style.display = 'flex';
+});
+
+window.addEventListener('appinstalled', function() {
+  deferredPrompt = null;
+  showToast('ParcourSante AI installé sur votre écran d accueil ✓');
+  var installBtn = document.getElementById('installPwaBtn');
+  if(installBtn) installBtn.style.display = 'none';
+});
+
+function installerApp(){
+  if(!deferredPrompt){ 
+    showToast('Utilisez le menu de votre navigateur pour installer l app');
+    return; 
+  }
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(function(result){
+    if(result.outcome === 'accepted'){
+      showToast('Installation en cours...');
+    }
+    deferredPrompt = null;
+  });
 }
 </script>
 </body>

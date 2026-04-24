@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#4D9EF6">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ParcourSante AI">
 <script>(function(){var t=localStorage.getItem("ps_theme")||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");document.documentElement.setAttribute("data-theme",t);})();</script>
 <meta charset="UTF-8">
 <link rel="stylesheet" href="ps_design.css">
@@ -220,6 +225,9 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
 
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:2px}
+
+.situ-tag{display:inline-flex;align-items:center;padding:4px 9px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border-2);background:var(--bg-2);color:var(--text-2);transition:all .15s;user-select:none}
+.situ-tag.active{background:var(--purple-bg);border-color:var(--purple-border);color:var(--purple)}
 </style>
 </head>
 <body>
@@ -252,6 +260,53 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
       <span style="animation:pulse 2s infinite;display:inline-block;width:7px;height:7px;border-radius:50%;background:#fff"></span>
       Orientation IA par situation
     </button>
+  </div>
+
+  <!-- BOUTON SITUATION PATIENT -->
+  <div style="padding:10px 14px 0">
+    <button onclick="toggleSituationPanel()" id="btnSituation" style="width:100%;padding:9px 12px;border-radius:9px;background:var(--purple-bg);border:1px solid var(--purple-border);color:var(--purple);font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font-body);display:flex;align-items:center;gap:8px">
+      <span>🎯</span><span style="flex:1;text-align:left">Filtrer par situation patient</span><span id="situArrow">▼</span>
+    </button>
+    <div id="situationPanel" style="display:none;margin-top:8px;background:var(--bg-3);border:1px solid var(--border);border-radius:9px;padding:12px">
+      <div style="font-size:10px;font-weight:700;color:var(--text-3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px">Profil du patient</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div>
+          <div style="font-size:11px;color:var(--text-2);margin-bottom:4px">Autonomie (GIR)</div>
+          <select id="situGir" onchange="applySituation()" style="width:100%;background:var(--bg-2);border:1px solid var(--border);border-radius:7px;color:var(--text);font-size:12px;padding:7px 9px;outline:none;font-family:var(--font-body)">
+            <option value="">Tous niveaux</option>
+            <option value="1-2">GIR 1-2 (dépendance totale)</option>
+            <option value="3-4">GIR 3-4 (dépendance partielle)</option>
+            <option value="5-6">GIR 5-6 (autonome)</option>
+          </select>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--text-2);margin-bottom:4px">Situation sociale</div>
+          <div style="display:flex;flex-wrap:wrap;gap:5px" id="situSocial">
+            <span class="situ-tag" data-val="isole" onclick="toggleSituTag(this)">Isolé(e)</span>
+            <span class="situ-tag" data-val="sans_droits" onclick="toggleSituTag(this)">Sans droits ouverts</span>
+            <span class="situ-tag" data-val="sans_logement" onclick="toggleSituTag(this)">Hébergement précaire</span>
+            <span class="situ-tag" data-val="famille_aidant" onclick="toggleSituTag(this)">Famille aidante</span>
+            <span class="situ-tag" data-val="migrant" onclick="toggleSituTag(this)">Primo-arrivant</span>
+            <span class="situ-tag" data-val="protection_jur" onclick="toggleSituTag(this)">Sous protection jur.</span>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--text-2);margin-bottom:4px">Besoin principal</div>
+          <div style="display:flex;flex-wrap:wrap;gap:5px" id="situBesoin">
+            <span class="situ-tag" data-val="maintien_domicile" onclick="toggleSituTag(this)">Maintien à domicile</span>
+            <span class="situ-tag" data-val="entree_ehpad" onclick="toggleSituTag(this)">Entrée EHPAD</span>
+            <span class="situ-tag" data-val="soins_infirmiers" onclick="toggleSituTag(this)">Soins infirmiers</span>
+            <span class="situ-tag" data-val="reeducation" onclick="toggleSituTag(this)">Rééducation</span>
+            <span class="situ-tag" data-val="aide_psycho" onclick="toggleSituTag(this)">Soutien psychologique</span>
+            <span class="situ-tag" data-val="aide_droits" onclick="toggleSituTag(this)">Aide aux droits</span>
+            <span class="situ-tag" data-val="aide_financiere" onclick="toggleSituTag(this)">Aide financière</span>
+            <span class="situ-tag" data-val="transport" onclick="toggleSituTag(this)">Transport sanitaire</span>
+          </div>
+        </div>
+        <button onclick="applySituation()" style="width:100%;padding:8px;border-radius:7px;background:var(--purple);border:none;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font-body)">Trouver les structures adaptées</button>
+        <button onclick="resetSituation()" style="width:100%;padding:6px;border-radius:7px;background:transparent;border:1px solid var(--border-2);color:var(--text-2);font-size:11px;cursor:pointer;font-family:var(--font-body)">Réinitialiser</button>
+      </div>
+    </div>
   </div>
 
   <div class="sb-scroll">
@@ -986,6 +1041,114 @@ function toggleTheme(){
     window.location.href="parcours_sante_ai.html";
   };
 })();
+
+// ═══ FILTRE PAR SITUATION ═══
+var activeSituTags = [];
+
+function toggleSituationPanel(){
+  var p = document.getElementById("situationPanel");
+  var arrow = document.getElementById("situArrow");
+  var open = p.style.display !== "none";
+  p.style.display = open ? "none" : "block";
+  arrow.textContent = open ? "▼" : "▲";
+}
+
+function toggleSituTag(el){
+  var val = el.getAttribute("data-val");
+  var idx = activeSituTags.indexOf(val);
+  if(idx > -1){
+    activeSituTags.splice(idx, 1);
+    el.classList.remove("active");
+  } else {
+    activeSituTags.push(val);
+    el.classList.add("active");
+  }
+}
+
+function applySituation(){
+  var gir = document.getElementById("situGir").value;
+  var tags = activeSituTags;
+
+  // Mapping situation → types de structures à privilégier
+  var typeBoost = [];
+  var tagBoost = [];
+
+  // Par GIR
+  if(gir === "1-2"){
+    typeBoost = ["ehpad","ssiad","had"];
+  } else if(gir === "3-4"){
+    typeBoost = ["ssiad","had","accueil_de_jour","ehpad","portage_repas"];
+  } else if(gir === "5-6"){
+    typeBoost = ["portage_repas","aide_domicile","accueil_de_jour"];
+  }
+
+  // Par tags sociaux/besoins
+  tags.forEach(function(t){
+    if(t === "isole") tagBoost = tagBoost.concat(["teleassistance","accueil_de_jour","soutien_psycho"]);
+    if(t === "sans_droits") tagBoost = tagBoost.concat(["cpam","caf","mdph","ccas","permanence_juridique"]);
+    if(t === "sans_logement") tagBoost = tagBoost.concat(["ccas","hebergement","dispositif_social"]);
+    if(t === "migrant") tagBoost = tagBoost.concat(["permanence_juridique","cpam","chu"]);
+    if(t === "protection_jur") tagBoost = tagBoost.concat(["mjpm","permanence_juridique"]);
+    if(t === "maintien_domicile") typeBoost = typeBoost.concat(["ssiad","had","portage_repas","aide_domicile"]);
+    if(t === "entree_ehpad") typeBoost = typeBoost.concat(["ehpad","usld"]);
+    if(t === "soins_infirmiers") typeBoost = typeBoost.concat(["ssiad","had","cabinet_ide"]);
+    if(t === "reeducation") typeBoost = typeBoost.concat(["ssr","kine"]);
+    if(t === "aide_psycho") typeBoost = typeBoost.concat(["cmp","cmpp","soutien_psycho"]);
+    if(t === "aide_droits") typeBoost = typeBoost.concat(["cpam","caf","mdph","ccas"]);
+    if(t === "aide_financiere") typeBoost = typeBoost.concat(["caf","cpam","cd93","ccas"]);
+    if(t === "transport") typeBoost = typeBoost.concat(["vsl","ambulance","taxi"]);
+  });
+
+  // Si aucun filtre actif, tout réinitialiser
+  if(!gir && tags.length === 0){
+    resetSituation();
+    return;
+  }
+
+  // Appliquer les filtres de type
+  var allTypes = Array.from(new Set(typeBoost.concat(tagBoost)));
+  if(allTypes.length > 0){
+    activeFilters.types = allTypes;
+  }
+
+  // Filtrer et trier les structures selon pertinence
+  applyFilters();
+
+  // Montrer un message de contexte
+  var nb = filteredStructures.length;
+  var ctx = document.getElementById("situContextMsg");
+  if(!ctx){
+    ctx = document.createElement("div");
+    ctx.id = "situContextMsg";
+    ctx.style.cssText = "padding:8px 14px;font-size:11px;color:var(--purple);font-weight:600;border-bottom:1px solid var(--border)";
+    var resultsEl = document.getElementById("resultsContainer") || document.querySelector(".results-area");
+    if(resultsEl) resultsEl.parentNode.insertBefore(ctx, resultsEl);
+  }
+  ctx.textContent = nb + " structure(s) adaptée(s) trouvée(s) pour ce profil";
+  ctx.style.display = "block";
+}
+
+function resetSituation(){
+  activeSituTags = [];
+  document.querySelectorAll(".situ-tag").forEach(function(el){el.classList.remove("active");});
+  document.getElementById("situGir").value = "";
+  activeFilters.types = [];
+  activeFilters.zones = [];
+  applyFilters();
+  var ctx = document.getElementById("situContextMsg");
+  if(ctx) ctx.style.display = "none";
+}
+</script>
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('./sw.js').then(function(reg){
+      console.log('SW enregistre:', reg.scope);
+    }).catch(function(err){
+      console.log('SW erreur:', err);
+    });
+  });
+}
 </script>
 </body>
 </html>

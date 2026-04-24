@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#4D9EF6">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ParcourSante AI">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>ParcourSante AI — Bilan d activite</title>
+<script>(function(){var t=localStorage.getItem("ps_theme")||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");document.documentElement.setAttribute("data-theme",t);})();</script>
+<link rel="stylesheet" href="ps_design.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root,[data-theme="dark"]{--bg:#0F1117;--bg-2:#161B26;--bg-3:#1E2535;--bg-4:#252D40;--border:rgba(255,255,255,0.07);--border-2:rgba(255,255,255,0.14);--text:#E8EDF5;--text-2:#7C8FA6;--text-3:#3D4E63;--blue:#4D9EF6;--blue-bg:rgba(77,158,246,0.1);--blue-border:rgba(77,158,246,0.25);--green:#34D399;--green-bg:rgba(52,211,153,0.1);--green-border:rgba(52,211,153,0.22);--amber:#FBBF24;--amber-bg:rgba(251,191,36,0.1);--amber-border:rgba(251,191,36,0.22);--red:#F87171;--red-bg:rgba(248,113,113,0.1);--red-border:rgba(248,113,113,0.22);--purple:#A78BFA;--purple-bg:rgba(167,139,250,0.1);--purple-border:rgba(167,139,250,0.25);--teal:#22D3EE;--teal-bg:rgba(34,211,238,0.1);--teal-border:rgba(34,211,238,0.22);--topbar-bg:rgba(15,17,23,0.97);--font-body:"Inter",-apple-system,sans-serif;--radius-lg:12px;--radius-md:10px;}
+[data-theme="light"]{--bg:#F8F9FB;--bg-2:#FFFFFF;--bg-3:#F1F3F7;--bg-4:#E8ECF2;--border:rgba(0,0,0,0.08);--border-2:rgba(0,0,0,0.15);--text:#0F1923;--text-2:#4A5568;--text-3:#94A3B8;--blue:#1B6FE8;--blue-bg:rgba(27,111,232,0.08);--blue-border:rgba(27,111,232,0.2);--green:#0E9F6E;--green-bg:rgba(14,159,110,0.08);--green-border:rgba(14,159,110,0.2);--amber:#D97706;--amber-bg:rgba(217,119,6,0.08);--amber-border:rgba(217,119,6,0.2);--red:#DC2626;--red-bg:rgba(220,38,38,0.08);--red-border:rgba(220,38,38,0.2);--purple:#7C3AED;--purple-bg:rgba(124,58,237,0.08);--purple-border:rgba(124,58,237,0.2);--teal:#0891B2;--teal-bg:rgba(8,145,178,0.08);--teal-border:rgba(8,145,178,0.2);--topbar-bg:rgba(248,249,251,0.95);}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+.topbar{position:sticky;top:0;z-index:100;background:var(--topbar-bg);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);height:54px;display:flex;align-items:center;padding:0 14px;gap:10px}
+.back-btn{padding:6px 12px;border-radius:6px;border:1px solid var(--border-2);background:transparent;color:var(--text-2);font-size:12px;cursor:pointer;font-family:var(--font-body)}
+.tb-title{font-size:14px;font-weight:600;flex:1;text-align:center}
+.theme-btn{width:32px;height:32px;border-radius:50%;border:1px solid var(--border-2);background:transparent;cursor:pointer;font-size:14px}
+.content{padding:14px 14px 90px}
+.card{background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px;margin-bottom:12px}
+.card-title{font-size:13px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.stat-card{background:var(--bg-3);border:1px solid var(--border);border-radius:var(--radius-md);padding:12px;text-align:center}
+.stat-number{font-size:28px;font-weight:800;letter-spacing:-1px}
+.stat-label{font-size:11px;color:var(--text-2);margin-top:2px}
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.bar-label{font-size:11px;color:var(--text-2);width:80px;flex-shrink:0;text-align:right}
+.bar-track{flex:1;height:8px;background:var(--bg-4);border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;transition:width .5s ease}
+.bar-value{font-size:11px;font-weight:600;width:30px;text-align:right}
+.patient-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px}
+.patient-row:last-child{border-bottom:none}
+.p-name{font-weight:600;flex:1}
+.p-info{color:var(--text-2)}
+.pill{display:inline-flex;align-items:center;font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;border:1px solid}
+.pill.green{background:var(--green-bg);color:var(--green);border-color:var(--green-border)}
+.pill.amber{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-border)}
+.pill.blue{background:var(--blue-bg);color:var(--blue);border-color:var(--blue-border)}
+.pill.red{background:var(--red-bg);color:var(--red);border-color:var(--red-border)}
+.period-btns{display:flex;gap:6px;margin-bottom:14px}
+.period-btn{flex:1;padding:8px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border-2);background:transparent;color:var(--text-2);font-family:var(--font-body);text-align:center}
+.period-btn.active{background:var(--blue-bg);border-color:var(--blue-border);color:var(--blue)}
+.btn-export{width:100%;padding:12px;border-radius:var(--radius-md);background:var(--blue);border:none;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font-body)}
+.btn-ia{width:100%;padding:12px;border-radius:var(--radius-md);background:var(--purple-bg);border:1px solid var(--purple-border);color:var(--purple);font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font-body);margin-top:8px}
+.result-box{background:var(--bg-3);border:1px solid var(--border);border-radius:var(--radius-md);padding:14px;font-size:12px;line-height:1.8;white-space:pre-wrap;margin-top:10px}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--bg-2);border:1px solid var(--border-2);color:var(--text);padding:9px 18px;border-radius:20px;font-size:12px;z-index:999;white-space:nowrap;pointer-events:none}
+.mini-chart{display:flex;align-items:flex-end;gap:4px;height:48px;margin-top:8px}
+.mc-bar{flex:1;background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:3px 3px 0 0;transition:height .4s ease;min-height:4px}
+.mc-labels{display:flex;gap:4px;margin-top:4px}
+.mc-label{flex:1;text-align:center;font-size:9px;color:var(--text-3)}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <button class="back-btn" onclick="window.location.href='parcours_sante_ai.html'">&#8249; Accueil</button>
+  <div class="tb-title">Bilan d activite</div>
+  <button class="theme-btn" onclick="toggleTheme()">&#127763;</button>
+</div>
+<div class="content" id="mainContent"></div>
+<script>
+var getDossiers = function(){return JSON.parse(localStorage.getItem("mediasante_dossiers")||"[]");};
+var getApiKey = function(){return localStorage.getItem("mediasante_api_key")||"";};
+var currentPeriod = "mois";
+
+window.addEventListener("load", function(){render();});
+
+function render(){
+  var el = document.getElementById("mainContent");
+  el.innerHTML = "";
+
+  // Sélecteur période
+  var pd = mkEl("div",{cls:"period-btns"},el);
+  [{v:"semaine",l:"Cette semaine"},{v:"mois",l:"Ce mois"},{v:"trimestre",l:"Ce trimestre"}].forEach(function(p){
+    var btn = mkEl("button",{cls:"period-btn"+(currentPeriod===p.v?" active":""),text:p.l},pd);
+    btn.onclick = (function(val){return function(){currentPeriod=val;render();};})(p.v);
+  });
+
+  var stats = calcStats();
+
+  // Stats principales
+  var sg = mkEl("div",{cls:"stat-grid"},el);
+  [
+    {n:stats.dossiers_actifs,l:"Dossiers actifs",c:"var(--blue)"},
+    {n:stats.admissions,l:"Admissions",c:"var(--green)"},
+    {n:stats.transmissions,l:"Transmissions",c:"var(--amber)"},
+    {n:stats.sans_evaluation,l:"Sans evaluation",c:"var(--red)"},
+  ].forEach(function(s){
+    var sc = mkEl("div",{cls:"stat-card"},sg);
+    mkEl("div",{css:"font-size:28px;font-weight:800;letter-spacing:-1px;color:"+s.c,text:String(s.n)},sc);
+    mkEl("div",{css:"font-size:11px;color:var(--text-2);margin-top:2px",text:s.l},sc);
+  });
+
+  // Graphique activité
+  var chartCard = mkEl("div",{cls:"card"},el);
+  mkEl("div",{cls:"card-title",text:"Activite par semaine"},chartCard);
+  renderMiniChart(stats.par_semaine, chartCard);
+
+  // Répartition par statut
+  var statusCard = mkEl("div",{cls:"card"},el);
+  mkEl("div",{cls:"card-title",text:"Repartition des dossiers"},statusCard);
+  var total = stats.dossiers_actifs + stats.archives + stats.en_cours;
+  [
+    {l:"Actifs",n:stats.dossiers_actifs,c:"var(--green)"},
+    {l:"En cours",n:stats.en_cours,c:"var(--blue)"},
+    {l:"Archivés",n:stats.archives,c:"var(--text-3)"},
+    {l:"Sans evaluation",n:stats.sans_evaluation,c:"var(--amber)"},
+    {l:"Alertes actives",n:stats.alertes,c:"var(--red)"},
+  ].forEach(function(s){
+    if(s.n===0) return;
+    var row = mkEl("div",{cls:"bar-row"},statusCard);
+    mkEl("div",{cls:"bar-label",text:s.l},row);
+    var track = mkEl("div",{cls:"bar-track"},row);
+    var fill = mkEl("div",{cls:"bar-fill",css:"background:"+s.c},track);
+    fill.style.width = Math.round((s.n/Math.max(total,1))*100)+"%";
+    mkEl("div",{cls:"bar-value",text:String(s.n)},row);
+  });
+
+  // GIR répartition
+  var girCard = mkEl("div",{cls:"card"},el);
+  mkEl("div",{cls:"card-title",text:"Repartition GIR"},girCard);
+  var girCounts = stats.gir_repartition;
+  var girTotal = Object.values(girCounts).reduce(function(a,b){return a+b;},0);
+  [1,2,3,4,5,6,"nd"].forEach(function(g){
+    var n = girCounts[g]||0;
+    if(n===0) return;
+    var row = mkEl("div",{cls:"bar-row"},girCard);
+    mkEl("div",{cls:"bar-label",text:g==="nd"?"Non eval.":"GIR "+g},row);
+    var track = mkEl("div",{cls:"bar-track"},row);
+    var fill = mkEl("div",{cls:"bar-fill",css:"background:"+["","var(--red)","var(--red)","var(--amber)","var(--amber)","var(--green)","var(--green)","var(--text-3)"][typeof g==="number"?g:7]},track);
+    fill.style.width = Math.round((n/Math.max(girTotal,1))*100)+"%";
+    mkEl("div",{cls:"bar-value",text:String(n)},row);
+  });
+
+  // Patients sans contact récent
+  if(stats.sans_contact.length > 0){
+    var scCard = mkEl("div",{cls:"card"},el);
+    mkEl("div",{css:"font-size:13px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px;color:var(--amber)",html:"<span>⚠️</span> Patients sans contact (+" + stats.seuil_jours + "j)"},scCard);
+    stats.sans_contact.slice(0,5).forEach(function(p){
+      var row = mkEl("div",{cls:"patient-row"},scCard);
+      mkEl("div",{cls:"p-name",text:p.name},row);
+      mkEl("div",{cls:"p-info",text:p.jours+"j"},row);
+      mkEl("span",{cls:"pill amber",text:"A contacter"},row);
+    });
+  }
+
+  // Droits expirés
+  if(stats.droits_expires.length > 0){
+    var drCard = mkEl("div",{cls:"card"},el);
+    mkEl("div",{css:"font-size:13px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px;color:var(--red)",html:"<span>🔴</span> Droits expires / a renouveler"},drCard);
+    stats.droits_expires.slice(0,5).forEach(function(d){
+      var row = mkEl("div",{cls:"patient-row"},drCard);
+      mkEl("div",{cls:"p-name",text:d.name},row);
+      mkEl("div",{cls:"p-info",text:d.droit},row);
+      mkEl("span",{cls:"pill red",text:"Expire"},row);
+    });
+  }
+
+  // Export et IA
+  var actionsCard = mkEl("div",{cls:"card"},el);
+  mkEl("div",{cls:"card-title",text:"Generer le bilan"},actionsCard);
+
+  var btnExp = mkEl("button",{cls:"btn-export",text:"Copier le bilan texte"},actionsCard);
+  btnExp.onclick = function(){exportBilanTexte(stats);};
+
+  var btnPrint = mkEl("button",{cls:"btn-export",css:"background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);margin-top:8px",text:"Imprimer / PDF"},actionsCard);
+  btnPrint.onclick = function(){imprimerBilan(stats);};
+
+  if(getApiKey().startsWith("sk-")){
+    var btnIA = mkEl("button",{cls:"btn-ia",text:"Synthese IA pour reunion de service"},actionsCard);
+    btnIA.onclick = function(){genSyntheseIA(stats);};
+    mkEl("div",{id:"iaResult"},actionsCard);
+  }
+}
+
+function calcStats(){
+  var dossiers = getDossiers();
+  var now = Date.now();
+  var today = new Date().toISOString().split("T")[0];
+
+  // Période
+  var periodeMs = {semaine:7*86400000, mois:30*86400000, trimestre:91*86400000}[currentPeriod]||30*86400000;
+  var periodeStart = new Date(now - periodeMs).toISOString();
+
+  var stats = {
+    dossiers_actifs:0, admissions:0, transmissions:0, sans_evaluation:0,
+    en_cours:0, archives:0, alertes:0, par_semaine:[0,0,0,0,0,0,0],
+    gir_repartition:{}, sans_contact:[], droits_expires:[], seuil_jours:15
+  };
+
+  dossiers.forEach(function(d){
+    var p = d.data&&d.data.patient||{};
+    var name = [p.prenom,p.nom].filter(Boolean).join(" ")||d.id;
+    var statut = d.statut_manuel||"actif";
+
+    if(statut==="archive"){ stats.archives++; return; }
+    stats.dossiers_actifs++;
+
+    // Admissions dans la période
+    if(d.date >= periodeStart) stats.admissions++;
+
+    // En cours vs actif
+    if(statut==="en_cours") stats.en_cours++;
+
+    // Sans évaluation
+    if(!d.evaluation) stats.sans_evaluation++;
+
+    // GIR
+    var gir = d.evaluation&&d.evaluation.gir;
+    var girKey = gir ? gir : "nd";
+    stats.gir_repartition[girKey] = (stats.gir_repartition[girKey]||0) + 1;
+
+    // Transmissions dans la période
+    var txs = JSON.parse(localStorage.getItem("transmissions_"+d.id)||"[]");
+    var txRecentes = txs.filter(function(t){return t.date>=periodeStart;});
+    stats.transmissions += txRecentes.length;
+
+    // Sans contact
+    var lastTx = txs[0];
+    if(lastTx){
+      var jours = Math.floor((now - new Date(lastTx.date))/86400000);
+      if(jours > stats.seuil_jours) stats.sans_contact.push({name:name,jours:jours,id:d.id});
+    } else {
+      var joursDepuisAdmission = Math.floor((now - new Date(d.date))/86400000);
+      if(joursDepuisAdmission > stats.seuil_jours) stats.sans_contact.push({name:name,jours:joursDepuisAdmission,id:d.id});
+    }
+
+    // Droits expirés
+    (d.droits||[]).forEach(function(dr){
+      if(dr.statut==="expire"||dr.statut==="a_renouveler"){
+        stats.droits_expires.push({name:name,droit:dr.type||"Droit",id:d.id});
+        stats.alertes++;
+      }
+    });
+
+    // Alertes
+    var alerts = d.data&&d.data.alerts||{};
+    if(Object.values(alerts).some(Boolean)) stats.alertes++;
+
+    // Par semaine (7 derniers jours)
+    txs.forEach(function(t){
+      var daysAgo = Math.floor((now - new Date(t.date))/86400000);
+      if(daysAgo < 7) stats.par_semaine[6-daysAgo]++;
+    });
+  });
+
+  stats.sans_contact.sort(function(a,b){return b.jours-a.jours;});
+  return stats;
+}
+
+function renderMiniChart(data, parent){
+  var max = Math.max.apply(null, data.concat([1]));
+  var chart = mkEl("div",{cls:"mini-chart"},parent);
+  var days = ["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"];
+  var today = new Date().getDay();
+  var labels = [];
+  for(var i=6;i>=0;i--){
+    var d = (today - i + 7) % 7;
+    labels.push(days[d]);
+  }
+  data.forEach(function(v,i){
+    var bar = mkEl("div",{cls:"mc-bar"},chart);
+    bar.style.height = Math.round((v/max)*48)+"px";
+    bar.title = labels[i]+": "+v+" transmissions";
+  });
+  var labelsRow = mkEl("div",{cls:"mc-labels"},parent);
+  labels.forEach(function(l){mkEl("div",{cls:"mc-label",text:l},labelsRow);});
+}
+
+function exportBilanTexte(stats){
+  var periode = {semaine:"cette semaine",mois:"ce mois",trimestre:"ce trimestre"}[currentPeriod];
+  var user = JSON.parse(localStorage.getItem("ps_user_profile")||"{}");
+  var lines = [
+    "BILAN D ACTIVITE — "+periode.toUpperCase(),
+    "Coordinateur : "+(user.nom||"A renseigner"),
+    "Structure : "+(user.structure||"A renseigner"),
+    "Genere le "+new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long",year:"numeric"}),
+    "",
+    "=".repeat(40),
+    "CHIFFRES CLES",
+    "=".repeat(40),
+    "Dossiers actifs : "+stats.dossiers_actifs,
+    "Admissions : "+stats.admissions,
+    "Transmissions enregistrees : "+stats.transmissions,
+    "Dossiers sans evaluation : "+stats.sans_evaluation,
+    "Alertes actives : "+stats.alertes,
+    "",
+    "REPARTITION GIR",
+    Object.entries(stats.gir_repartition).map(function(e){return "GIR "+e[0]+" : "+e[1]+" patient(s)";}).join("\n"),
+    "",
+    stats.sans_contact.length > 0 ? "PATIENTS SANS CONTACT (+"+stats.seuil_jours+"j)\n"+stats.sans_contact.map(function(p){return "- "+p.name+" ("+p.jours+"j)";}).join("\n") : "",
+    "",
+    stats.droits_expires.length > 0 ? "DROITS EXPIRES / A RENOUVELER\n"+stats.droits_expires.map(function(d){return "- "+d.name+" : "+d.droit;}).join("\n") : "",
+    "",
+    "=".repeat(40),
+    "Document genere par ParcourSante AI"
+  ];
+  navigator.clipboard.writeText(lines.filter(function(l){return l!==undefined;}).join("\n")).then(function(){
+    showToast("Bilan copie");
+  });
+}
+
+function imprimerBilan(stats){
+  var periode = {semaine:"cette semaine",mois:"ce mois",trimestre:"ce trimestre"}[currentPeriod];
+  var user = JSON.parse(localStorage.getItem("ps_user_profile")||"{}");
+  var girRows = Object.entries(stats.gir_repartition).map(function(e){
+    return "<tr><td>GIR "+e[0]+"</td><td style='text-align:center'>"+e[1]+"</td></tr>";
+  }).join("");
+
+  var html = "<html><head><title>Bilan d activite</title><style>body{font-family:Arial,sans-serif;padding:30px;font-size:13px;line-height:1.7;color:#111}h1{font-size:20px;margin-bottom:4px}h2{font-size:14px;margin:16px 0 8px;border-bottom:2px solid #eee;padding-bottom:4px}table{width:100%;border-collapse:collapse;margin-bottom:12px}td,th{padding:6px 10px;border:1px solid #ddd;font-size:12px}th{background:#f5f5f5}strong{color:#1B6FE8}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.stat-box{padding:12px;background:#f8f8f8;border-radius:8px;text-align:center}.stat-num{font-size:24px;font-weight:800;color:#1B6FE8}.footer{margin-top:24px;font-size:10px;color:#999;border-top:1px solid #eee;padding-top:8px}<\/style><\/head><body>";
+  html += "<h1>Bilan d activite — "+periode+"</h1>";
+  html += "<p style='color:#666;margin-bottom:16px'>"+user.nom+" — "+user.structure+" — "+new Date().toLocaleDateString("fr-FR")+"</p>";
+  html += "<div class='grid'>";
+  [{n:stats.dossiers_actifs,l:"Dossiers actifs"},{n:stats.admissions,l:"Admissions"},{n:stats.transmissions,l:"Transmissions"},{n:stats.alertes,l:"Alertes"}].forEach(function(s){
+    html += "<div class='stat-box'><div class='stat-num'>"+s.n+"</div><div style='font-size:11px;color:#666'>"+s.l+"</div></div>";
+  });
+  html += "</div>";
+  html += "<h2>Repartition GIR</h2><table><tr><th>GIR</th><th>Nb patients</th></tr>"+girRows+"</table>";
+  if(stats.sans_contact.length > 0){
+    html += "<h2>Patients sans contact (+"+stats.seuil_jours+"j)</h2><table><tr><th>Patient</th><th>Jours</th></tr>";
+    stats.sans_contact.forEach(function(p){html += "<tr><td>"+p.name+"</td><td style='text-align:center'>"+p.jours+"j</td></tr>";});
+    html += "</table>";
+  }
+  if(stats.droits_expires.length > 0){
+    html += "<h2>Droits expires / a renouveler</h2><table><tr><th>Patient</th><th>Droit</th></tr>";
+    stats.droits_expires.forEach(function(d){html += "<tr><td>"+d.name+"</td><td>"+d.droit+"</td></tr>";});
+    html += "</table>";
+  }
+  html += "<div class='footer'>ParcourSante AI — Document confidentiel a usage interne<\/div><\/body><\/html>";
+
+  var w = window.open("","_blank");
+  w.document.write(html);
+  w.document.close();
+  setTimeout(function(){w.print();},400);
+}
+
+async function genSyntheseIA(stats){
+  var resEl = document.getElementById("iaResult");
+  if(!resEl) return;
+  var apiKey = getApiKey();
+  if(!apiKey.startsWith("sk-")){resEl.innerHTML="<div class='result-box'>Cle API requise dans le profil.</div>";return;}
+  resEl.innerHTML = "<div class='result-box' style='color:var(--text-3);animation:pulse 1s infinite'>Generation de la synthese...</div>";
+
+  var user = JSON.parse(localStorage.getItem("ps_user_profile")||"{}");
+  var periode = {semaine:"cette semaine",mois:"ce mois",trimestre:"ce trimestre"}[currentPeriod];
+  var girText = Object.entries(stats.gir_repartition).map(function(e){return "GIR "+e[0]+": "+e[1];}).join(", ");
+  var prompt = "Tu es coordinateur de parcours de sante DAC 93. Redige une synthese d activite courte (max 150 mots) pour une reunion de service, en style professionnel. Donnees pour "+periode+" : "+stats.dossiers_actifs+" dossiers actifs, "+stats.admissions+" admissions, "+stats.transmissions+" transmissions, "+stats.alertes+" alertes. GIR : "+girText+". "+stats.sans_contact.length+" patients sans contact depuis +"+stats.seuil_jours+"j. "+stats.droits_expires.length+" droits expires. Coordinateur : "+(user.nom||"Non renseigne")+". Sois factuel, professionnel, mets en valeur les points d attention.";
+
+  try {
+    var resp = await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+      body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:400,messages:[{role:"user",content:prompt}]})
+    });
+    var data = await resp.json();
+    var text = data.content&&data.content[0]&&data.content[0].text||"Erreur";
+    resEl.innerHTML = "<div class='result-box'>"+text+"</div>";
+    var btnCopy = document.createElement("button");
+    btnCopy.className="btn-export";btnCopy.style.marginTop="8px";btnCopy.textContent="Copier la synthese";
+    btnCopy.onclick=function(){navigator.clipboard.writeText(text).then(function(){showToast("Copie");});};
+    resEl.appendChild(btnCopy);
+  } catch(e){
+    resEl.innerHTML = "<div class='result-box'>Erreur API : "+e.message+"</div>";
+  }
+}
+
+function mkEl(tag,props,parent){
+  var el=document.createElement(tag);
+  Object.keys(props||{}).forEach(function(k){
+    if(k==="text") el.textContent=props[k];
+    else if(k==="html") el.innerHTML=props[k];
+    else if(k==="css") el.style.cssText=props[k];
+    else if(k==="cls") el.className=props[k];
+    else el[k]=props[k];
+  });
+  if(parent) parent.appendChild(el);
+  return el;
+}
+
+function toggleTheme(){
+  var c=document.documentElement.getAttribute("data-theme");
+  document.documentElement.setAttribute("data-theme",c==="dark"?"light":"dark");
+  localStorage.setItem("ps_theme",c==="dark"?"light":"dark");
+}
+
+function showToast(msg){
+  var t=document.createElement("div");t.className="toast";t.textContent=msg;
+  document.body.appendChild(t);setTimeout(function(){t.remove();},2400);
+}
+</script>
+<script>
+(function(){
+  var dossiers=JSON.parse(localStorage.getItem("mediasante_dossiers")||"[]");
+  if(!dossiers.some(function(d){return d.id==="DEMO-0001";})) return;
+  var bar=document.createElement("div");
+  bar.style.cssText="position:fixed;bottom:0;left:0;right:0;z-index:9999;background:rgba(245,166,35,0.95);padding:8px 16px;display:flex;align-items:center;gap:10px;font-size:12px;font-weight:600;color:#92400e;border-top:1px solid rgba(245,166,35,0.5)";
+  var s1=document.createElement("span");s1.textContent="Mode demo";bar.appendChild(s1);
+  var s2=document.createElement("span");s2.style.flex="1";s2.textContent="Donnees fictives";bar.appendChild(s2);
+  var qBtn=document.createElement("button");qBtn.textContent="Quitter";qBtn.style.cssText="padding:5px 12px;border-radius:6px;background:#92400e;border:none;color:#fff;font-size:11px;font-weight:700;cursor:pointer";qBtn.onclick=function(){window.quitterDemo();};bar.appendChild(qBtn);
+  document.body.appendChild(bar);
+  document.body.style.paddingBottom="50px";
+  window.quitterDemo=function(){
+    var d=JSON.parse(localStorage.getItem("mediasante_dossiers")||"[]").filter(function(x){return x.id!=="DEMO-0001";});
+    localStorage.setItem("mediasante_dossiers",JSON.stringify(d));
+    localStorage.removeItem("transmissions_DEMO-0001");
+    if(localStorage.getItem("fiche_patient_id")==="DEMO-0001") localStorage.removeItem("fiche_patient_id");
+    window.location.href="parcours_sante_ai.html";
+  };
+})();
+</script>
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('./sw.js').then(function(reg){
+      console.log('SW enregistre:', reg.scope);
+    }).catch(function(err){
+      console.log('SW erreur:', err);
+    });
+  });
+}
+</script>
+</body>
+</html>

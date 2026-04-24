@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>ParcourSante AI — Questionnaire patient</title>
+<script>(function(){var t=localStorage.getItem("ps_theme")||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");document.documentElement.setAttribute("data-theme",t);})();</script>
+<link rel="manifest" href="./manifest.json">
+<link rel="stylesheet" href="ps_design.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root,[data-theme="dark"]{--bg:#0F1117;--bg-2:#161B26;--bg-3:#1E2535;--bg-4:#252D40;--border:rgba(255,255,255,0.07);--border-2:rgba(255,255,255,0.14);--text:#E8EDF5;--text-2:#7C8FA6;--text-3:#3D4E63;--blue:#4D9EF6;--blue-bg:rgba(77,158,246,0.1);--blue-border:rgba(77,158,246,0.25);--green:#34D399;--green-bg:rgba(52,211,153,0.1);--green-border:rgba(52,211,153,0.22);--amber:#FBBF24;--amber-bg:rgba(251,191,36,0.1);--amber-border:rgba(251,191,36,0.22);--red:#F87171;--red-bg:rgba(248,113,113,0.1);--red-border:rgba(248,113,113,0.22);--topbar-bg:rgba(15,17,23,0.97);--font-body:"Inter",-apple-system,sans-serif;--radius-lg:12px;--radius-md:10px;}
+[data-theme="light"]{--bg:#F8F9FB;--bg-2:#FFFFFF;--bg-3:#F1F3F7;--bg-4:#E8ECF2;--border:rgba(0,0,0,0.08);--border-2:rgba(0,0,0,0.15);--text:#0F1923;--text-2:#4A5568;--text-3:#94A3B8;--blue:#1B6FE8;--blue-bg:rgba(27,111,232,0.08);--blue-border:rgba(27,111,232,0.2);--green:#0E9F6E;--green-bg:rgba(14,159,110,0.08);--green-border:rgba(14,159,110,0.2);--amber:#D97706;--amber-bg:rgba(217,119,6,0.08);--amber-border:rgba(217,119,6,0.2);--red:#DC2626;--red-bg:rgba(220,38,38,0.08);--red-border:rgba(220,38,38,0.2);--topbar-bg:rgba(248,249,251,0.95);}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+.header{background:var(--topbar-bg);border-bottom:1px solid var(--border);padding:20px 16px;text-align:center}
+.header-icon{font-size:40px;margin-bottom:8px}
+.header-title{font-size:20px;font-weight:700;letter-spacing:-.3px;margin-bottom:4px}
+.header-sub{font-size:13px;color:var(--text-2);line-height:1.5}
+.content{padding:16px 14px 80px;max-width:540px;margin:0 auto}
+.question-card{background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:12px}
+.q-num{font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.q-text{font-size:15px;font-weight:600;margin-bottom:12px;line-height:1.4}
+.q-sub{font-size:12px;color:var(--text-2);margin-bottom:10px;line-height:1.5}
+.choices{display:flex;flex-direction:column;gap:6px}
+.choice{padding:11px 14px;border-radius:9px;border:1.5px solid var(--border-2);cursor:pointer;font-size:13px;font-weight:500;transition:all .15s;background:var(--bg-3)}
+.choice.selected{background:var(--blue-bg);border-color:var(--blue-border);color:var(--blue);font-weight:700}
+.choice:hover:not(.selected){border-color:var(--border-2);background:var(--bg-4)}
+.slider-container{padding:8px 0}
+.slider{width:100%;height:6px;border-radius:3px;-webkit-appearance:none;background:var(--bg-4);outline:none;cursor:pointer}
+.slider::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--blue);cursor:pointer;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3)}
+.slider-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--text-3);margin-top:6px}
+.slider-val{text-align:center;font-size:18px;font-weight:800;color:var(--blue);margin-bottom:8px}
+.free-text{width:100%;background:var(--bg-3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;padding:10px 12px;outline:none;font-family:var(--font-body);resize:vertical;min-height:70px;line-height:1.6}
+.free-text:focus{border-color:var(--blue-border)}
+.progress-bar{height:3px;background:var(--bg-4);position:sticky;top:0;z-index:10}
+.progress-fill{height:100%;background:var(--blue);transition:width .4s ease}
+.btn-nav{display:flex;gap:8px;position:fixed;bottom:0;left:0;right:0;padding:12px 14px;background:var(--topbar-bg);backdrop-filter:blur(16px);border-top:1px solid var(--border)}
+.btn-p{flex:2;padding:13px;border-radius:var(--radius-md);background:var(--blue);border:none;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font-body)}
+.btn-s{flex:1;padding:13px;border-radius:var(--radius-md);border:1px solid var(--border-2);background:transparent;color:var(--text-2);font-size:13px;cursor:pointer;font-family:var(--font-body)}
+.section-title{font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.08em;padding:8px 0 10px;border-bottom:1px solid var(--border);margin-bottom:12px}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--bg-2);border:1px solid var(--border-2);color:var(--text);padding:9px 18px;border-radius:20px;font-size:12px;z-index:999;white-space:nowrap;pointer-events:none}
+.success-screen{text-align:center;padding:60px 20px}
+.success-icon{font-size:60px;margin-bottom:16px}
+.success-title{font-size:22px;font-weight:700;margin-bottom:8px}
+.success-sub{font-size:14px;color:var(--text-2);line-height:1.6;max-width:320px;margin:0 auto}
+</style>
+</head>
+<body>
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+<div class="header" id="headerZone">
+  <div class="header-icon">💬</div>
+  <div class="header-title" id="headerTitle">Comment allez-vous ?</div>
+  <div class="header-sub" id="headerSub">Ce questionnaire aide votre coordinateur de sante a mieux suivre votre situation. Vos reponses sont confidentielles.</div>
+</div>
+<div class="content" id="mainContent"></div>
+<div class="btn-nav" id="btnNav"></div>
+
+<script>
+var answers = {};
+var currentSection = 0;
+
+// Sections et questions du questionnaire
+var SECTIONS = [
+  {
+    title: "Comment vous sentez-vous ?",
+    sub: "Votre etat de sante cette semaine",
+    questions: [
+      {
+        id: "humeur",
+        text: "Comment decririez-vous votre humeur cette semaine ?",
+        type: "choice",
+        choices: ["Tres bien, je me sens bien", "Plutot bien", "Ca va, sans plus", "Pas tres bien, je suis preoccupe(e)", "Tres mal, j ai besoin d aide"]
+      },
+      {
+        id: "douleur",
+        text: "Avez-vous eu des douleurs cette semaine ?",
+        type: "slider",
+        min: 0, max: 10,
+        label_min: "Aucune douleur",
+        label_max: "Douleur insupportable",
+        default_val: 0
+      },
+      {
+        id: "sommeil",
+        text: "Comment avez-vous dormi ?",
+        type: "choice",
+        choices: ["Tres bien", "Bien", "Moyennement", "Mal", "Tres mal, je dors peu"]
+      },
+      {
+        id: "alimentation",
+        text: "Avez-vous bien mange cette semaine ?",
+        type: "choice",
+        choices: ["Oui, normalement", "Un peu moins qu avant", "Beaucoup moins qu avant", "Je n ai presque pas mange"]
+      }
+    ]
+  },
+  {
+    title: "Votre autonomie",
+    sub: "Ce que vous pouvez faire seul(e) ou avec de l aide",
+    questions: [
+      {
+        id: "autonomie_globale",
+        text: "En ce moment, vous sentez-vous capable de faire les choses du quotidien seul(e) ?",
+        type: "choice",
+        choices: ["Oui, tout seul(e) sans probleme", "La plupart des choses, quelques difficultes", "J ai besoin d aide pour beaucoup de choses", "J ai besoin d aide pour presque tout"]
+      },
+      {
+        id: "difficultes",
+        text: "Y a-t-il quelque chose que vous n arriviez plus a faire seul(e) et qui vous manque ?",
+        type: "free",
+        placeholder: "Ex: sortir faire mes courses, monter les escaliers, me doucher seul(e)..."
+      },
+      {
+        id: "chute",
+        text: "Avez-vous eu des chutes ou des risques de chute cette semaine ?",
+        type: "choice",
+        choices: ["Non, aucune", "J ai failli tomber mais pas de chute", "Oui, une chute", "Oui, plusieurs chutes"]
+      }
+    ]
+  },
+  {
+    title: "Votre entourage",
+    sub: "Votre situation sociale et familiale",
+    questions: [
+      {
+        id: "solitude",
+        text: "Avez-vous eu des moments ou vous vous etes senti(e) seul(e) cette semaine ?",
+        type: "choice",
+        choices: ["Non, j ai eu de la compagnie", "Parfois, mais ca allait", "Souvent, cela me pesait", "Tout le temps, je me sens tres seul(e)"]
+      },
+      {
+        id: "aide_entourage",
+        text: "Avez-vous quelqu un sur qui compter si vous avez besoin d aide rapidement ?",
+        type: "choice",
+        choices: ["Oui, famille proche disponible", "Oui, un voisin ou ami", "Pas vraiment", "Non, personne"]
+      },
+      {
+        id: "message_coordinateur",
+        text: "Y a-t-il quelque chose que vous souhaitez dire ou signaler a votre coordinateur ?",
+        type: "free",
+        placeholder: "Posez vos questions, signalez un probleme, ou laissez un message..."
+      }
+    ]
+  },
+  {
+    title: "Vos soins et rendez-vous",
+    sub: "Le suivi medical et les soins a domicile",
+    questions: [
+      {
+        id: "medicaments",
+        text: "Prenez-vous vos medicaments regulierement ?",
+        type: "choice",
+        choices: ["Oui, tous les jours comme prescrit", "La plupart du temps", "J en oublie souvent", "J ai arrete certains medicaments", "Je n ai pas de medicaments a prendre"]
+      },
+      {
+        id: "rdv_prevu",
+        text: "Avez-vous des rendez-vous medicaux prevus que vous ne pourrez pas honorer ?",
+        type: "choice",
+        choices: ["Non, tout est ok", "Oui, un rendez-vous pose probleme", "Je n ai pas de rendez-vous prevu"]
+      },
+      {
+        id: "satisfaction_soins",
+        text: "Globalement, etes-vous satisfait(e) des soins et du suivi que vous recevez ?",
+        type: "slider",
+        min: 0, max: 10,
+        label_min: "Pas du tout satisfait",
+        label_max: "Tres satisfait",
+        default_val: 7
+      }
+    ]
+  }
+];
+
+// Aplatir toutes les questions
+var ALL_QUESTIONS = [];
+SECTIONS.forEach(function(s, si){
+  s.questions.forEach(function(q){
+    ALL_QUESTIONS.push(Object.assign({}, q, {sectionIndex: si, sectionTitle: s.title}));
+  });
+});
+
+var currentQ = 0;
+var totalQ = ALL_QUESTIONS.length;
+
+window.addEventListener("load", function(){
+  // Lire le code dossier depuis l URL si present
+  var params = new URLSearchParams(window.location.search);
+  var dossierId = params.get("d")||"";
+  var patientName = params.get("n")||"";
+  if(patientName){
+    document.getElementById("headerTitle").textContent = "Bonjour, " + decodeURIComponent(patientName);
+    document.getElementById("headerSub").textContent = "Votre coordinateur de sante vous a envoye ce questionnaire pour mieux suivre votre situation. Merci de repondre en quelques minutes.";
+  }
+  answers._dossierId = dossierId;
+  answers._patientName = patientName;
+  renderQuestion();
+});
+
+function renderQuestion(){
+  var progress = (currentQ / totalQ) * 100;
+  document.getElementById("progressFill").style.width = progress + "%";
+
+  var q = ALL_QUESTIONS[currentQ];
+  var el = document.getElementById("mainContent");
+  el.innerHTML = "";
+
+  // Section title si nouvelle section
+  if(currentQ === 0 || ALL_QUESTIONS[currentQ-1].sectionIndex !== q.sectionIndex){
+    var s = SECTIONS[q.sectionIndex];
+    mkEl("div",{cls:"section-title",text:s.title + (s.sub?" — "+s.sub:"")},el);
+  }
+
+  var card = mkEl("div",{cls:"question-card"},el);
+  mkEl("div",{cls:"q-num",text:"Question "+(currentQ+1)+" sur "+totalQ},card);
+  mkEl("div",{cls:"q-text",text:q.text},card);
+
+  if(q.type === "choice"){
+    var choices = mkEl("div",{cls:"choices"},card);
+    q.choices.forEach(function(c, i){
+      var btn = mkEl("div",{cls:"choice"+(answers[q.id]===c?" selected":""),text:c},choices);
+      btn.onclick = (function(val){return function(){
+        answers[q.id] = val;
+        renderQuestion();
+      };})(c);
+    });
+  } else if(q.type === "slider"){
+    var curVal = answers[q.id] !== undefined ? answers[q.id] : q.default_val;
+    var valDisplay = mkEl("div",{cls:"slider-val",text:String(curVal)},card);
+    var sliderC = mkEl("div",{cls:"slider-container"},card);
+    var slider = mkEl("input",{type:"range",cls:"slider",min:String(q.min),max:String(q.max)},sliderC);
+    slider.value = curVal;
+    slider.oninput = function(){
+      answers[q.id] = parseInt(this.value);
+      valDisplay.textContent = this.value;
+    };
+    var slabels = mkEl("div",{cls:"slider-labels"},card);
+    mkEl("span",{text:q.label_min},slabels);
+    mkEl("span",{text:q.label_max},slabels);
+    if(answers[q.id] === undefined) answers[q.id] = q.default_val;
+  } else if(q.type === "free"){
+    if(q.sub) mkEl("div",{cls:"q-sub",text:q.sub},card);
+    var ta = mkEl("textarea",{cls:"free-text"},card);
+    ta.placeholder = q.placeholder||"Votre reponse...";
+    ta.value = answers[q.id]||"";
+    ta.oninput = (function(id){return function(){answers[id]=this.value;};})(q.id);
+  }
+
+  // Navigation
+  var btnNav = document.getElementById("btnNav");
+  btnNav.innerHTML = "";
+  if(currentQ > 0){
+    var btnPrev = mkEl("button",{cls:"btn-s",text:"Retour"},btnNav);
+    btnPrev.onclick = function(){currentQ--;renderQuestion();};
+  }
+  var btnNext = mkEl("button",{cls:"btn-p"},btnNav);
+  var isLast = currentQ === totalQ - 1;
+  btnNext.textContent = isLast ? "Envoyer mes reponses" : "Suivant →";
+  btnNext.onclick = function(){
+    if(isLast){ soumettre(); }
+    else { currentQ++; renderQuestion(); }
+  };
+  // Scroll haut
+  window.scrollTo(0,0);
+}
+
+function soumettre(){
+  answers._date = new Date().toISOString();
+  answers._completed = true;
+
+  // Générer un résumé textuel
+  var lines = ["QUESTIONNAIRE PATIENT — "+new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})];
+  if(answers._patientName) lines.push("Patient : "+decodeURIComponent(answers._patientName));
+  lines.push("");
+
+  ALL_QUESTIONS.forEach(function(q){
+    var val = answers[q.id];
+    if(val !== undefined && val !== ""){
+      lines.push("• "+q.text);
+      lines.push("  → "+val);
+      lines.push("");
+    }
+  });
+
+  // Détecter les alertes automatiquement
+  var alertes = [];
+  if(answers.douleur >= 7) alertes.push("Douleur intense ("+answers.douleur+"/10)");
+  if(answers.humeur && answers.humeur.includes("Tres mal")) alertes.push("Moral tres bas");
+  if(answers.chute && answers.chute.includes("chute")) alertes.push("Chute(s) declaree(s)");
+  if(answers.solitude && answers.solitude.includes("Tout le temps")) alertes.push("Isolement severe");
+  if(answers.aide_entourage && answers.aide_entourage.includes("Non, personne")) alertes.push("Aucun entourage disponible");
+  if(answers.medicaments && answers.medicaments.includes("arrete")) alertes.push("Arret de medicaments");
+
+  if(alertes.length > 0){
+    lines.push("⚠️ ALERTES DETECTEES");
+    alertes.forEach(function(a){lines.push("  • "+a);});
+  }
+
+  var summary = lines.join("\n");
+
+  // Stocker localement (pour récupération par le coordinateur)
+  var stored = JSON.parse(localStorage.getItem("ps_questionnaires")||"[]");
+  stored.unshift({
+    id: "q_"+Date.now(),
+    date: answers._date,
+    dossierId: answers._dossierId,
+    patientName: answers._patientName,
+    answers: answers,
+    summary: summary,
+    alertes: alertes
+  });
+  localStorage.setItem("ps_questionnaires", JSON.stringify(stored));
+
+  // Copier le résumé pour envoi au coordinateur
+  navigator.clipboard.writeText(summary).catch(function(){});
+
+  // Afficher succès
+  document.getElementById("progressFill").style.width = "100%";
+  document.getElementById("btnNav").innerHTML = "";
+  document.getElementById("mainContent").innerHTML = "";
+
+  var sc = mkEl("div",{cls:"success-screen"},document.getElementById("mainContent"));
+  mkEl("div",{cls:"success-icon",text:"✅"},sc);
+  mkEl("div",{cls:"success-title",text:"Merci pour vos reponses !"},sc);
+  mkEl("div",{cls:"success-sub",text:"Votre coordinateur de sante recevra vos reponses et vous contactera si necessaire. N hesitez pas a appeler si vous avez une urgence."},sc);
+
+  if(alertes.length > 0){
+    var alertDiv = mkEl("div",{css:"margin-top:20px;padding:14px;background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:12px;text-align:left"},sc);
+    mkEl("div",{css:"font-size:12px;font-weight:700;color:var(--amber);margin-bottom:8px",text:"Points signales a votre coordinateur :"},alertDiv);
+    alertes.forEach(function(a){
+      mkEl("div",{css:"font-size:12px;color:var(--text-2);margin-bottom:4px",text:"• "+a},alertDiv);
+    });
+  }
+}
+
+function mkEl(tag,props,parent){
+  var el=document.createElement(tag);
+  Object.keys(props||{}).forEach(function(k){
+    if(k==="text") el.textContent=props[k];
+    else if(k==="html") el.innerHTML=props[k];
+    else if(k==="css") el.style.cssText=props[k];
+    else if(k==="cls") el.className=props[k];
+    else el[k]=props[k];
+  });
+  if(parent) parent.appendChild(el);
+  return el;
+}
+
+function toggleTheme(){
+  var c=document.documentElement.getAttribute("data-theme");
+  document.documentElement.setAttribute("data-theme",c==="dark"?"light":"dark");
+  localStorage.setItem("ps_theme",c==="dark"?"light":"dark");
+}
+
+function showToast(msg){
+  var t=document.createElement("div");t.className="toast";t.textContent=msg;
+  document.body.appendChild(t);setTimeout(function(){t.remove();},2400);
+}
+</script>
+</body>
+</html>
